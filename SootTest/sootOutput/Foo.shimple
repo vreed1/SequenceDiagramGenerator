@@ -1,0 +1,60 @@
+public class Foo extends java.lang.Object
+{
+    public boolean as_long_as_it_takes;
+
+    public int test()
+    {
+        Foo this;
+        int blue, temp$1, temp$2, blue_1, blue_2, blue_3, blue_4;
+        boolean temp$0;
+
+        this := @this: Foo;
+(0)     blue = 100;
+
+     label0:
+        blue_1 = Phi(blue #0, blue_4 #3);
+        nop;
+        temp$0 = this.<Foo: boolean as_long_as_it_takes>;
+        if temp$0 == 0 goto label5;
+
+        goto label1;
+
+     label1:
+        nop;
+        if blue_1 < 200 goto label2;
+
+        goto label3;
+
+     label2:
+        nop;
+        temp$1 = 100;
+        blue_3 = temp$1;
+(1)     goto label4;
+
+     label3:
+        nop;
+        temp$2 = 200;
+(2)     blue_2 = temp$2;
+
+     label4:
+        blue_4 = Phi(blue_3 #1, blue_2 #2);
+        nop;
+(3)     goto label0;
+
+     label5:
+        nop;
+        return blue_1;
+    }
+
+    public void <init>()
+    {
+        Foo this;
+        boolean temp$0;
+
+        this := @this: Foo;
+        specialinvoke this.<java.lang.Object: void <init>()>();
+        temp$0 = 1;
+        this.<Foo: boolean as_long_as_it_takes> = temp$0;
+        return;
+    }
+}
