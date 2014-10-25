@@ -20,8 +20,8 @@ public class HyperEdgeMultiMap<A>
     public int size;
 
     // The actual hypergraph for reference purposes only when adding edges (check for intrinsic)
-    private hypergraph.Hypergraph<GeometryTutorLib.ConcreteAST.GroundedClause, hypergraph.EdgeAnnotation> graph;
-    public void SetOriginalHypergraph(hypergraph.Hypergraph<GeometryTutorLib.ConcreteAST.GroundedClause, hypergraph.EdgeAnnotation> g) { graph = g; }
+    private hypergraph.Hypergraph<concreteAST.CodeObject, hypergraph.EdgeAnnotation> graph;
+    public void SetOriginalHypergraph(hypergraph.Hypergraph<concreteAST.CodeObject, hypergraph.EdgeAnnotation> g) { graph = g; }
 
     // If the user specifies the size, we will never have to rehash
     public HyperEdgeMultiMap(int sz)
@@ -44,7 +44,7 @@ public class HyperEdgeMultiMap<A>
         int minSrc = Collections.max(edge.sourceNodes);
         for (int src : edge.sourceNodes)
         {
-            if (!graph.vertices.get(src).data.IsIntrinsic() || !graph.vertices.get(src).data.IsAxiomatic())
+            if (!graph.getVertices().get(src).data.IsIntrinsic() || !graph.getVertices().get(src).data.IsAxiomatic())
             {
                 minSrc = src;
             }

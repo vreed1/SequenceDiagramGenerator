@@ -11,7 +11,8 @@ import pebbler.*;
 public class Hypergraph<T, A>
 {
     // The main graph data structure
-	public List<HyperNode<T, A>> vertices;
+	private List<HyperNode<T, A>> vertices;
+	public List<HyperNode<T,A>> getVertices() { return vertices; }
 
     public Hypergraph(){
         vertices = new ArrayList<HyperNode<T, A>>();
@@ -58,7 +59,7 @@ public class Hypergraph<T, A>
         return new PebblerHypergraph<T, A>(pebblerNodes);
     }
 
-/*  Is the Strengthened concept relevant for this project?
+/*  
  	public List<Strengthened> GetStrengthenedNodes(List<Integer> indices) {
         List<Strengthened> strengList = new List<Strengthened>();
 
@@ -279,33 +280,4 @@ public class Hypergraph<T, A>
         }
         System.out.println(edgeStr);    	
     }
-
-/*  Are these methods relevant for this project?  
-    public void DumpNonEquationClauses()
-    {
-    	System.out.println("Non-Equation Clauses:\n");
-
-        StringBuilder edgeStr = new StringBuilder();
-        for (int v = 0; v < vertices.size(); v++)
-        {
-            if (!(vertices.get(v).data is Equation))
-            {
-            	System.out.println(edgeStr + " " + v + " " + vertices.get(v).data.toString());
-            }
-        }
-    }
-
-    public void DumpEquationClauses()
-    {
-    	System.out.println("Equation Clauses:\n");
-
-        StringBuilder edgeStr = new StringBuilder();
-        for (int v = 0; v < vertices.size(); v++)
-        {
-            if (vertices.get(v).data is Equation)
-            {
-            	System.out.println(edgeStr + " " + v + " " + vertices.get(v).data.ToString());
-            }
-        }
-    }*/
 }

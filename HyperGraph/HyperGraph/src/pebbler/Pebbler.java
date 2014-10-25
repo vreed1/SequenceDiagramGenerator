@@ -6,6 +6,7 @@ import java.util.List;
 
 import hypergraph.*;
 import utilities.*;
+import concreteAST.*;
 
 //
 // A reduced version of the original hypergraph that provides simple pebbling and exploration
@@ -13,37 +14,37 @@ import utilities.*;
 public class Pebbler
 {
     // The pebbling version (integer-based) of the hypergraph to work on.
-    private PebblerHypergraph<ConcreteAST.GroundedClause, hypergraph.EdgeAnnotation> pebblerGraph;
+    private PebblerHypergraph<concreteAST.CodeObject, hypergraph.EdgeAnnotation> pebblerGraph;
 
     // The actual hypergraph for reference purposes only
-    private hypergraph.Hypergraph<GeometryTutorLib.ConcreteAST.GroundedClause, hypergraph.EdgeAnnotation> graph;
+    private hypergraph.Hypergraph<concreteAST.CodeObject, hypergraph.EdgeAnnotation> graph;
 
     // A static list of edges that can be processed using means other than a fixpoint analysis.
-    public HyperEdgeMultiMap<hypergraph.EdgeAnnotation> forwardPebbledEdges;
-    public HyperEdgeMultiMap<hypergraph.EdgeAnnotation> backwardPebbledEdges;
+    private HyperEdgeMultiMap<hypergraph.EdgeAnnotation> forwardPebbledEdges;
+    private HyperEdgeMultiMap<hypergraph.EdgeAnnotation> backwardPebbledEdges;
+    
+    public HyperEdgeMultiMap<hypergraph.EdgeAnnotation> getForwardPebbledEdges() { return forwardPebbledEdges; }
+    public HyperEdgeMultiMap<hypergraph.EdgeAnnotation> getBackwardPebbledEdges() { return backwardPebbledEdges; }
 
-    public Pebbler(hypergraph.Hypergraph<GeometryTutorLib.ConcreteAST.GroundedClause, hypergraph.EdgeAnnotation> graph,
-                   PebblerHypergraph<ConcreteAST.GroundedClause, hypergraph.EdgeAnnotation> pGraph)
+    public Pebbler(hypergraph.Hypergraph<concreteAST.CodeObject, hypergraph.EdgeAnnotation> graph,
+                   PebblerHypergraph<concreteAST.CodeObject, hypergraph.EdgeAnnotation> pGraph)
     {
         this.graph = graph;
         this.pebblerGraph = pGraph;
         
-        forwardPebbledEdges = new HyperEdgeMultiMap<hypergraph.EdgeAnnotation>(pGraph.vertices.Length);
-        backwardPebbledEdges = new HyperEdgeMultiMap<hypergraph.EdgeAnnotation>(pGraph.vertices.Length);
+        forwardPebbledEdges = new HyperEdgeMultiMap<hypergraph.EdgeAnnotation>(pGraph.NumVertices());
+        backwardPebbledEdges = new HyperEdgeMultiMap<hypergraph.EdgeAnnotation>(pGraph.NumVertices());
 
         forwardPebbledEdges.SetOriginalHypergraph(graph);
         backwardPebbledEdges.SetOriginalHypergraph(graph);
     }
 
     // Clear all pebbles from all nodes and edges in the hypergraph
-    private void ClearPebbles()
-    {
-        for (PebblerHyperNode<ConcreteAST.GroundedClause, hypergraph.EdgeAnnotation> node : pebblerGraph.vertices)
-        {
+    private void ClearPebbles() {
+        for (PebblerHyperNode<concreteAST.CodeObject, hypergraph.EdgeAnnotation> node : pebblerGraph.getVertices()) {
             node.pebbled = false;
 
-            for (PebblerHyperEdge<hypergraph.EdgeAnnotation> edge : node.edges)
-            {
+            for (PebblerHyperEdge<hypergraph.EdgeAnnotation> edge : node.edges) {
                 edge.sourcePebbles.clear();
                 edge.pebbled = false;
             }
@@ -53,15 +54,13 @@ public class Pebbler
     //
     // Use Dowling-Gallier pebbling technique to pebble using all given nodes
     //
-    public void Pebble(List<Integer> figure, List<Integer> givens)
-    {
+    public void Pebble(List<Integer> figure, List<Integer> givens) {
         // Find all axiomatic, reflexive, and other obvious notions which may go both directions for solving problems.
         List<Integer> axiomaticNodes = new ArrayList<Integer>();
         List<Integer> reflexiveNodes = new ArrayList<Integer>();
         List<Integer> obviousDefinitionNodes = new ArrayList<Integer>();
-        for (int v = 0; v < graph.size(); v++)
-        {
-            ConcreteAST.GroundedClause node = graph.GetNode(v);
+        for (int v = 0; v < graph.Size(); v++) {
+        	concreteAST.CodeObject node = graph.GetNode(v);
 
             if (node.IsAxiomatic()) axiomaticNodes.add(v);
             if (node.IsReflexive()) reflexiveNodes.add(v);
@@ -84,9 +83,9 @@ public class Pebbler
         List<Integer> axiomaticNodes = new ArrayList<Integer>();
         List<Integer> reflexiveNodes = new ArrayList<Integer>();
         List<Integer> obviousDefinitionNodes = new ArrayList<Integer>();
-        for (int v = 0; v < graph.size(); v++)
+        for (int v = 0; v < graph.Size(); v++)
         {
-            ConcreteAST.GroundedClause node = graph.GetNode(v);
+        	concreteAST.CodeObject node = graph.GetNode(v);
 
             if (node.IsAxiomatic()) axiomaticNodes.add(v);
             if (node.IsReflexive()) reflexiveNodes.add(v);
@@ -117,7 +116,7 @@ public class Pebbler
 
     private boolean IsNodePebbled(int v)
     {
-        return pebblerGraph.vertices.get(v).pebbled;
+        return pebblerGraph.getVertices().get(v).pebbled;
     }
 
     //
@@ -132,7 +131,7 @@ public class Pebbler
         List<Integer> deducedNodesToPebbleBackward = new ArrayList<Integer>();
 
         // Avoid re-pebbling figure again so start after the figure
-        for (int v = pebblerGraph.vertices.Length - 1; v >= figure.size(); v--)
+        for (int v = pebblerGraph.NumVertices() - 1; v >= figure.size(); v--)
         {
             if (IsNodePebbled(v)) deducedNodesToPebbleBackward.add(v);
         }
@@ -186,12 +185,12 @@ public class Pebbler
             worklist.remove(0);
 
             // Pebble the current node as a forward node and percolate forward
-            pebblerGraph.vertices.get(currentNodeIndex).pebbled = true;
+            pebblerGraph.getVertices().get(currentNodeIndex).pebbled = true;
 
             // For all hyperedges leaving this node, mark a pebble along the arc
-            for (PebblerHyperEdge<hypergraph.EdgeAnnotation> currentEdge : pebblerGraph.vertices.get(currentNodeIndex).edges)
+            for (PebblerHyperEdge<hypergraph.EdgeAnnotation> currentEdge : pebblerGraph.getVertices().get(currentNodeIndex).edges)
             {
-                if (!Utilities.RESTRICTING_AXS_DEFINITIONS_THEOREMS || (Utilities.RESTRICTING_AXS_DEFINITIONS_THEOREMS && currentEdge.annotation.IsActive()))
+                if (!Utilities.PLACEHOLDER_RESTRICTION || (Utilities.PLACEHOLDER_RESTRICTION && currentEdge.annotation.IsActive()))
                 {
                     if (!currentEdge.IsFullyPebbled())
                     {
@@ -228,10 +227,10 @@ public class Pebbler
     private void BackwardPebbleFigure(List<Integer> figure) {
         for (int fIndex : figure) {
             // Pebble the current node as a backward; DO NOT PERCOLATE forward
-            pebblerGraph.vertices.get(fIndex).pebbled = true;
+            pebblerGraph.getVertices().get(fIndex).pebbled = true;
 
             // For all hyperedges leaving this node, mark a pebble along the arc
-            for (PebblerHyperEdge<hypergraph.EdgeAnnotation> currentEdge : pebblerGraph.vertices.get(fIndex).edges) {
+            for (PebblerHyperEdge<hypergraph.EdgeAnnotation> currentEdge : pebblerGraph.getVertices().get(fIndex).edges) {
                 // Avoid a fully pebbled edge
                 if (!currentEdge.IsFullyPebbled()) {
                     // Indicate the node has been pebbled by adding to the list of pebbled vertices
@@ -249,7 +248,7 @@ public class Pebbler
 
         System.out.println("\n Vertices:");
         edgeStr = new StringBuilder();
-        for (int v = 0; v < pebblerGraph.vertices.size(); v++) {
+        for (int v = 0; v < pebblerGraph.NumVertices(); v++) {
             edgeStr.append(v + ": ");
 
             if (IsNodePebbled(v)) {
@@ -263,10 +262,10 @@ public class Pebbler
         }
 
         System.out.println("\nPebbled Edges:");
-        for (int v = 0; v < pebblerGraph.vertices.size(); v++) {
-            if (!pebblerGraph.vertices.get(v).edges.isEmpty()) {
+        for (int v = 0; v < pebblerGraph.NumVertices(); v++) {
+            if (!pebblerGraph.getVertices().get(v).edges.isEmpty()) {
                 edgeStr.append(v + ": {");
-                for (PebblerHyperEdge<hypergraph.EdgeAnnotation> edge : pebblerGraph.vertices.get(v).edges) {
+                for (PebblerHyperEdge<hypergraph.EdgeAnnotation> edge : pebblerGraph.getVertices().get(v).edges) {
                     if (v == Collections.min(edge.sourceNodes)) {
                         edgeStr.append(" { ");
 
@@ -293,10 +292,10 @@ public class Pebbler
         StringBuilder edgeStr = new StringBuilder();
 
         edgeStr.append("\nUnPebbled Edges:");
-        for (int v = 0; v < pebblerGraph.vertices.size(); v++) {
-            if (!pebblerGraph.vertices.get(v).edges.isEmpty()) {
+        for (int v = 0; v < pebblerGraph.NumVertices(); v++) {
+            if (!pebblerGraph.getVertices().get(v).edges.isEmpty()) {
                 boolean containsEdge = false;
-                for (PebblerHyperEdge<hypergraph.EdgeAnnotation> edge : pebblerGraph.vertices.get(v).edges) {
+                for (PebblerHyperEdge<hypergraph.EdgeAnnotation> edge : pebblerGraph.getVertices().get(v).edges) {
                     if (!edge.IsFullyPebbled() && v == Collections.min(edge.sourceNodes)) {
                         containsEdge = true;
                         break;
@@ -305,7 +304,7 @@ public class Pebbler
 
                 if (containsEdge) {
                     edgeStr.append(v + ": {");
-                    for (PebblerHyperEdge<hypergraph.EdgeAnnotation> edge : pebblerGraph.vertices.get(v).edges) {
+                    for (PebblerHyperEdge<hypergraph.EdgeAnnotation> edge : pebblerGraph.getVertices().get(v).edges) {
                         if (!edge.IsFullyPebbled() && v == Collections.min(edge.sourceNodes)) {
                             edgeStr.append(" { ");
 
@@ -325,10 +324,10 @@ public class Pebbler
         }
 
         edgeStr.append("\nPebbled Edges:");
-        for (int v = 0; v < pebblerGraph.vertices.size(); v++) {
-            if (pebblerGraph.vertices.get(v).edges.Any()) {
+        for (int v = 0; v < pebblerGraph.NumVertices(); v++) {
+            if (!pebblerGraph.getVertices().get(v).edges.isEmpty()) {
                 boolean containsEdge = false;
-                for (PebblerHyperEdge<hypergraph.EdgeAnnotation> edge : pebblerGraph.vertices.get(v).edges) {
+                for (PebblerHyperEdge<hypergraph.EdgeAnnotation> edge : pebblerGraph.getVertices().get(v).edges) {
                     if (edge.IsFullyPebbled() && v == Collections.min(edge.sourceNodes)) {
                         containsEdge = true;
                         break;
@@ -337,7 +336,7 @@ public class Pebbler
 
                 if (containsEdge) {
                     edgeStr.append(v + ": {");
-                    for (PebblerHyperEdge<hypergraph.EdgeAnnotation> edge : pebblerGraph.vertices.get(v).edges) {
+                    for (PebblerHyperEdge<hypergraph.EdgeAnnotation> edge : pebblerGraph.getVertices().get(v).edges) {
                         if (edge.IsFullyPebbled() && v == Collections.min(edge.sourceNodes)) {
                             edgeStr.append(" { + ");
 
