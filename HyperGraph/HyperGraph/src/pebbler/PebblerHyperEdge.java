@@ -6,7 +6,7 @@ import java.util.List;
 public class PebblerHyperEdge<A>
 {
     public List<Integer> sourceNodes;
-    
+
     public int targetNode;
 
     // The original edge annotation purely for reference.
@@ -44,14 +44,14 @@ public class PebblerHyperEdge<A>
     // The source nodes and target must be the same for equality.
     @Override
     public boolean equals(Object obj) {
-    	try {
-	        PebblerHyperEdge<A> thatEdge = (PebblerHyperEdge<A>)obj;
-	        if (thatEdge == null) return false;
-	        for (int src : sourceNodes){
-	            if (!thatEdge.sourceNodes.contains(src)) return false;
-	        }
-	        return targetNode == thatEdge.targetNode;
-    	}catch(ClassCastException e){return false;} 
+        try {
+            PebblerHyperEdge<A> thatEdge = (PebblerHyperEdge<A>)obj;
+            if (thatEdge == null) return false;
+            for (int src : sourceNodes){
+                if (!thatEdge.sourceNodes.contains(src)) return false;
+            }
+            return targetNode == thatEdge.targetNode;
+        }catch(ClassCastException e){return false;} 
     }
 
     @Override

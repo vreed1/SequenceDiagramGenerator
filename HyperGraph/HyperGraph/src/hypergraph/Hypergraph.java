@@ -11,8 +11,8 @@ import pebbler.*;
 public class Hypergraph<T, A>
 {
     // The main graph data structure
-	private List<HyperNode<T, A>> vertices;
-	public List<HyperNode<T,A>> getVertices() { return vertices; }
+    private List<HyperNode<T, A>> vertices;
+    public List<HyperNode<T,A>> getVertices() { return vertices; }
 
     public Hypergraph(){
         vertices = new ArrayList<HyperNode<T, A>>();
@@ -59,7 +59,7 @@ public class Hypergraph<T, A>
         return new PebblerHypergraph<T, A>(pebblerNodes);
     }
 
-/*  
+    /*  
  	public List<Strengthened> GetStrengthenedNodes(List<Integer> indices) {
         List<Strengthened> strengList = new List<Strengthened>();
 
@@ -143,11 +143,11 @@ public class Hypergraph<T, A>
     {
         for (int ante : antecedent) {
             if (ante < 0 || ante > vertices.size()) 
-            	throw new IllegalArgumentException("Index of bounds on local edge: " + ante);
+                throw new IllegalArgumentException("Index of bounds on local edge: " + ante);
         }
-  
+
         if (consequent < 0 || consequent > vertices.size()) 
-        	throw new IllegalArgumentException("Index of bounds on local edge: " + consequent);
+            throw new IllegalArgumentException("Index of bounds on local edge: " + consequent);
 
 
         for (HyperNode<T, A> vertex : vertices) {
@@ -255,12 +255,12 @@ public class Hypergraph<T, A>
         System.out.println("\nEdges: ");
         DumpEdges();
     }
-    
+
     public void DumpClauseForwardEdges() {
-    	System.out.println("\n Forward Edges: ");
-    	DumpEdges();
+        System.out.println("\n Forward Edges: ");
+        DumpEdges();
     }
-    
+
     private void DumpEdges() {
         StringBuilder edgeStr = new StringBuilder();
         for (int v = 0; v < vertices.size(); v++) {
