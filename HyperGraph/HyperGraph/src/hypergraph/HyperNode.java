@@ -1,5 +1,8 @@
+package hypergraph;
+
 import java.util.ArrayList;
 import java.util.List;
+import pebbler.*;
 
 
 public class HyperNode<T,A> {
