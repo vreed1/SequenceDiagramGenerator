@@ -80,6 +80,11 @@ public class ExecAnalysis {
 	//to allow us to follow analysis into sub classes.
 	//This obviously might produce a problem if we couldn't enter that code.
 	//but I think I've covered that with a try/catch.
+	
+	//note the very important line starting with
+	//soot.PhaseOptions ...
+	//This line forces the use of normal names in all analysis!  I don't know
+	//a simpler way to do this.
 	public static String ShimpleAnalyzer(String ClassName, String MethodName){
 		
 		StringBuilder toReturn = new StringBuilder();
