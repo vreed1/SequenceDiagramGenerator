@@ -12,6 +12,7 @@ import soot.SootClass;
 import soot.SootMethod;
 import soot.Unit;
 import soot.UnitBox;
+import soot.jimple.InvokeExpr;
 import soot.jimple.toolkits.callgraph.CallGraph;
 import soot.shimple.Shimple;
 import soot.shimple.ShimpleBody;
@@ -73,6 +74,11 @@ public class ExecAnalysis {
 	//The work done below PatchingChain<Unit> ... is just throwaway work
 	//to prove that the functionality works at the moment.
 	//that will change as we decide what to do with the shimple analysis.
+	
+	//Some of this work has been moved to the GetFromBody method
+	//to allow us to follow analysis into sub classes.
+	//This obviously might produce a problem if we couldn't enter that code.
+	//but I think I've covered that with a try/catch.
 	public static String ShimpleAnalyzer(String ClassName, String MethodName){
 		
 		StringBuilder toReturn = new StringBuilder();
@@ -84,26 +90,50 @@ public class ExecAnalysis {
 		
 		Body b = m.retrieveActiveBody();
 		
-		ShimpleBody sb = Shimple.v().newBody(b);
+		toReturn.append(GetFromBody(b));
 		
-		PatchingChain<Unit> pu = sb.getUnits();
-		
-		Unit aUnit = pu.getFirst();
-		
-		while(aUnit != null){
-			toReturn.append(aUnit.toString());
-			toReturn.append("\n");
-			aUnit = pu.getSuccOf(aUnit);
+		return toReturn.toString();
+	}
+		//removing this from above method allows us to call this part recursively
+		//on sub methods found.
+		//we can also note when we hit an invoke statement.
+		private static String GetFromBody(Body b){
+
+			StringBuilder toReturn = new StringBuilder();
+			ShimpleBody sb = Shimple.v().newBody(b);
+			
+			PatchingChain<Unit> pu = sb.getUnits();
+			
+			Unit aUnit = pu.getFirst();
+			
+			while(aUnit != null){
+				
+				if(!(aUnit instanceof soot.jimple.internal.AbstractStmt))
+				{
+					//I don't believe this is possible, which reduces the amount of 
+					//the subtree we have to deal with in practice.
+					toReturn.append("Is not a abstractstmt");
+				}
+				else{
+					soot.jimple.internal.AbstractStmt aStmt = (soot.jimple.internal.AbstractStmt)aUnit;
+					if(aStmt.containsInvokeExpr())
+					{
+						toReturn.append("A invoke present:");
+						InvokeExpr ie = aStmt.getInvokeExpr();
+						SootMethod sm = ie.getMethod();
+						try{
+							Body bsub = sm.retrieveActiveBody();
+							toReturn.append(GetFromBody(bsub));
+						}catch(RuntimeException ex){
+							toReturn.append("\nNo Method Body Found\n");
+						}
+					}
+				}
+				toReturn.append(aUnit.toString());
+				toReturn.append("\n");
+				aUnit = pu.getSuccOf(aUnit);
 		}
 		
-		
-//		List<UnitBox> listUB = sb.getAllUnitBoxes();
-//		
-//		for(int i = 0; i < listUB.size(); i++){
-//			Unit aUnit = listUB.get(i).getUnit();
-//			toReturn.append(aUnit.toString());
-//			toReturn.append("\n");
-//		}
 		return toReturn.toString();
 	}
 	
