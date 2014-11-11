@@ -100,14 +100,14 @@ public class ExecAnalysis {
 		
 		Body b = m.retrieveActiveBody();
 		
-		toReturn.append(GetFromBody(b));
+		toReturn.append(GetFromBody(b, ""));
 		
 		return toReturn.toString();
 	}
-		//removing this from above method allows us to call this part recursively
-		//on sub methods found.
-		//we can also note when we hit an invoke statement.
-		private static String GetFromBody(Body b){
+	//removing this from above method allows us to call this part recursively
+	//on sub methods found.
+	//we can also note when we hit an invoke statement.
+	private static String GetFromBody(Body b, String tabs){
 
 			StringBuilder toReturn = new StringBuilder();
 			ShimpleBody sb = Shimple.v().newBody(b);
@@ -122,13 +122,15 @@ public class ExecAnalysis {
 				{
 					//I don't believe this is possible, which reduces the amount of 
 					//the subtree we have to deal with in practice.
-					toReturn.append("Is not a abstractstmt");
+					toReturn.append(tabs + "Is not a abstractstmt");
+					toReturn.append("\n");
 				}
 				else{
 					soot.jimple.internal.AbstractStmt aStmt = (soot.jimple.internal.AbstractStmt)aUnit;
 					if(aStmt.containsInvokeExpr())
 					{
-						toReturn.append("A invoke present:");
+						toReturn.append(tabs + "A invoke present:");
+						toReturn.append("\n");
 						InvokeExpr ie = aStmt.getInvokeExpr();
 						SootMethod sm = ie.getMethod();
 						
@@ -136,22 +138,26 @@ public class ExecAnalysis {
 							soot.jimple.internal.AbstractInvokeExpr jie = (soot.jimple.internal.AbstractInvokeExpr)ie;
 							if(jie.getArgCount() > 0){
 								jie.getArgBox(0);
-								//still has lousy r1 style naming even in jimple analysis.
-								//i need to figure out how to force it to use nicer names
-								//if that is possible which I'm increasingly concerned may 
-								//not always be true.
+								
 							}
 						}
 						
 						try{
 							Body bsub = sm.retrieveActiveBody();
-							toReturn.append(GetFromBody(bsub));
+							toReturn.append(tabs + GetFromBody(bsub, tabs + "   "));
+							toReturn.append("\n");
 						}catch(RuntimeException ex){
-							toReturn.append("\nNo Method Body Found\n");
+							toReturn.append(tabs + "No Method Body Found Err:");
+							toReturn.append(tabs + ex.getMessage());
+							toReturn.append("\n");
 						}
 					}
+					if(aStmt.branches()){
+						toReturn.append(tabs + "Branching Stmt Below\n");
+						String s = aStmt.toString();
+					}
 				}
-				toReturn.append(aUnit.toString());
+				toReturn.append(tabs + aUnit.toString());
 				toReturn.append("\n");
 				aUnit = pu.getSuccOf(aUnit);
 		}

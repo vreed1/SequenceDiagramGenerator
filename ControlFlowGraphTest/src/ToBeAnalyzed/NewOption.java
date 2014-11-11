@@ -20,7 +20,8 @@ public class NewOption {
 		aConstructVariable = true;
 	}
 	
-	public void aFunc(){
+	public String aFunc(){
 		aThirdInstance = new ThirdClass();
+		return aSecondInstance.toString();
 	}
 }
