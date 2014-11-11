@@ -2,6 +2,7 @@ package NewAnalyzerCode;
 import java.util.ArrayList;
 import java.util.Iterator;
 import java.util.List;
+import java.util.Map;
 
 import PastedSootExampleCode.SimpleVeryBusyExpressions;
 import PastedSootExampleCode.VeryBusyExpressions;
@@ -83,7 +84,11 @@ public class ExecAnalysis {
 		
 		StringBuilder toReturn = new StringBuilder();
 		
+		soot.PhaseOptions.v().setPhaseOptionIfUnset("jb", "use-original-names");
 		SootClass c = Scene.v().loadClassAndSupport(ClassName);
+		
+	    //Map mp = soot.PhaseOptions.v().getPhaseOptions("jb");
+				
 		c.setApplicationClass();
 		
 		SootMethod m = c.getMethodByName(MethodName);
@@ -121,6 +126,18 @@ public class ExecAnalysis {
 						toReturn.append("A invoke present:");
 						InvokeExpr ie = aStmt.getInvokeExpr();
 						SootMethod sm = ie.getMethod();
+						
+						if(ie instanceof soot.jimple.internal.AbstractInvokeExpr){
+							soot.jimple.internal.AbstractInvokeExpr jie = (soot.jimple.internal.AbstractInvokeExpr)ie;
+							if(jie.getArgCount() > 0){
+								jie.getArgBox(0);
+								//still has lousy r1 style naming even in jimple analysis.
+								//i need to figure out how to force it to use nicer names
+								//if that is possible which I'm increasingly concerned may 
+								//not always be true.
+							}
+						}
+						
 						try{
 							Body bsub = sm.retrieveActiveBody();
 							toReturn.append(GetFromBody(bsub));
