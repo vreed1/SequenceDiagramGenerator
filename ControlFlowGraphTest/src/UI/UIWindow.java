@@ -9,6 +9,11 @@ import javax.swing.JFrame;
 
 import NewAnalyzerCode.ExecAnalysis;
 
+//Brian Peterson
+//Window for UI of control flow graph test.
+//actionPerformed handles button presses on the child
+//ControlPanel and actually triggers the "work" of the program.
+
 public class UIWindow implements ActionListener{
 
 	private JFrame frame;
@@ -61,9 +66,12 @@ public class UIWindow implements ActionListener{
 			ExecAnalysis.setSootClassPath(theControlPanel.tfClassPath.getText());
 		}
 		if(e.getActionCommand().equals("Analyze")){
-			theGraphPanel.SetGraph(ExecAnalysis.Analyze(
-					theControlPanel.tfClassName.getText(), 
-					theControlPanel.tfMethod.getText()));
+			String ClassName = theControlPanel.tfClassName.getText();
+			String MethodName = theControlPanel.tfMethod.getText();
+			theGraphPanel.SetString(ExecAnalysis.ShimpleAnalyzer(ClassName, MethodName));
+			//theGraphPanel.SetUnitGraph(ExecAnalysis.Analyze(
+			//		theControlPanel.tfClassName.getText(), 
+			//		theControlPanel.tfMethod.getText()));
 		}
 	}
 

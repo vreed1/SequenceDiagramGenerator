@@ -1,5 +1,7 @@
 package ToBeAnalyzed;
 
+//Class Brian Peterson wrote to analyze.
+
 public class ToBeAnalyzed {
 	public static void NotMain(String[] Args){
 		int x = 0;

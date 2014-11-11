@@ -16,6 +16,20 @@ import NewAnalyzerCode.ExecAnalysis;
 import java.awt.event.ActionListener;
 import java.awt.event.ActionEvent;
 
+//Brian Peterson
+//Basic UI for control flow graph testing.  
+//The control panel sits on top of the window
+//and allows redefinition of the 
+//class path,
+//and definition of a class and method to analyze.
+
+//This panel does not handle its own events, it takes
+//an ActionListener as argument.  That listener will
+//respond to button presses on this control.
+
+//All the constructor does is UI work, like positioning
+//and describing controls.
+
 public class ControlPanel extends JPanel {
 	public JTextField tfClassPath;
 	public JTextField tfClassName;
@@ -49,9 +63,14 @@ public class ControlPanel extends JPanel {
 		
 		JLabel lblAppclass = new JLabel("Class");
 		subPanelTwo.add(lblAppclass);
+
+		GridBagConstraints c2 = new GridBagConstraints();
+		c2.weightx = 1.0;
+		c2.fill = GridBagConstraints.HORIZONTAL;
 		
 		tfClassName = new JTextField();
-		subPanelTwo.add(tfClassName, c);
+		tfClassName.setText("ToBeAnalyzed.ToBeAnalyzed");
+		subPanelTwo.add(tfClassName, c2);
 		tfClassName.setColumns(10);
 		
 		JButton btnAnalyze = new JButton("Analyze");
@@ -60,9 +79,14 @@ public class ControlPanel extends JPanel {
 		
 		JLabel lblMethod = new JLabel("Method");
 		subPanelTwo.add(lblMethod);
+
+		GridBagConstraints c3 = new GridBagConstraints();
+		c3.weightx = 1.0;
+		c3.fill = GridBagConstraints.HORIZONTAL;
 		
 		tfMethod = new JTextField();
-		subPanelTwo.add(tfMethod, c);
+		tfMethod.setText("NotMain");
+		subPanelTwo.add(tfMethod, c3);
 		tfMethod.setColumns(10);
 		subPanelTwo.add(btnAnalyze);
 

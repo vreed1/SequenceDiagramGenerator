@@ -1,14 +1,26 @@
 package UI;
 
 import java.util.ArrayList;
+import java.util.Iterator;
 import java.util.List;
 
 import javax.swing.JPanel;
 
+import soot.MethodOrMethodContext;
 import soot.Unit;
+import soot.jimple.toolkits.callgraph.CallGraph;
 import soot.toolkits.graph.UnitGraph;
+
 import javax.swing.JTextArea;
+
+import polyglot.visit.FlowGraph.Edge;
+
 import java.awt.BorderLayout;
+
+//Brian Peterson
+//Very basic UI for output of analysis
+//it is just a big text area in which I can drop string output.
+//This is a pretty messy class, but I anticipate throwing it away completely.
 
 public class GraphPanel extends JPanel {
 
@@ -17,7 +29,9 @@ public class GraphPanel extends JPanel {
 	 */
 	private static final long serialVersionUID = 1L;
 
-	private UnitGraph theGraph = null;
+	private CallGraph theCallGraph = null;
+	
+	private UnitGraph theUnitGraph = null;
 	
 	private JTextArea theTextArea;
 	
@@ -33,13 +47,39 @@ public class GraphPanel extends JPanel {
 		//SetGraph(NewAnalyzerCode.ExecAnalysis.getGraph());
 	}
 	
-	public void SetGraph(UnitGraph aGraph){
-		theGraph = aGraph;
-		theTextArea.setText(GetStringOfGraph());
+	//unused
+	public void SetUnitGraph(UnitGraph aGraph){
+		theUnitGraph = aGraph;
+		theTextArea.setText(GetStringOfUnitGraph());
 		this.repaint();
 	}
 	
-	public String GetStringOfGraph(){
+	public void SetString(String aString){
+		theTextArea.setText(aString);
+		this.repaint();
+	}
+	
+	//Unused.
+	public String GetStringOfCallGraph(){
+
+		StringBuilder toReturn = new StringBuilder();
+
+//		Iterator<MethodOrMethodContext> it = theGraph.sourceMethods();
+//		
+//		while(it.hasNext()){
+//			MethodOrMethodContext am = it.next();
+//			Iterator<Edge> itEdge = theGraph.edgesOutOf(am);
+//			while(itEdge.hasNext()){
+//				Edge e = itEdge.next();
+//				e.getTarget()
+//			}
+//		}
+//		
+		return toReturn.toString();
+	}
+	
+	//Unused.
+	public String GetStringOfUnitGraph(){
 
 		StringBuilder toReturn = new StringBuilder();
 		
@@ -47,7 +87,8 @@ public class GraphPanel extends JPanel {
 		
 		List<Unit> seen = new ArrayList<Unit>();
 		
-		topList.add(theGraph.getHeads());
+		
+		topList.add(theUnitGraph.getHeads());
 		seen.addAll(topList.get(0));
 		
 		boolean lookAhead = true;
@@ -56,13 +97,13 @@ public class GraphPanel extends JPanel {
 			lookAhead = false;
 			List<Unit> nextLevel = new ArrayList<Unit>();
 			for(int j = 0; j < topList.get(i).size(); j++){
-				List<Unit> toCheck = theGraph.getSuccsOf(topList.get(i).get(j));
+				List<Unit> toCheck = theUnitGraph.getSuccsOf(topList.get(i).get(j));
 				for(int k = 0; k < toCheck.size(); k++){
-					if(!seen.contains(toCheck.get(k))){
+					if(true || !seen.contains(toCheck.get(k))){
 						seen.add(toCheck.get(k));
 						lookAhead = true;
 						nextLevel.add(toCheck.get(k));
-						toReturn.append(topList.get(i).get(j).toString());
+						toReturn.append(toCheck.get(k).toString());
 						toReturn.append(", ");
 					}
 				}
