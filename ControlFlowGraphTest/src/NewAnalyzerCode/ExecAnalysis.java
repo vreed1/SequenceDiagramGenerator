@@ -25,6 +25,8 @@ import soot.toolkits.graph.UnitGraph;
 //The idea is to have a place where I can write a new method to test 
 //a new way of doing things without disturbing a class structure.
 
+//This is a new trivial change.
+
 public class ExecAnalysis {
 	
 	//The soot class path is the class path that soot can look through
