@@ -1,11 +1,13 @@
-package pebbler;
+package sequenceDiagramGenerator.pebbler;
 
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
 
-import hypergraph.*;
 import utilities.*;
+import sequenceDiagramGenerator.*;
+import sequenceDiagramGenerator.hypergraph.*;
+
 
 //
 // Implements a multi-hashtable in which an entry may appear more than once in the table.
@@ -20,8 +22,8 @@ public class HyperEdgeMultiMap<A>
     public int size;
 
     // The actual hypergraph for reference purposes only when adding edges (check for intrinsic)
-    private hypergraph.Hypergraph<concreteAST.CodeObject, hypergraph.EdgeAnnotation> graph;
-    public void SetOriginalHypergraph(hypergraph.Hypergraph<concreteAST.CodeObject, hypergraph.EdgeAnnotation> g) { graph = g; }
+    private Hypergraph<SourceCodeType, EdgeAnnotation> graph;
+    public void SetOriginalHypergraph(Hypergraph<SourceCodeType, EdgeAnnotation> g) { graph = g; }
 
     // If the user specifies the size, we will never have to rehash
     public HyperEdgeMultiMap(int sz)
@@ -41,23 +43,14 @@ public class HyperEdgeMultiMap<A>
         // such that the target is greater than or less than all source nodes
         // Find the minimum non-intrinsic node (if it exists)
         Collections.sort(edge.sourceNodes);
-        int minSrc = Collections.max(edge.sourceNodes);
-        for (int src : edge.sourceNodes)
-        {
-            if (!graph.getVertices().get(src).data.IsIntrinsic() || !graph.getVertices().get(src).data.IsAxiomatic())
-            {
-                minSrc = src;
-            }
-        }
+        int minSrc = Collections.min(edge.sourceNodes);
         int maxSrc = Collections.max(edge.sourceNodes);
+
         if (minSrc < edge.targetNode && edge.targetNode < maxSrc)
         {
             throw new IllegalArgumentException("A mixed edge was pebbled as valid: " + edge);
         }
 
-        //Java does not natively have long-indexed arrays
-        //Arrays limited to size of integer.MAX_VALUE
-        //Since TABLE_SIZE was declared as an int, assuming it is okay to make hashVal an int
         int hashVal = (edge.targetNode % TABLE_SIZE);
 
         if (table.get(hashVal) == null)

@@ -1,4 +1,4 @@
-package pebbler;
+package sequenceDiagramGenerator.pebbler;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -12,14 +12,19 @@ public class PebblerHypergraph<T, A>
     // The main graph data structure
     private ArrayList<PebblerHyperNode<T, A>> vertices;
     public ArrayList<PebblerHyperNode<T, A>> getVertices() { return vertices; }
-
     public int NumVertices() { return vertices.size(); }
     
-    public List<Integer> GetPebbledNodes() {
+    //
+    // Returns the complete set of pebbled (marked) nodes in this hypergraph.
+    //
+    public List<Integer> GetPebbledNodes()
+    {
         List<Integer> indices = new ArrayList<Integer>();
 
-        for (int n = 0 ; n < vertices.size(); n++) {
-            if (vertices.get(n).pebbled) {
+        for (int n = 0 ; n < vertices.size(); n++)
+        {
+            if (vertices.get(n).pebbled)
+            {
                 indices.add(n);
             }
         }
@@ -29,7 +34,6 @@ public class PebblerHypergraph<T, A>
 
     public PebblerHypergraph(ArrayList<PebblerHyperNode<T, A>> inputVertices)
     {
-        //graph = null; // This must be set outside to use
         vertices = inputVertices;
     }
 }

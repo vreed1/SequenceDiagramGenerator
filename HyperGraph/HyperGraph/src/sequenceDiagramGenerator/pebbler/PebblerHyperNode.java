@@ -1,4 +1,4 @@
-package pebbler;
+package sequenceDiagramGenerator.pebbler;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -6,20 +6,17 @@ import java.util.List;
 public class PebblerHyperNode<T, A>
 {
     public T data; // Original Hypergraph representation
-    public int id; // index of original hypergraph node
+    public int uniqueId; // index of original hypergraph node
 
     public List<Integer> nodes;
     public List<PebblerHyperEdge<A>> edges;
-
-    // Coloration of the edge when pebbled
-    //public PebblerColorType pebble;
 
     // Whether the node has been pebbled or not.
     public boolean pebbled;
 
     public PebblerHyperNode(T thatData, int thatId)
     {
-        id = thatId;
+        uniqueId = thatId;
         data = thatData;
         pebbled = false;
 
@@ -41,13 +38,19 @@ public class PebblerHyperNode<T, A>
     {
         String retS = data.toString() + "\t\t\t\t= { ";
 
-        retS += id + ", Pebbled(" + pebbled + "), ";
+        retS += uniqueId + ", Pebbled(" + pebbled + "), ";
         retS += "SuccN={";
+        
         for (int n : nodes) retS += n + ",";
+
         if (nodes.size() != 0) retS = retS.substring(0, retS.length() - 1);
+        
         retS += "}, SuccE = { ";
+        
         for (PebblerHyperEdge<A> edge : edges) { retS += edge.toString() + ", "; }
+        
         if (edges.size() != 0) retS = retS.substring(0, retS.length() - 2);
+        
         retS += " } }";
 
         return retS;
