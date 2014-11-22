@@ -7,6 +7,7 @@ import java.awt.event.ActionListener;
 
 import javax.swing.JFrame;
 
+import sequenceDiagramGenerator.SourceCodeType;
 import sequenceDiagramGenerator.hypergraph.EdgeAnnotation;
 import sequenceDiagramGenerator.hypergraph.Hypergraph;
 import sequenceDiagramGenerator.sootAnalyzer.Analyzer;
@@ -59,8 +60,9 @@ public class TestUI implements ActionListener{
 		if(e.getActionCommand().equals("Analyze")){
 			String ClassName = theControlPanel.tfClassName.getText();
 			String ClassPath = theControlPanel.tfClassPath.getText();
+			String ClassDir = theControlPanel.tfClassDir.getText();
 			
-			Hypergraph<soot.Type, EdgeAnnotation> hg = Analyzer.AnalyzeAllReachableClasses(ClassName, ClassPath);
+			Hypergraph<SourceCodeType, EdgeAnnotation> hg = Analyzer.AnalyzeSpecificClasses(ClassName, ClassDir, ClassPath);
 			
 			int hello = 0;
 		}

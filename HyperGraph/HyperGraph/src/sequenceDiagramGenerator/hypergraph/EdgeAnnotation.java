@@ -13,6 +13,8 @@ public class EdgeAnnotation
     // Is this edge allowed to be considered in the analysis? 
     public boolean active;
     
+    public soot.SootMethod theSootMethod;
+    
     public EdgeAnnotation()
     {
         methodName = "";

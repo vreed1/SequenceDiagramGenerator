@@ -15,9 +15,11 @@ public class HyperEdge<A>
         targetNode = target;
         annotation = annot;
 
-        if(src.contains(new Integer(target))) {
-            throw new IllegalArgumentException("There exists a direct cycle in a hyperedge" + this);
-        }
+        //Brian commenting this out per email around nov 16ish
+        //Direct cycles seem inevitable with the seq. diagram project.
+        //if(src.contains(new Integer(target))) {
+        //    throw new IllegalArgumentException("There exists a direct cycle in a hyperedge" + this);
+        //}
     }
 
     public boolean DefinesEdge(List<Integer> antecedent, int consequent)

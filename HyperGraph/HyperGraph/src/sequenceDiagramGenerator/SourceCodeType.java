@@ -3,7 +3,7 @@ package sequenceDiagramGenerator;
 public class SourceCodeType
 {
     private int uniqueId;
-    private soot.Type theSootType;
+    public soot.Type theSootType;
 
     public int getId() { return uniqueId; }
 
@@ -19,5 +19,22 @@ public class SourceCodeType
     }
     public SourceCodeType(){
     	this.uniqueId = GetNextInt();
+    }
+    
+    @Override
+    public boolean equals(Object other){
+    	if(other instanceof SourceCodeType){
+    		SourceCodeType anOther = (SourceCodeType)other;
+    		return anOther.theSootType.equals(this.theSootType);
+    	}
+    	return false;
+    }
+    
+    @Override
+    public String toString(){
+    	if(theSootType == null){
+    		return super.toString();
+    	}
+    	return theSootType.getClass().getName();
     }
 }
