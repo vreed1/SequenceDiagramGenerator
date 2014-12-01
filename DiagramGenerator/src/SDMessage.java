@@ -14,7 +14,8 @@ public class SDMessage {
     
     
     // Simplest possible message <caller>:.<message>
-    public SDMessage (String caller, String message, Dictionary<MessageOpt, String> opts){
+    public SDMessage (String caller, String message, Dictionary<MessageOpt, String> opts)
+    {
         this.caller = caller;
         this.message = message;
         
