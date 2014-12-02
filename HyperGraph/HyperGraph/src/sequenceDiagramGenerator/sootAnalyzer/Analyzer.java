@@ -44,6 +44,7 @@ public class Analyzer {
 				AppendToClassPath);
 	}
 	
+	
 	private static String RemoveCountFromEnd(String s, int c){
 		return s.substring(0, s.length() - c );
 	}
@@ -66,6 +67,33 @@ public class Analyzer {
 				ListAllFilesInFolder(prereq, f.getAbsolutePath(), ListAllFiles);
 			}
 		}
+	}
+
+	public static Hypergraph<SourceCodeType, EdgeAnnotation> AnalyzeSpecificClasses(
+			List<String> listClassNames,
+			String AppendtoClassPath){
+
+		if(AppendtoClassPath != null ){
+			if(!AppendtoClassPath.isEmpty()){
+				setSootClassPath(getSootClassPath() + ":" + AppendtoClassPath);
+			}
+		}
+
+		Hypergraph<SourceCodeType, EdgeAnnotation> toReturn = new Hypergraph<SourceCodeType, EdgeAnnotation>();
+		
+		//the addition of this line is probably evidence of paranoia on my part.
+		//but it took me a long time to figure out these magic words.
+		soot.PhaseOptions.v().setPhaseOptionIfUnset("jb", "use-original-names");
+		
+		for(int i= 0; i < listClassNames.size(); i++){
+			SootClass c = Scene.v().loadClassAndSupport(listClassNames.get(i));
+			
+			AddClassToHypergraph(
+					toReturn,
+					c);
+		}
+		return toReturn;
+		
 	}
 	
 	public static Hypergraph<SourceCodeType, EdgeAnnotation> AnalyzeSpecificClasses(

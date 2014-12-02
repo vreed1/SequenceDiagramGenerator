@@ -12,6 +12,7 @@ import javax.swing.JButton;
 
 import java.awt.event.ActionListener;
 import java.awt.Insets;
+import java.awt.event.ActionEvent;
 
 //Brian Peterson
 //Basic UI for control flow graph testing.  
@@ -56,9 +57,16 @@ public class ControlPanel extends JPanel {
 		JPanel subPanelTwo = new JPanel(new GridBagLayout());
 		
 		JLabel lblAppclass = new JLabel("MainClass");
-		subPanelTwo.add(lblAppclass);
+		GridBagConstraints gbc_lblAppclass = new GridBagConstraints();
+		gbc_lblAppclass.insets = new Insets(0, 0, 0, 5);
+		gbc_lblAppclass.gridx = 0;
+		gbc_lblAppclass.gridy = 0;
+		subPanelTwo.add(lblAppclass, gbc_lblAppclass);
 
 		GridBagConstraints c2 = new GridBagConstraints();
+		c2.insets = new Insets(0, 0, 0, 5);
+		c2.gridx = 1;
+		c2.gridy = 0;
 		c2.weightx = 1.0;
 		c2.fill = GridBagConstraints.HORIZONTAL;
 		
@@ -70,7 +78,20 @@ public class ControlPanel extends JPanel {
 		JButton btnAnalyze = new JButton("Analyze");
 		btnAnalyze.setActionCommand("Analyze");
 		btnAnalyze.addActionListener(aListener);
-		subPanelTwo.add(btnAnalyze);
+		GridBagConstraints gbc_btnAnalyze = new GridBagConstraints();
+		gbc_btnAnalyze.insets = new Insets(0, 0, 0, 5);
+		gbc_btnAnalyze.gridx = 2;
+		gbc_btnAnalyze.gridy = 0;
+		subPanelTwo.add(btnAnalyze, gbc_btnAnalyze);
+		
+		JButton btnLoadjar = new JButton("LoadJar");
+		btnLoadjar.setActionCommand("LoadJar");
+		btnLoadjar.addActionListener(aListener);
+		GridBagConstraints gbc_btnLoadjar = new GridBagConstraints();
+		gbc_btnLoadjar.insets = new Insets(0, 0, 0, 5);
+		gbc_btnLoadjar.gridx = 3;
+		gbc_btnLoadjar.gridy = 0;
+		subPanelTwo.add(btnLoadjar, gbc_btnLoadjar);
 
 		add(subPanelOne, BorderLayout.NORTH);
 		

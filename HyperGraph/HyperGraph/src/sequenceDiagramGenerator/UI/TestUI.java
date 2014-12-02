@@ -4,13 +4,23 @@ import java.awt.BorderLayout;
 import java.awt.EventQueue;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
+import java.io.File;
+import java.io.FileInputStream;
+import java.io.FileNotFoundException;
+import java.io.IOException;
+import java.util.ArrayList;
+import java.util.List;
+import java.util.zip.ZipEntry;
+import java.util.zip.ZipInputStream;
 
+import javax.swing.JFileChooser;
 import javax.swing.JFrame;
 
 import sequenceDiagramGenerator.SourceCodeType;
 import sequenceDiagramGenerator.hypergraph.EdgeAnnotation;
 import sequenceDiagramGenerator.hypergraph.Hypergraph;
 import sequenceDiagramGenerator.sootAnalyzer.Analyzer;
+import utilities.Utilities;
 
 public class TestUI implements ActionListener{
 
@@ -65,6 +75,37 @@ public class TestUI implements ActionListener{
 			Hypergraph<SourceCodeType, EdgeAnnotation> hg = Analyzer.AnalyzeSpecificClasses(ClassName, ClassDir, ClassPath);
 			
 			int hello = 0;
+		}
+		if(e.getActionCommand().equals("LoadJar")){
+			
+			
+			JFileChooser fc = new JFileChooser();
+
+			if(fc.showOpenDialog(frame) == JFileChooser.APPROVE_OPTION){
+				String ClassPath = theControlPanel.tfClassPath.getText();
+				File[] jars = fc.getSelectedFiles();
+				if(jars.length == 0){
+					File fJar = fc.getSelectedFile();
+					jars = new File[]{fJar};
+				}
+				List<String> listClasses = new ArrayList<String>();
+				try {
+					for(int i = 0; i < jars.length; i++){
+						listClasses.addAll(Utilities.ListClassesInJar(jars[i]));
+						String parentDir;
+							parentDir = jars[i].getCanonicalPath();
+						ClassPath = ClassPath + ":" + parentDir;
+					}
+
+					Hypergraph<SourceCodeType, EdgeAnnotation> hg = Analyzer.AnalyzeSpecificClasses(listClasses, ClassPath);
+
+					System.out.println(hg.toString());
+					
+				} catch (IOException e1) {
+					// TODO Auto-generated catch block
+					e1.printStackTrace();
+				}
+			}
 		}
 	}
 

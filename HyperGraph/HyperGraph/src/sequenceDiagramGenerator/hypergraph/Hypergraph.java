@@ -271,4 +271,9 @@ public class Hypergraph<T, A>
         }
         System.out.println(edgeStr);    	
     }
+	private boolean called;
+	public void breakpoint() {
+		// TODO Auto-generated method stub
+		this.called = true;
+	}
 }
