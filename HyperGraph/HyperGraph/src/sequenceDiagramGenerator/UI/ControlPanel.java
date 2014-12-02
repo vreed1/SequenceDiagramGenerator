@@ -43,7 +43,7 @@ public class ControlPanel extends JPanel {
 		setLayout(new BorderLayout());
 		
 		GridBagLayout gbl_subPanelOne = new GridBagLayout();
-		gbl_subPanelOne.columnWeights = new double[]{0.0, 0.0, 1.0, 0.0};
+		gbl_subPanelOne.columnWeights = new double[]{0.0, 1.0, 0.0, 1.0};
 		JPanel subPanelOne = new JPanel(gbl_subPanelOne);
 		
 		JLabel lblClasspath = new JLabel("ClassPath");
@@ -89,7 +89,8 @@ public class ControlPanel extends JPanel {
 		JLabel lblClassdir = new JLabel("ClassDir");
 		GridBagConstraints gbc_lblClassdir = new GridBagConstraints();
 		gbc_lblClassdir.insets = new Insets(0, 0, 0, 5);
-		gbc_lblClassdir.anchor = GridBagConstraints.EAST;
+		//gbc_lblClassdir.anchor = GridBagConstraints.WEST;
+		//gbc_lblClassdir.weightx = 1.0;
 		gbc_lblClassdir.gridx = 2;
 		gbc_lblClassdir.gridy = 0;
 		subPanelOne.add(lblClassdir, gbc_lblClassdir);
@@ -98,6 +99,7 @@ public class ControlPanel extends JPanel {
 		tfClassDir.setText("/home/brian/git/SequenceDiagramGenerator/ControlFlowGraphTest/bin/ToBeAnalyzed");
 		GridBagConstraints gbc_textField = new GridBagConstraints();
 		gbc_textField.insets = new Insets(0, 0, 0, 5);
+		gbc_textField.anchor = GridBagConstraints.WEST;
 		gbc_textField.fill = GridBagConstraints.HORIZONTAL;
 		gbc_textField.gridx = 3;
 		gbc_textField.gridy = 0;
