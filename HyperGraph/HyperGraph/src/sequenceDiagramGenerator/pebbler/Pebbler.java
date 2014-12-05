@@ -8,323 +8,253 @@ import sequenceDiagramGenerator.*;
 import sequenceDiagramGenerator.hypergraph.*;
 import utilities.*;
 
+import net.sf.sdedit.config.Configuration;
+import net.sf.sdedit.config.ConfigurationManager;
+import net.sf.sdedit.diagram.Diagram;
+import net.sf.sdedit.editor.DiagramFileHandler;
+import net.sf.sdedit.error.SemanticError;
+import net.sf.sdedit.error.SyntaxError;
+import net.sf.sdedit.server.Exporter;
+import net.sf.sdedit.text.TextHandler;
+import net.sf.sdedit.ui.ImagePaintDevice;
+import net.sf.sdedit.ui.components.configuration.Bean;
+import net.sf.sdedit.util.DocUtil.XMLException;
+import net.sf.sdedit.util.Pair;
+
 //
 // A reduced version of the original hypergraph that provides simple pebbling and exploration
 //
 public class Pebbler
 {
-    // The pebbling version (integer-based) of the hypergraph to work on.
-    private PebblerHypergraph<SourceCodeType, EdgeAnnotation> pebblerGraph;
+	// The pebbling version (integer-based) of the hypergraph to work on.
+	private PebblerHypergraph<SourceCodeType, EdgeAnnotation> pebblerGraph;
 
-    // The actual hypergraph for reference purposes only
-    private Hypergraph<SourceCodeType, EdgeAnnotation> graph;
+	// The actual hypergraph for reference purposes only
+	private Hypergraph<SourceCodeType, EdgeAnnotation> graph;
 
-    // A static list of edges that can be processed using means other than a fixpoint analysis.
-    private HyperEdgeMultiMap<EdgeAnnotation> forwardPebbledEdges;
-    //private HyperEdgeMultiMap<EdgeAnnotation> backwardPebbledEdges;
-    
-    public HyperEdgeMultiMap<EdgeAnnotation> getForwardPebbledEdges() { return forwardPebbledEdges; }
-    //public HyperEdgeMultiMap<EdgeAnnotation> getBackwardPebbledEdges() { return backwardPebbledEdges; }
+	// A static list of edges that can be processed using means other than a fixpoint analysis.
+	private HyperEdgeMultiMap<EdgeAnnotation> forwardPebbledEdges;
+	public HyperEdgeMultiMap<EdgeAnnotation> getForwardPebbledEdges() { return forwardPebbledEdges; }
 
-    public Pebbler(Hypergraph<SourceCodeType, EdgeAnnotation> graph,
-                   PebblerHypergraph<SourceCodeType, EdgeAnnotation> pGraph)
-    {
-        this.graph = graph;
-        this.pebblerGraph = pGraph;
-        
-        forwardPebbledEdges = new HyperEdgeMultiMap<EdgeAnnotation>(pGraph.NumVertices());
-        //backwardPebbledEdges = new HyperEdgeMultiMap<EdgeAnnotation>(pGraph.NumVertices());
+	public Pebbler(Hypergraph<SourceCodeType, EdgeAnnotation> graph,
+			PebblerHypergraph<SourceCodeType, EdgeAnnotation> pGraph)
+	{
+		this.graph = graph;
+		this.pebblerGraph = pGraph;
 
-        forwardPebbledEdges.SetOriginalHypergraph(graph);
-        //backwardPebbledEdges.SetOriginalHypergraph(graph);
-    }
+		// Create the database of forward edges and set the original hypergraph as a reference.
+		forwardPebbledEdges = new HyperEdgeMultiMap<EdgeAnnotation>(pGraph.NumVertices());
+		forwardPebbledEdges.SetOriginalHypergraph(graph);
+	}
 
-    //
-    // Clear all pebbles from all nodes and edges in the hypergraph
-    //
-    private void ClearPebbles()
-    {
-        for (PebblerHyperNode<SourceCodeType, EdgeAnnotation> node : pebblerGraph.getVertices())
-        {
-            node.pebbled = false;
+	//
+	// Clear all pebbles from all nodes and edges in the hypergraph
+	//
+	private void ClearPebbles()
+	{
+		for (PebblerHyperNode<SourceCodeType, EdgeAnnotation> node : pebblerGraph.getVertices())
+		{
+			node.pebbled = false;
 
-            for (PebblerHyperEdge<EdgeAnnotation> edge : node.edges)
-            {
-                edge.sourcePebbles.clear();
-                edge.pebbled = false;
-            }
-        }
-    }
+			for (PebblerHyperEdge<EdgeAnnotation> edge : node.edges)
+			{
+				edge.sourcePebbles.clear();
+				edge.pebbled = false;
+			}
+		}
+	}
 
-    //
-    // Use Dowling-Gallier pebbling technique to pebble using all given nodes
-    //
-    public void Pebble(List<Integer> nodes) 
-    {
-        // Forward pebble: it acquires the valid list of forward edges 
-        PebbleForward(nodes);
+	//
+	// Use Dowling-Gallier pebbling technique to pebble using all given nodes
+	//
+	public void Pebble(List<Integer> nodes) 
+	{
+		PebbleForward(nodes);
+	}
 
-        // Backward pebble: acquires the valid list of bakcward edges 
-        //PebbleBackward(figure, axiomaticNodes, reflexiveNodes);
-    }
+	//
+	// We are attempting to pebble exactly the same way in which the hypergraph was generated: using a
+	// worklist, breadth-first manner of construction.
+	//
+	private void PebbleForward(List<Integer> nodes)
+	{
+		// Combine all the given information uniquely.
+		List<Integer> nodesToBePebbled = new ArrayList<Integer>(nodes);
 
-    //
-    // We are attempting to pebble exactly the same way in which the hypergraph was generated: using a
-    // worklist, breadth-first manner of construction.
-    //
-    private void PebbleForward(List<Integer> nodes)
-    {
-        // Combine all the given information uniquely.
-        List<Integer> nodesToBePebbled = new ArrayList<Integer>(nodes);
-//        Utilities.AddUniqueList(nodesToBePebbled, axiomaticNodes);
-//        Utilities.AddUniqueList(nodesToBePebbled, givens);
+		// Sort in ascending order for pebbling
+		Collections.sort(nodesToBePebbled);
 
-        // Sort in ascending order for pebbling
-        Collections.sort(nodesToBePebbled);
+		// Pebble all nodes and percolate
+		ForwardTraversal(forwardPebbledEdges, nodesToBePebbled);
+	}
 
-        // Pebble all nodes and percolate
-        ForwardTraversal(forwardPebbledEdges, nodesToBePebbled);
-    }
+	private boolean IsNodePebbled(int v)
+	{
+		return pebblerGraph.getVertices().get(v).pebbled;
+	}
 
-    private boolean IsNodePebbled(int v)
-    {
-        return pebblerGraph.getVertices().get(v).pebbled;
-    }
+	//
+	// Given a node, pebble the reachable parts of the graph (in the forward direction)
+	// We pebble in a breadth first manner
+	//
+	private void ForwardTraversal(HyperEdgeMultiMap<EdgeAnnotation> edgeDatabase, List<Integer> nodesToPebble)
+	{
+		List<Integer> worklist = new ArrayList<Integer>(nodesToPebble);
 
-//    //
-//    // Pebble the graph in the backward direction using all pebbled nodes from the forward direction.
-//    // Note: we do so in a descending order (opposite the way we did from the forward direction); this attempts to 
-//    //
-//    private void PebbleBackward(List<Integer> figure, List<Integer> axiomaticNodes, List<Integer> reflexiveNodes)
-//    {
-//        //
-//        // Acquire all nodes which are to be pebbled (reachable during forward analysis)
-//        //
-//        List<Integer> deducedNodesToPebbleBackward = new ArrayList<Integer>();
-//
-//        // Avoid re-pebbling figure again so start after the figure
-//        for (int v = pebblerGraph.NumVertices() - 1; v >= figure.size(); v--)
-//        {
-//            if (IsNodePebbled(v)) deducedNodesToPebbleBackward.add(v);
-//        }
-//
-//        // Clear all pebbles (nodes and edges)
-//        ClearPebbles();
-//
-//        //
-//        // Pebble all Figure nodes, but do pursue edges: node -> node.
-//        // That is, the goal is to pebbles all the occurrences of figure nodes in edges (without traversing further).
-//        // We include, not just the intrinsic nodes in the list, but other relationships as well that are obvious:
-//        //       reflexive, OTHERS?
-//        //
-//        List<Integer> cumulativeIntrinsic = new ArrayList<Integer>();
-//        cumulativeIntrinsic.addAll(figure);
-//        cumulativeIntrinsic.addAll(reflexiveNodes);
-//        Collections.sort(cumulativeIntrinsic);
-//
-//        BackwardPebbleFigure(cumulativeIntrinsic);
-//
-//        //
-//        // Pebble axiomatic nodes (and any edges); note axiomatic edges may occur in BOTH forward and backward problems
-//        //
-//        Collections.sort(axiomaticNodes);
-//        ForwardTraversal(backwardPebbledEdges, axiomaticNodes);
-//
-//        //
-//        // Pebble the graph in the backward direction using all pebbled nodes from the forward direction.
-//        // Note: we do so in a descending order (opposite the way we did from the forward direction)
-//        // We create an ascending list and will pull from the back of the list
-//        //
-//        ForwardTraversal(backwardPebbledEdges, deducedNodesToPebbleBackward);
-//    }
+		//
+		// Pebble until the list is empty
+		//
+		while (!worklist.isEmpty())
+		{
+			// Acquire the next value to consider
+			int currentNodeIndex = worklist.get(0);
+			worklist.remove(0);
 
+			// Pebble the current node as a forward node and percolate forward
+			pebblerGraph.getVertices().get(currentNodeIndex).pebbled = true;
 
-    //
-    // Given a node, pebble the reachable parts of the graph (in the forward direction)
-    // We pebble in a breadth first manner
-    //
-    private void ForwardTraversal(HyperEdgeMultiMap<EdgeAnnotation> edgeDatabase, List<Integer> nodesToPebble)
-    {
-        List<Integer> worklist = new ArrayList<Integer>(nodesToPebble);
+			// For all hyperedges leaving this node, mark a pebble along the arc
+			for (PebblerHyperEdge<EdgeAnnotation> currentEdge : pebblerGraph.getVertices().get(currentNodeIndex).edges)
+			{
+				if (currentEdge.annotation.IsActive())
+				{
+					if (!currentEdge.IsFullyPebbled())
+					{
+						// Indicate the node has been pebbled by adding to the list of pebbled vertices; should not have to be a unique addition
+						Utilities.AddUnique(currentEdge.sourcePebbles, currentNodeIndex);
 
-        //
-        // Pebble until the list is empty
-        //
-        while (!worklist.isEmpty())
-        {
-            // Acquire the next value to consider
-            int currentNodeIndex = worklist.get(0);
-            worklist.remove(0);
+						// With this new node, check if the edge is full pebbled; if so, percolate
+						if (currentEdge.IsFullyPebbled())
+						{
+							// Has the target of this edge been pebbled previously? Pebbled -> Pebbled means we have a backward edge
+							if (!IsNodePebbled(currentEdge.targetNode))
+							{
+								// Success, we have an edge
+								// Construct a static set of pebbled hyperedges for problem construction
+								edgeDatabase.Put(currentEdge);
 
-            // Pebble the current node as a forward node and percolate forward
-            pebblerGraph.getVertices().get(currentNodeIndex).pebbled = true;
+								// Add this node to the worklist to percolate further
+								if (!worklist.contains(currentEdge.targetNode))
+								{
+									worklist.add(currentEdge.targetNode);
+									Collections.sort(worklist);
+								}
+							}
+						}
+					}
+				}
+			}
+		}
+	}
 
-            // For all hyperedges leaving this node, mark a pebble along the arc
-            for (PebblerHyperEdge<EdgeAnnotation> currentEdge : pebblerGraph.getVertices().get(currentNodeIndex).edges)
-            {
-                if (!Utilities.PLACEHOLDER_RESTRICTION || (Utilities.PLACEHOLDER_RESTRICTION && currentEdge.annotation.IsActive()))
-                {
-                    if (!currentEdge.IsFullyPebbled())
-                    {
-                        // Indicate the node has been pebbled by adding to the list of pebbled vertices; should not have to be a unique addition
-                        Utilities.AddUnique(currentEdge.sourcePebbles, currentNodeIndex);
+	//
+	// Pebble forward acquiring the list of messages (in breadth-first order).
+	//
+	public List<DiagramMessageAggregator> InteractivePebble(List<Integer> nodes)
+	{
+		return InteractivePebbleForward(nodes);
+	}
 
-                        // With this new node, check if the edge is full pebbled; if so, percolate
-                        if (currentEdge.IsFullyPebbled())
-                        {
-                            // Has the target of this edge been pebbled previously? Pebbled -> Pebbled means we have a backward edge
-                            if (!IsNodePebbled(currentEdge.targetNode))
-                            {
-                                // Success, we have an edge
-                                // Construct a static set of pebbled hyperedges for problem construction
-                                edgeDatabase.Put(currentEdge);
+	//
+	// We are attempting to pebble exactly the same way in which the hypergraph was generated: using a
+	// worklist, breadth-first manner of construction.
+	//
+	private List<DiagramMessageAggregator> InteractivePebbleForward(List<Integer> nodes)
+	{
+		// Combine all the given information uniquely.
+		List<Integer> nodesToBePebbled = new ArrayList<Integer>(nodes);
 
-                                // Add this node to the worklist to percolate further
-                                if (!worklist.contains(currentEdge.targetNode))
-                                {
-                                    worklist.add(currentEdge.targetNode);
-                                    Collections.sort(worklist);
-                                }
-                            }
-                        }
-                    }
-                }
-            }
-        }
-    }
+		// Sort in ascending order for pebbling
+		Collections.sort(nodesToBePebbled);
 
-//    //
-//    // Pebble only the figure DO NOT traverse the pebble through the graph 
-//    //
-//    private void BackwardPebbleFigure(List<Integer> figure) {
-//        for (int fIndex : figure) {
-//            // Pebble the current node as a backward; DO NOT PERCOLATE forward
-//            pebblerGraph.getVertices().get(fIndex).pebbled = true;
-//
-//            // For all hyperedges leaving this node, mark a pebble along the arc
-//            for (PebblerHyperEdge<EdgeAnnotation> currentEdge : pebblerGraph.getVertices().get(fIndex).edges) {
-//                // Avoid a fully pebbled edge
-//                if (!currentEdge.IsFullyPebbled()) {
-//                    // Indicate the node has been pebbled by adding to the list of pebbled vertices
-//                    Utilities.AddUnique(currentEdge.sourcePebbles, fIndex);
-//                }
-//            }
-//        }
-//    }
+		// Pebble all nodes and percolate individually as to acquire the ordered list of messages.
+		List<DiagramMessageAggregator> messages = new ArrayList<DiagramMessageAggregator>();
+		for (Integer node : nodesToBePebbled)
+		{
+			messages.addAll(InteractiveForwardTraversal(forwardPebbledEdges, node));
+		}
+		
+		return messages;
+	}
 
-//    public void DebugDumpClauses() {
-//        StringBuilder edgeStr = new StringBuilder();
-//
-//        int numNonPebbledNodes = 0;
-//        int numPebbledNodes = 0;
-//
-//        System.out.println("\n Vertices:");
-//        edgeStr = new StringBuilder();
-//        for (int v = 0; v < pebblerGraph.NumVertices(); v++) {
-//            edgeStr.append(v + ": ");
-//
-//            if (IsNodePebbled(v)) {
-//                edgeStr.append("PEBBLE\n");
-//                numPebbledNodes++;
-//            }
-//            else {
-//                edgeStr.append("NOT\n");
-//                numNonPebbledNodes++;
-//            }
-//        }
-//
-//        System.out.println("\nPebbled Edges:");
-//        for (int v = 0; v < pebblerGraph.NumVertices(); v++) {
-//            if (!pebblerGraph.getVertices().get(v).edges.isEmpty()) {
-//                edgeStr.append(v + ": {");
-//                for (PebblerHyperEdge<EdgeAnnotation> edge : pebblerGraph.getVertices().get(v).edges) {
-//                    if (v == Collections.min(edge.sourceNodes)) {
-//                        edgeStr.append(" { ");
-//
-//                        if (edge.IsFullyPebbled()) edgeStr.append("+ ");
-//                        else edgeStr.append("- ");
-//
-//                        for (int s : edge.sourceNodes) {
-//                            edgeStr.append(s + " ");
-//                        }
-//                        edgeStr.append("} -> " + edge.targetNode + ", ");
-//                    }
-//                }
-//                int remove = edgeStr.length() - 2;
-//                edgeStr.delete(remove, remove + 2);
-//                edgeStr.append(" }\n");
-//            }
-//        }
-//
-//        System.out.println(edgeStr);
-//        DebugDumpEdges();
-//    }
-//
-//    public void DebugDumpEdges() {
-//        StringBuilder edgeStr = new StringBuilder();
-//
-//        edgeStr.append("\nUnPebbled Edges:");
-//        for (int v = 0; v < pebblerGraph.NumVertices(); v++) {
-//            if (!pebblerGraph.getVertices().get(v).edges.isEmpty()) {
-//                boolean containsEdge = false;
-//                for (PebblerHyperEdge<EdgeAnnotation> edge : pebblerGraph.getVertices().get(v).edges) {
-//                    if (!edge.IsFullyPebbled() && v == Collections.min(edge.sourceNodes)) {
-//                        containsEdge = true;
-//                        break;
-//                    }
-//                }
-//
-//                if (containsEdge) {
-//                    edgeStr.append(v + ": {");
-//                    for (PebblerHyperEdge<EdgeAnnotation> edge : pebblerGraph.getVertices().get(v).edges) {
-//                        if (!edge.IsFullyPebbled() && v == Collections.min(edge.sourceNodes)) {
-//                            edgeStr.append(" { ");
-//
-//                            for (int s : edge.sourceNodes) {
-//                                edgeStr.append(s + " ");
-//                            }
-//                            edgeStr.append("} -> " + edge.targetNode + ", ");
-//                        }
-//                    }
-//                }
-//                
-//                int remove = edgeStr.length() - 2;
-//                
-//                edgeStr.delete(remove, remove + 2);
-//                edgeStr.append(" }\n");
-//            }
-//        }
-//
-//        edgeStr.append("\nPebbled Edges:");
-//        for (int v = 0; v < pebblerGraph.NumVertices(); v++) {
-//            if (!pebblerGraph.getVertices().get(v).edges.isEmpty()) {
-//                boolean containsEdge = false;
-//                for (PebblerHyperEdge<EdgeAnnotation> edge : pebblerGraph.getVertices().get(v).edges) {
-//                    if (edge.IsFullyPebbled() && v == Collections.min(edge.sourceNodes)) {
-//                        containsEdge = true;
-//                        break;
-//                    }
-//                }
-//
-//                if (containsEdge) {
-//                    edgeStr.append(v + ": {");
-//                    for (PebblerHyperEdge<EdgeAnnotation> edge : pebblerGraph.getVertices().get(v).edges) {
-//                        if (edge.IsFullyPebbled() && v == Collections.min(edge.sourceNodes)) {
-//                            edgeStr.append(" { + ");
-//
-//                            for (int s : edge.sourceNodes) {
-//                                edgeStr.append(s + " ");
-//                            }
-//                            edgeStr.append("} -> " + edge.targetNode + ", ");
-//                        }
-//                    }
-//                }
-//                int remove = edgeStr.length() - 2;
-//                edgeStr.delete(remove, remove + 2);
-//                edgeStr.append(" }\n");
-//            }
-//        }
-//
-//        System.out.println(edgeStr);
-//    }
+	//
+	// Given a node, pebble the reachable parts of the graph (in the forward direction)
+	// We pebble in a breadth first manner
+	//
+	private List<DiagramMessageAggregator> InteractiveForwardTraversal(HyperEdgeMultiMap<EdgeAnnotation> edgeDatabase, Integer node)
+	{
+		// Messages that were created from this pebbled node.
+		List<DiagramMessageAggregator> messages = new ArrayList<DiagramMessageAggregator>();
+
+		//
+		// Pebble until the list is empty
+		//
+		List<Integer> worklist = new ArrayList<Integer>();
+		worklist.add(node);
+
+		while (!worklist.isEmpty())
+		{
+			// Acquire the next value to consider
+			int currentNodeIndex = worklist.get(0);
+			worklist.remove(0);
+
+			if (!IsNodePebbled(currentNodeIndex))
+			{
+				// Pebble the current node as a forward node and percolate forward
+				pebblerGraph.getVertices().get(currentNodeIndex).pebbled = true;
+
+				// For all hyperedges leaving this node, mark a pebble along the arc
+				for (PebblerHyperEdge<EdgeAnnotation> currentEdge : pebblerGraph.getVertices().get(currentNodeIndex).edges)
+				{
+					if (currentEdge.annotation.IsActive() && !currentEdge.IsFullyPebbled())
+					{
+						// Indicate the node has been pebbled by adding to the list of pebbled vertices; should not have to be a unique addition
+						Utilities.AddUnique(currentEdge.sourcePebbles, currentNodeIndex);
+
+						// With this new node, check if the edge is full pebbled; if so, percolate
+						// Has the target of this edge been pebbled previously? Pebbled -> Pebbled means we have a backward edge
+						if (currentEdge.IsFullyPebbled() && !IsNodePebbled(currentEdge.targetNode))
+						{
+							//
+							// Success, we have a new edge
+							//
+							//
+							// We have a fully pebbled edge; this means we have a UML sequence message
+							// Create the message and add to the list.
+							//
+							messages.add(ConstructMessage(currentEdge));
+
+							// Construct a static set of pebbled hyperedges for problem construction
+							edgeDatabase.Put(currentEdge);
+
+							// Add this node to the worklist to percolate further
+							if (!worklist.contains(currentEdge.targetNode))
+							{
+								worklist.add(currentEdge.targetNode);
+								Collections.sort(worklist);
+							}
+						}
+					}
+				}
+			}
+		}
+
+		return messages;
+	}
+
+	//
+	// Construct the SD edit message represented by this edge
+	//
+	private DiagramMessageAggregator ConstructMessage(PebblerHyperEdge<EdgeAnnotation> edge)
+	{
+		ArrayList<SourceCodeType> srcs = new ArrayList<SourceCodeType>();
+
+		// Construct the source objects
+		for (Integer src : edge.sourceNodes)
+		{
+			srcs.add(graph.GetNode(src));
+		}
+
+		return new DiagramMessageAggregator(srcs, graph.GetNode(edge.targetNode), edge.annotation.getMethodName());
+	}
 }

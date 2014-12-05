@@ -4,11 +4,28 @@ public class SourceCodeType
 {
     private int uniqueId;
     public soot.Type theSootType;
+    private String className;
+    
+    //Brian Peterson created this method
+    //it is an amalgamation of Chris's and my
+    //method here, ultimately I don't know if
+    //className has value as a variable but
+    //this seemed like the fastest way to get
+    //us back to one set of changes.
+    public String getClassName(){
+    	if(theSootType != null || className == null){
+    		return this.toString();
+    	}
+    	return className;
+    }
+    
+    public String getObjectName(){return "";}
 
     public int getId() { return uniqueId; }
 
-    public SourceCodeType(int id)
+    public SourceCodeType(String name, int id)
     {
+    	this.className = name;
         this.uniqueId = id;
     }
     
