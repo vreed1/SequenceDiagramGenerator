@@ -19,7 +19,9 @@ public class SourceCodeType
     	return className;
     }
     
-    public String getObjectName(){return "";}
+    public String getObjectName(){
+    	return "None";
+    }
 
     public int getId() { return uniqueId; }
 
@@ -52,6 +54,6 @@ public class SourceCodeType
     	if(theSootType == null){
     		return super.toString();
     	}
-    	return theSootType.getClass().getName();
+    	return theSootType.toString();
     }
 }

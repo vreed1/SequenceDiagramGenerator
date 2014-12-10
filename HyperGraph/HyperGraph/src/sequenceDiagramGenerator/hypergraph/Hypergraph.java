@@ -251,6 +251,20 @@ public class Hypergraph<T, A>
         System.out.println("\nEdges: ");
         DumpEdges();
     }
+    
+    public List<HyperEdge<A>> GetAllEdges(){
+    	List<HyperEdge<A>> toReturn = new ArrayList<HyperEdge<A>>();
+    	for(int v = 0; v < vertices.size(); v++){
+    		HyperNode<T,A> aNode = vertices.get(v);
+    		for(int e = 0; e < aNode.edges.size(); e++){
+    			HyperEdge<A> aEdge = aNode.edges.get(e);
+    			if(!toReturn.contains(aEdge)){
+    				toReturn.add(aEdge);
+    			}
+    		}
+    	}
+    	return toReturn;
+    }
 
     private void DumpEdges() {
         StringBuilder edgeStr = new StringBuilder();

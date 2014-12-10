@@ -16,6 +16,7 @@ import java.util.zip.ZipInputStream;
 import javax.swing.JFileChooser;
 import javax.swing.JFrame;
 
+import sequenceDiagramGenerator.SDGenerator;
 import sequenceDiagramGenerator.SourceCodeType;
 import sequenceDiagramGenerator.hypergraph.EdgeAnnotation;
 import sequenceDiagramGenerator.hypergraph.Hypergraph;
@@ -72,9 +73,7 @@ public class TestUI implements ActionListener{
 			String ClassPath = theControlPanel.tfClassPath.getText();
 			String ClassDir = theControlPanel.tfClassDir.getText();
 			
-			Hypergraph<SourceCodeType, EdgeAnnotation> hg = Analyzer.AnalyzeSpecificClasses(ClassName, ClassDir, ClassPath);
-			
-			int hello = 0;
+			SDGenerator.Generate(ClassName, ClassDir, ClassPath, this.theControlPanel.tfSaveFile.getText());
 		}
 		if(e.getActionCommand().equals("LoadJar")){
 			
@@ -97,14 +96,19 @@ public class TestUI implements ActionListener{
 						ClassPath = ClassPath + ":" + parentDir;
 					}
 
-					Hypergraph<SourceCodeType, EdgeAnnotation> hg = Analyzer.AnalyzeSpecificClasses(listClasses, ClassPath);
-
-					System.out.println(hg.toString());
-					
+					SDGenerator.Generate(listClasses, ClassPath, this.theControlPanel.tfSaveFile.getText());
 				} catch (IOException e1) {
 					// TODO Auto-generated catch block
 					e1.printStackTrace();
 				}
+			}
+		}
+		if(e.getActionCommand().equals("SaveFile")){
+
+			JFileChooser fc = new JFileChooser();
+
+			if(fc.showOpenDialog(frame) == JFileChooser.APPROVE_OPTION){
+				this.theControlPanel.tfSaveFile.setText(fc.getSelectedFile().getAbsolutePath());
 			}
 		}
 	}
