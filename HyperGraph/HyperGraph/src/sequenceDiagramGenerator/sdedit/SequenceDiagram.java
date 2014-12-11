@@ -38,7 +38,12 @@ public class SequenceDiagram {
     }
     
     public void AddObject(SDObject obj) {
-        objects.add(obj);
+    	for(SDObject oldObject : objects){
+    		if(oldObject.GetName().equals(obj.GetName())){
+    			return;
+    		}
+    	}
+    	objects.add(obj);
     }
     
     public void AddMessage(SDMessage msg) {

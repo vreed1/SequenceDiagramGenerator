@@ -45,7 +45,7 @@ public class DiagramMessageAggregator
 	public SDMessage GenerateSDEditMessage()
     {
 		                     // caller              // message    // options : TO BE Completed
-        return new SDMessage(target.getClassName(), this.message, ConstructMessage("", "", "", ""));
+        return new SDMessage(target.getObjectName(), this.message, ConstructMessage("", "", "", ""));
     }
     
     protected Dictionary<MessageOpt, String> ConstructMessage(String callee, String answer, String specifier, String mnemonic)

@@ -45,4 +45,7 @@ public class SDObject
             obj.append(String.format("\"%s\"", label));
         return obj.toString();
     }
+	public String GetName() {
+		return name;
+	}
 }

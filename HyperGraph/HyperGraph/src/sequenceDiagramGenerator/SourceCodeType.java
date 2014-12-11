@@ -1,5 +1,7 @@
 package sequenceDiagramGenerator;
 
+import utilities.Utilities;
+
 public class SourceCodeType
 {
     private int uniqueId;
@@ -19,8 +21,15 @@ public class SourceCodeType
     	return className;
     }
     
+    //Brian this method has to change
+    //whenever we figure out how we want to deal with 
+    //instance names
+    private String theObjectName;
     public String getObjectName(){
-    	return "None";
+    	if(theObjectName == null){
+    		theObjectName = Utilities.GetUniqueName();
+    	}
+    	return theObjectName;
     }
 
     public int getId() { return uniqueId; }

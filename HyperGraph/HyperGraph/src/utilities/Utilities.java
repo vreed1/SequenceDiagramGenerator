@@ -22,6 +22,11 @@ public final class Utilities {
         list.add(obj);
         return true;
     }
+    
+    private static int NameCount = 1;
+    public static String GetUniqueName(){
+    	return "x" + NameCount++;
+    }
 
     // Makes a list containing a single element
     public static <T> void AddUniqueList(List<T> list, List<T> objList) {

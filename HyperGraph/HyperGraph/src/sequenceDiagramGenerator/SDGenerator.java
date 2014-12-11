@@ -37,15 +37,15 @@ public class SDGenerator {
 			}
 			sd.AddMessage(dma.GenerateSDEditMessage());
 		}
-		//sd.CreatePDF(outFile);
-		try {
+		sd.CreatePDF(outFile);
+		/*try {
 			FileWriter fw = new FileWriter(outFile);
 			fw.write(sd.toString());
 			fw.close();
 		} catch (IOException e) {
 			// TODO Auto-generated catch block
 			e.printStackTrace();
-		}
+		}*/
 		
 	}
 	
