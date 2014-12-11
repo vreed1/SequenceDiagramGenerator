@@ -200,7 +200,10 @@ public class Hypergraph<T, A>
         //
         // Add a local representation of this edge to each node in which it is applicable
         //
-        if (HasEdge(antecedent, consequent)) return false;
+    	
+    	//Brian commenting this out as there are going to be relevant edges with 
+    	//same antecedents and consequents under this system.
+        //if (HasEdge(antecedent, consequent)) return false;
 
         SimpleEntry<List<Integer>, Integer> local = ConvertToLocal(antecedent, consequent);
 

@@ -61,6 +61,10 @@ public class HyperEdge<A>
             if(!otherEdge.sourceNodes.contains(src)) return false;
         }
         
+        //Brian added this line so that methods with signatures 
+        //that are the same other than method name can exist.
+        if(!otherEdge.annotation.equals(this.annotation)){return false;}
+        
         return true;
     }
 
