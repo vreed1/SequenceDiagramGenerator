@@ -19,14 +19,18 @@ public class Hypergraph<T, A>
     private int edgeCount;
     public int EdgeCount() { return edgeCount; }
     
+    private HyperNodeFactory<T,A> theNodeFactory;
+    
     public Hypergraph()
     {
+    	theNodeFactory = new IPHyperNodeFactory<T,A>();
         vertices = new ArrayList<HyperNode<T, A>>();
         edgeCount = 0;
     }
 
     public Hypergraph(int capacity)
     {
+    	theNodeFactory = new IPHyperNodeFactory<T,A>();
         vertices = new ArrayList<HyperNode<T, A>>(capacity);
         edgeCount = 0;
     }
@@ -127,7 +131,10 @@ public class Hypergraph<T, A>
     //
     public boolean AddNode(T inputData) {
         if (!HasNode(inputData)) {
-            vertices.add(new HyperNode<T, A>(inputData, vertices.size())); // <data, id>
+        	//Brian commented out the following line when I changed to a factory pattern
+        	//to allow experimenting with extending hypernode class.
+            //vertices.add(new HyperNode<T, A>(inputData, vertices.size())); // <data, id>
+        	vertices.add(theNodeFactory.Generate(inputData));
             return true;
         }
 

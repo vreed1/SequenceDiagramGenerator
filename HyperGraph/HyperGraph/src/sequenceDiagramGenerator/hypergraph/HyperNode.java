@@ -14,6 +14,15 @@ public class HyperNode<T, A>
     public List<HyperEdge<A>> edges;
     public List<HyperEdge<A>> targetEdges;
 
+    public HyperNode(T d, int i)
+    {
+        uniqueId = i;
+        data = d;
+
+        edges = new ArrayList<HyperEdge<A>>();
+        targetEdges = new ArrayList<HyperEdge<A>>();
+    }
+    
     public void AddEdge(HyperEdge<A> edge)
     {
         edges.add(edge);
@@ -27,14 +36,6 @@ public class HyperNode<T, A>
         targetEdges.add(edge);
     }
 
-    public HyperNode(T d, int i)
-    {
-        uniqueId = i;
-        data = d;
-
-        edges = new ArrayList<HyperEdge<A>>();
-        targetEdges = new ArrayList<HyperEdge<A>>();
-    }
 
     public PebblerHyperNode<T,A> CreatePebblerNode()
     {
