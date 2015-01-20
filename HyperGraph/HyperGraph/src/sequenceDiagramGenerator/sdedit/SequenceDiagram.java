@@ -63,10 +63,8 @@ public class SequenceDiagram {
                 TextHandler th = new TextHandler(pair.getFirst());
                 Bean<Configuration> conf = pair.getSecond();
                 
-                Exporter paintDevice = Exporter.getExporter(diagType,
-                        diagOrientation, diagFormat, out);
-                new Diagram(conf.getDataObject(), th, paintDevice)
-                        .generate();
+                Exporter paintDevice = Exporter.getExporter(diagType, diagOrientation, diagFormat, out);
+                new Diagram(conf.getDataObject(), th, paintDevice).generate();
                 paintDevice.export();
             } catch (IOException | XMLException | SemanticError | SyntaxError e) {
                 // TODO Auto-generated catch block

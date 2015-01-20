@@ -8,9 +8,17 @@ import java.util.List;
 import sequenceDiagramGenerator.SourceCodeType;
 import sequenceDiagramGenerator.hypergraph.EdgeAnnotation;
 import sequenceDiagramGenerator.hypergraph.Hypergraph;
+import soot.Body;
+import soot.PatchingChain;
 import soot.Scene;
 import soot.SootClass;
 import soot.SootMethod;
+import soot.Unit;
+import soot.UnitBox;
+import soot.ValueBox;
+import soot.jimple.InvokeExpr;
+import soot.shimple.Shimple;
+import soot.shimple.ShimpleBody;
 import soot.util.Chain;
 import soot.Type;
 
@@ -124,6 +132,7 @@ public class Analyzer {
 		while(iSootClasses.hasNext()){
 			SootClass aClass = iSootClasses.next();
 			if(otherClassNames.contains(aClass.getName())){
+				
 				AddClassToHypergraph(
 					toReturn,
 					aClass);
@@ -177,6 +186,67 @@ public class Analyzer {
 		}
 		
 		return toReturn;
+	}
+	
+	public static void AnalyzeMethod(SootMethod sm){
+		try{
+			Body b = sm.retrieveActiveBody();
+			ShimpleBody sb = Shimple.v().newBody(b);
+			PatchingChain<Unit> pcu = sb.getUnits();
+			Unit u = pcu.getFirst();
+			AnalyzePC(pcu, u, new ArrayList<Unit>());
+		}
+		catch(java.lang.RuntimeException ex){
+			System.out.println(ex.getMessage());
+		}
+	}
+	
+	private static void AnalyzePC(PatchingChain<Unit> pcu, Unit u, List<Unit> seen){
+		if(seen.contains(u)){return;}
+		System.out.println(u.toString());
+		seen.add(u);
+		
+		if(!(u instanceof soot.jimple.internal.AbstractStmt))
+		{
+			//I don't believe this is possible, which reduces the amount of 
+			//the subtree we have to deal with in practice.
+			throw new java.lang.RuntimeException("Unit is not a subclass of soot.jimple.internal.AbstractStmt");
+		}
+		else{
+			soot.jimple.internal.AbstractStmt aStmt = (soot.jimple.internal.AbstractStmt)u;
+			if(aStmt.containsInvokeExpr())
+			{
+				InvokeExpr ie = aStmt.getInvokeExpr();
+				SootMethod sm = ie.getMethod();
+						
+				if(ie instanceof soot.jimple.internal.AbstractInvokeExpr){
+					soot.jimple.internal.AbstractInvokeExpr jie = (soot.jimple.internal.AbstractInvokeExpr)ie;
+					if(jie.getArgCount() > 0){
+						ValueBox vb = jie.getArgBox(0);
+						
+					}
+				}
+						
+				try{
+					Body bsub = sm.retrieveActiveBody();
+				}catch(RuntimeException ex){
+					//This may legitimately happen
+					//if the method is a call outside of the 
+					//analyzed code then we don't have 
+					//analysis of it, e.i.:
+					//   Random r = new Random();
+					//   int i = r.nextInt();
+					//we won't be able to retrieve nextInt body.
+				}
+			}
+			if(aStmt.branches()){
+				//toReturn.append(tabs + "Branching Stmt Below\n");
+				//String s = aStmt.toString();
+			}
+		}
+		
+		
+		AnalyzePC(pcu, pcu.getSuccOf(u), seen);
 	}
 	
 	private static void AddClassToHypergraph(

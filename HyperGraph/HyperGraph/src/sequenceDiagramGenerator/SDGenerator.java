@@ -19,6 +19,8 @@ public class SDGenerator {
 			String outFile){
 		List<HyperEdge<EdgeAnnotation>> lEdges = aGraph.GetAllEdges();
 		SequenceDiagram sd = new SequenceDiagram();
+		
+		
 		for(int i = 0; i < lEdges.size(); i++){
 			HyperEdge<EdgeAnnotation> aEdge = lEdges.get(i);
 			ArrayList<SourceCodeType> listSource = new ArrayList<SourceCodeType>();
@@ -32,6 +34,7 @@ public class SDGenerator {
 					tar,
 					aEdge.annotation.getMethodName()
 					);
+		
 			for(SDObject sdo : dma.GetSDObjects()){
 				sd.AddObject(sdo);
 			}
