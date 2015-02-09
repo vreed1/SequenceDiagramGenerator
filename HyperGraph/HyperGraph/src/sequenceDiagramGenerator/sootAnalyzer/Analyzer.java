@@ -6,8 +6,11 @@ import java.util.Iterator;
 import java.util.List;
 
 import sequenceDiagramGenerator.SourceCodeType;
+import sequenceDiagramGenerator.StatementGroup;
 import sequenceDiagramGenerator.hypergraph.EdgeAnnotation;
+import sequenceDiagramGenerator.hypergraph.HyperNode;
 import sequenceDiagramGenerator.hypergraph.Hypergraph;
+import sequenceDiagramGenerator.hypergraph.IPHyperNodeFactory;
 import soot.Body;
 import soot.PatchingChain;
 import soot.Scene;
@@ -201,6 +204,58 @@ public class Analyzer {
 		}
 	}
 	
+	public static HyperNode<StatementGroup, EdgeAnnotation> BuildNodeFromMethod(
+			IPHyperNodeFactory<StatementGroup, EdgeAnnotation> fact,
+			SootMethod sm){
+		StatementGroup theTopGroup = new StatementGroup();
+		try{
+			Body b = sm.retrieveActiveBody();
+			ShimpleBody sb = Shimple.v().newBody(b);
+			PatchingChain<Unit> pcu = sb.getUnits();
+			Unit u = pcu.getFirst();
+			GenerateStatementGroupFromPC(pcu, u, new ArrayList<Unit>(), theTopGroup);
+		}
+		catch(java.lang.RuntimeException ex){
+			System.out.println(ex.getMessage());
+		}
+		return fact.Generate(theTopGroup);
+	}
+
+	private static void GenerateStatementGroupFromPC(
+			PatchingChain<Unit> pcu, 
+			Unit u, 
+			List<Unit> seen,
+			StatementGroup SuperGroup){
+		if(seen.contains(u)){return;}
+		System.out.println(u.toString());
+		seen.add(u);
+		
+		if(!(u instanceof soot.jimple.internal.AbstractStmt))
+		{
+			//I don't believe this is possible, which reduces the amount of 
+			//the subtree we have to deal with in practice.
+			throw new java.lang.RuntimeException("Unit is not a subclass of soot.jimple.internal.AbstractStmt");
+		}
+		else{
+			soot.jimple.internal.AbstractStmt aStmt = (soot.jimple.internal.AbstractStmt)u;
+
+			if(aStmt.branches()){
+				SuperGroup.AppendStmtGroup(new StatementGroup(aStmt));
+				StatementGroup newGroup = new StatementGroup();
+				SuperGroup.AppendStmtGroup(newGroup);
+				//This is not done, need to do some debugging to figure out best
+				//way to deal with this.
+			}
+			else if(aStmt.containsInvokeExpr())
+			{
+				SuperGroup.AppendStmtGroup(new StatementGroup(aStmt));
+			}
+		}
+		
+		
+		AnalyzePC(pcu, pcu.getSuccOf(u), seen);
+	}
+	
 	private static void AnalyzePC(PatchingChain<Unit> pcu, Unit u, List<Unit> seen){
 		if(seen.contains(u)){return;}
 		System.out.println(u.toString());
@@ -218,6 +273,9 @@ public class Analyzer {
 			{
 				InvokeExpr ie = aStmt.getInvokeExpr();
 				SootMethod sm = ie.getMethod();
+				String methodName = sm.getName();
+				SootClass sc = sm.getDeclaringClass();
+				String className = sc.getName();
 						
 				if(ie instanceof soot.jimple.internal.AbstractInvokeExpr){
 					soot.jimple.internal.AbstractInvokeExpr jie = (soot.jimple.internal.AbstractInvokeExpr)ie;
