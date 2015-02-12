@@ -6,6 +6,7 @@ import java.util.Iterator;
 import java.util.List;
 
 import sequenceDiagramGenerator.BranchableStmt;
+import sequenceDiagramGenerator.GroupableStmt;
 import sequenceDiagramGenerator.MethodNodeAnnot;
 import sequenceDiagramGenerator.SourceCodeType;
 import sequenceDiagramGenerator.hypergraph.EdgeAnnotation;
@@ -230,6 +231,103 @@ public class Analyzer {
 			System.out.println(ex.getMessage());
 		}
 		return new MethodNodeAnnot(sm, null);
+	}
+	
+	private static GroupableStmt GroupStmts(BranchableStmt aBStmt, List<BranchableStmt> loopDetect){
+		if(loopDetect.contains(aBStmt)){
+			return new GroupableStmt(true, aBStmt.theStmt);
+		}
+		else if(aBStmt.theStmt instanceof JIfStmt){
+			BranchableStmt tempTrue = aBStmt.theNext;
+			BranchableStmt tempFalse = aBStmt.theElse;
+			
+			List<BranchableStmt> newDetect = new ArrayList<BranchableStmt>();
+			newDetect.addAll(loopDetect);
+			newDetect.add(aBStmt);
+			
+			GroupableStmt trueBranch = GroupStmts(tempTrue, newDetect);
+			GroupableStmt falseBranch = GroupStmts(tempFalse, newDetect);
+			
+			if(trueBranch.equals(falseBranch)){
+				return trueBranch;
+			}
+			
+			while(trueBranch != null){
+				
+				if(trueBranch.EndsLoop && trueBranch.theStmt.equals(aBStmt.theStmt)){
+					GroupableStmt toReturn = new GroupableStmt(false, aBStmt.theStmt);
+					toReturn.theTrueBranch = trueBranch;
+					toReturn.theNext = falseBranch;
+					toReturn.StartsLoop = true;
+					aBStmt.theEquiv = toReturn;
+					return toReturn;
+				}
+				
+				if(trueBranch.theNext.equals(falseBranch)){
+					trueBranch.theNext = null;
+					GroupableStmt toReturn = new GroupableStmt(false, aBStmt.theStmt);
+					toReturn.theTrueBranch = trueBranch;
+					toReturn.theNext = falseBranch;
+					aBStmt.theEquiv = toReturn;
+					return toReturn;
+				}
+			}
+			
+			trueBranch = tempTrue.theEquiv;
+			
+			while(falseBranch != null){
+
+				if(falseBranch.EndsLoop && falseBranch.theStmt.equals(aBStmt.theStmt)){
+
+					GroupableStmt toReturn = new GroupableStmt(false, aBStmt.theStmt);
+					toReturn.theFalseBranch = falseBranch;
+					toReturn.theNext = trueBranch;
+					toReturn.StartsLoop = true;
+					aBStmt.theEquiv = toReturn;
+					return toReturn;
+				}
+				
+				if(falseBranch.theNext.equals(trueBranch)){
+					falseBranch.theNext = null;
+					GroupableStmt toReturn = new GroupableStmt(false, aBStmt.theStmt);
+					toReturn.theFalseBranch = falseBranch;
+					toReturn.theNext = trueBranch;
+					aBStmt.theEquiv = toReturn;
+					return toReturn;
+				}
+				
+			}
+			
+			GroupableStmt common = null;
+			
+			while(trueBranch != null){
+				falseBranch = tempFalse.theEquiv;
+				while(falseBranch != null){
+					if(trueBranch.theNext.equals(falseBranch.theNext)){
+						common = trueBranch.theNext;
+						trueBranch.theNext = null;
+						falseBranch.theNext = null;
+					}
+					
+					falseBranch = falseBranch.theNext;
+				}
+				trueBranch = trueBranch.theNext;
+			}
+			
+			GroupableStmt toReturn = new GroupableStmt(false, aBStmt.theStmt);
+			toReturn.theFalseBranch = falseBranch;
+			toReturn.theTrueBranch = trueBranch;
+			toReturn.theNext = common;
+			aBStmt.theEquiv = toReturn;
+			return toReturn;
+			
+		}
+		else{
+			GroupableStmt toReturn = new GroupableStmt(false, aBStmt.theStmt);
+			toReturn.theNext = GroupStmts(aBStmt.theNext, loopDetect);
+			aBStmt.theEquiv = toReturn;
+			return toReturn;
+		}
 	}
 	
 	private static BranchableStmt ReduceToInvokesAndBranches(BranchableStmt aStmt){

@@ -12,6 +12,8 @@ public class BranchableStmt {
 	public BranchableStmt theNext;
 	public BranchableStmt theElse;
 	
+	public GroupableStmt theEquiv;
+	
 	public BranchableStmt(AbstractStmt aStmt){
 		theStmt = aStmt;
 	}
