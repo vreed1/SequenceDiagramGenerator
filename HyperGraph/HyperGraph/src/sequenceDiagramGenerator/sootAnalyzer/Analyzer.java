@@ -5,8 +5,9 @@ import java.util.ArrayList;
 import java.util.Iterator;
 import java.util.List;
 
+import sequenceDiagramGenerator.BranchableStmt;
+import sequenceDiagramGenerator.MethodNodeAnnot;
 import sequenceDiagramGenerator.SourceCodeType;
-import sequenceDiagramGenerator.StatementGroup;
 import sequenceDiagramGenerator.hypergraph.EdgeAnnotation;
 import sequenceDiagramGenerator.hypergraph.HyperNode;
 import sequenceDiagramGenerator.hypergraph.Hypergraph;
@@ -20,6 +21,10 @@ import soot.Unit;
 import soot.UnitBox;
 import soot.ValueBox;
 import soot.jimple.InvokeExpr;
+import soot.jimple.Stmt;
+import soot.jimple.internal.AbstractStmt;
+import soot.jimple.internal.JGotoStmt;
+import soot.jimple.internal.JIfStmt;
 import soot.shimple.Shimple;
 import soot.shimple.ShimpleBody;
 import soot.util.Chain;
@@ -43,7 +48,7 @@ public class Analyzer {
 		Scene.v().setSootClassPath(val);
 	}
 	
-	public static Hypergraph<SourceCodeType, EdgeAnnotation> AnalyzeSpecificClasses(
+	public static Hypergraph<MethodNodeAnnot, EdgeAnnotation> AnalyzeSpecificClasses(
 			String ApplicationClassName,
 			String ClassDirectory,
 			String AppendToClassPath){
@@ -80,7 +85,7 @@ public class Analyzer {
 		}
 	}
 
-	public static Hypergraph<SourceCodeType, EdgeAnnotation> AnalyzeSpecificClasses(
+	public static Hypergraph<MethodNodeAnnot, EdgeAnnotation> AnalyzeSpecificClasses(
 			List<String> listClassNames,
 			String AppendtoClassPath){
 
@@ -90,7 +95,7 @@ public class Analyzer {
 			}
 		}
 
-		Hypergraph<SourceCodeType, EdgeAnnotation> toReturn = new Hypergraph<SourceCodeType, EdgeAnnotation>();
+		Hypergraph<MethodNodeAnnot, EdgeAnnotation> toReturn = new Hypergraph<MethodNodeAnnot, EdgeAnnotation>();
 		
 		//the addition of this line is probably evidence of paranoia on my part.
 		//but it took me a long time to figure out these magic words.
@@ -98,6 +103,11 @@ public class Analyzer {
 		
 		for(int i= 0; i < listClassNames.size(); i++){
 			SootClass c = Scene.v().loadClassAndSupport(listClassNames.get(i));
+			
+			List<SootMethod> listSM = c.getMethods();
+			for(int j = 0; j < listSM.size(); j++){
+				AnalyzeMethod(listSM.get(j));
+			}
 			
 			AddClassToHypergraph(
 					toReturn,
@@ -107,7 +117,7 @@ public class Analyzer {
 		
 	}
 	
-	public static Hypergraph<SourceCodeType, EdgeAnnotation> AnalyzeSpecificClasses(
+	public static Hypergraph<MethodNodeAnnot, EdgeAnnotation> AnalyzeSpecificClasses(
 			String ApplicationClassName,
 			List<String> otherClassNames,
 			String AppendToClassPath){
@@ -118,7 +128,7 @@ public class Analyzer {
 			}
 		}
 		
-		Hypergraph<SourceCodeType, EdgeAnnotation> toReturn = new Hypergraph<SourceCodeType, EdgeAnnotation>();
+		Hypergraph<MethodNodeAnnot, EdgeAnnotation> toReturn = new Hypergraph<MethodNodeAnnot, EdgeAnnotation>();
 		
 		//the addition of this line is probably evidence of paranoia on my part.
 		//but it took me a long time to figure out these magic words.
@@ -157,7 +167,7 @@ public class Analyzer {
 	//This doesn't use any Shimple functionality, because all we care about is types
 	//and Shimple isn't invoked by soot analysis until we start pulling
 	//method bodies.
-	public static Hypergraph<SourceCodeType, EdgeAnnotation> AnalyzeAllReachableClasses(
+	public static Hypergraph<MethodNodeAnnot, EdgeAnnotation> AnalyzeAllReachableClasses(
 			String FromClassName,
 			String AppendToClassPath){
 
@@ -167,7 +177,7 @@ public class Analyzer {
 			}
 		}
 		
-		Hypergraph<SourceCodeType, EdgeAnnotation> toReturn = new Hypergraph<SourceCodeType, EdgeAnnotation>();
+		Hypergraph<MethodNodeAnnot, EdgeAnnotation> toReturn = new Hypergraph<MethodNodeAnnot, EdgeAnnotation>();
 		
 		//the addition of this line is probably evidence of paranoia on my part.
 		//but it took me a long time to figure out these magic words.
@@ -197,67 +207,106 @@ public class Analyzer {
 			ShimpleBody sb = Shimple.v().newBody(b);
 			PatchingChain<Unit> pcu = sb.getUnits();
 			Unit u = pcu.getFirst();
+			System.out.println("---------");
 			AnalyzePC(pcu, u, new ArrayList<Unit>());
+			System.out.println("---------");
 		}
 		catch(java.lang.RuntimeException ex){
 			System.out.println(ex.getMessage());
 		}
 	}
 	
-	public static HyperNode<StatementGroup, EdgeAnnotation> BuildNodeFromMethod(
-			IPHyperNodeFactory<StatementGroup, EdgeAnnotation> fact,
+	public static MethodNodeAnnot BuildAnnotFromMethod(
 			SootMethod sm){
-		StatementGroup theTopGroup = new StatementGroup();
 		try{
 			Body b = sm.retrieveActiveBody();
 			ShimpleBody sb = Shimple.v().newBody(b);
 			PatchingChain<Unit> pcu = sb.getUnits();
-			Unit u = pcu.getFirst();
-			GenerateStatementGroupFromPC(pcu, u, new ArrayList<Unit>(), theTopGroup);
+			BranchableStmt bs = ReduceToInvokesAndBranches(MakeBranchableStmts(pcu));
+			MethodNodeAnnot theAnnot = new MethodNodeAnnot(sm, bs);
+			return theAnnot;
 		}
 		catch(java.lang.RuntimeException ex){
 			System.out.println(ex.getMessage());
 		}
-		return fact.Generate(theTopGroup);
+		return new MethodNodeAnnot(sm, null);
+	}
+	
+	private static BranchableStmt ReduceToInvokesAndBranches(BranchableStmt aStmt){
+		if(aStmt.theStmt.containsInvokeExpr()  || aStmt.theStmt.branches()){
+			if(aStmt.theNext != null)
+			{
+				aStmt.theNext= ReduceToInvokesAndBranches(aStmt.theNext);
+			}
+			if(aStmt.theElse != null){
+				aStmt.theElse = ReduceToInvokesAndBranches(aStmt.theElse);
+			}
+			if(aStmt.theElse == null && aStmt.theNext == null){
+				return null;
+			}
+			else
+			{
+				return aStmt;
+			}
+		}
+		if(aStmt.theNext!= null){
+			return ReduceToInvokesAndBranches(aStmt.theNext);
+		}
+		return null;
 	}
 
-	private static void GenerateStatementGroupFromPC(
-			PatchingChain<Unit> pcu, 
-			Unit u, 
-			List<Unit> seen,
-			StatementGroup SuperGroup){
-		if(seen.contains(u)){return;}
-		System.out.println(u.toString());
-		seen.add(u);
-		
-		if(!(u instanceof soot.jimple.internal.AbstractStmt))
-		{
-			//I don't believe this is possible, which reduces the amount of 
-			//the subtree we have to deal with in practice.
-			throw new java.lang.RuntimeException("Unit is not a subclass of soot.jimple.internal.AbstractStmt");
-		}
-		else{
-			soot.jimple.internal.AbstractStmt aStmt = (soot.jimple.internal.AbstractStmt)u;
-
-			if(aStmt.branches()){
-				SuperGroup.AppendStmtGroup(new StatementGroup(aStmt));
-				StatementGroup newGroup = new StatementGroup();
-				SuperGroup.AppendStmtGroup(newGroup);
-				//This is not done, need to do some debugging to figure out best
-				//way to deal with this.
-			}
-			else if(aStmt.containsInvokeExpr())
+	private static BranchableStmt MakeBranchableStmts(
+			PatchingChain<Unit> pcu){
+		Iterator<Unit> i = pcu.iterator();
+		List<BranchableStmt> listStmt = new ArrayList<BranchableStmt>();
+		while(i.hasNext()){
+			Unit u = i.next();
+			if(!(u instanceof soot.jimple.internal.AbstractStmt))
 			{
-				SuperGroup.AppendStmtGroup(new StatementGroup(aStmt));
+				//I don't believe this is possible, which reduces the amount of 
+				//the subtree we have to deal with in practice.
+				throw new java.lang.RuntimeException("Unit is not a subclass of soot.jimple.internal.AbstractStmt");
 			}
+			else{
+				AbstractStmt aStmt = (soot.jimple.internal.AbstractStmt)u;
+				listStmt.add(new BranchableStmt(aStmt));
+			}
+			
 		}
 		
-		
-		AnalyzePC(pcu, pcu.getSuccOf(u), seen);
+		for(int j = 0; j < listStmt.size(); j++){
+			if(listStmt.get(j).theStmt instanceof JIfStmt){
+				JIfStmt ifStmt = (JIfStmt) listStmt.get(j).theStmt;
+				Stmt tarStmt = ifStmt.getTarget();
+				for(int k = 0; k < listStmt.size(); k++){
+					if(tarStmt.equals(listStmt.get(k).theStmt)){
+						listStmt.get(j).theNext = listStmt.get(k);
+					}
+				}
+				listStmt.get(j).theElse = listStmt.get(j+1);
+			}
+			else if(listStmt.get(j).theStmt instanceof JGotoStmt){
+				JGotoStmt gotoStmt = (JGotoStmt)listStmt.get(j).theStmt;
+				Unit tar = gotoStmt.getTarget();
+				for(int k = 0; k < listStmt.size(); k++){
+					if(tar.equals(listStmt.get(k).theStmt)){
+						listStmt.get(j).theNext = listStmt.get(k);
+					}
+				}
+			}
+			else if(listStmt.get(j).theStmt.fallsThrough()){
+				if(j < listStmt.size() -1){
+					listStmt.get(j).theNext = listStmt.get(j+1);
+				}
+			}
+		}
+		return listStmt.get(0);
 	}
 	
 	private static void AnalyzePC(PatchingChain<Unit> pcu, Unit u, List<Unit> seen){
-		if(seen.contains(u)){return;}
+		if(seen.contains(u)){
+			return;
+			}
 		System.out.println(u.toString());
 		seen.add(u);
 		
@@ -298,8 +347,18 @@ public class Analyzer {
 				}
 			}
 			if(aStmt.branches()){
-				//toReturn.append(tabs + "Branching Stmt Below\n");
-				//String s = aStmt.toString();
+				if((u instanceof JIfStmt))
+				{
+					JIfStmt ifStmt = (JIfStmt)aStmt;
+					//toReturn.append(tabs + "Branching Stmt Below\n");
+					//String s = aStmt.toString();
+					Stmt s = ifStmt.getTarget();
+					
+				}
+				else if(u instanceof JGotoStmt){
+					JGotoStmt gotoStmt = (JGotoStmt)aStmt;
+					Unit tarU = gotoStmt.getTarget();
+				}
 			}
 		}
 		
@@ -308,6 +367,19 @@ public class Analyzer {
 	}
 	
 	private static void AddClassToHypergraph(
+			Hypergraph<MethodNodeAnnot, EdgeAnnotation> hg,
+			SootClass aClass
+			){
+
+		List<SootMethod> listMethods = aClass.getMethods();
+		for(int i = 0; i < listMethods.size(); i++){
+			SootMethod m = listMethods.get(i);
+			MethodNodeAnnot mannot = BuildAnnotFromMethod(m);
+			hg.AddNode(mannot);
+		}
+	}
+	
+	private static void AddClassToHypergraphOLD(
 			Hypergraph<SourceCodeType, EdgeAnnotation> hg,
 			SootClass aClass){
 		soot.Type aType = aClass.getType();

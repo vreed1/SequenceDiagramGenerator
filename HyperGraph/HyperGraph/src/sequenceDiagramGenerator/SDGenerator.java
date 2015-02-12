@@ -53,15 +53,15 @@ public class SDGenerator {
 	}
 	
 	public static void Generate(String ClassName, String ClassDir, String ClassPath, String SaveFile){
-		Hypergraph<SourceCodeType, EdgeAnnotation> hg = Analyzer.AnalyzeSpecificClasses(ClassName, ClassDir, ClassPath);
+		Hypergraph<MethodNodeAnnot, EdgeAnnotation> hg = Analyzer.AnalyzeSpecificClasses(ClassName, ClassDir, ClassPath);
 
-		SDGenerator.GenerateNaiveSequenceDiagram(hg, SaveFile);
+		//SDGenerator.GenerateNaiveSequenceDiagram(hg, SaveFile);
 		
 	}
 	
 	public static void Generate(List<String> listClasses, String ClassPath, String SaveFile){
-		Hypergraph<SourceCodeType, EdgeAnnotation> hg = Analyzer.AnalyzeSpecificClasses(listClasses, ClassPath);
+		Hypergraph<MethodNodeAnnot, EdgeAnnotation> hg = Analyzer.AnalyzeSpecificClasses(listClasses, ClassPath);
 
-		SDGenerator.GenerateNaiveSequenceDiagram(hg, SaveFile);
+		//SDGenerator.GenerateNaiveSequenceDiagram(hg, SaveFile);
 	}
 }
