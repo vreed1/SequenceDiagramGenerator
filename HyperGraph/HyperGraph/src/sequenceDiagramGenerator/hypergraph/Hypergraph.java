@@ -103,6 +103,12 @@ public class Hypergraph<T, A>
 
         return vertices.get(id).data;
     }
+    
+    public List<HyperNode<T,A>> GetNodes(){
+    	List<HyperNode<T,A>> toReturn = new ArrayList<HyperNode<T,A>>();
+    	toReturn.addAll(vertices);
+    	return toReturn;
+    }
 
     //
     // Check if the graph contains this specific grounded clause

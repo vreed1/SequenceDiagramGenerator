@@ -17,6 +17,7 @@ import javax.swing.JSeparator;
 import java.awt.Component;
 import javax.swing.Box;
 import javax.swing.JTextArea;
+import javax.swing.JComboBox;
 
 //Brian Peterson
 //Basic UI for control flow graph testing.  
@@ -41,6 +42,8 @@ public class ControlPanel extends JPanel {
 	public JTextField tfClassName;
 	public JTextField tfClassDir;
 	public JTextField tfSaveFile;
+	
+	public JComboBox cmbFunctions;
 
 	/**
 	 * Create the panel.
@@ -50,7 +53,7 @@ public class ControlPanel extends JPanel {
 		
 		GridBagLayout gbl_subPanelTwo = new GridBagLayout();
 		gbl_subPanelTwo.rowWeights = new double[]{0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0};
-		gbl_subPanelTwo.columnWeights = new double[]{0.0, 1.0, 0.0, 0.0, 0.0};
+		gbl_subPanelTwo.columnWeights = new double[]{0.0, 1.0, 0.0, 0.0, 1.0};
 		JPanel subPanelTwo = new JPanel(gbl_subPanelTwo);
 		
 		JLabel lblClasspath = new JLabel("ClassPath");
@@ -95,7 +98,7 @@ public class ControlPanel extends JPanel {
 		btnSavefile.addActionListener(aListener);
 		GridBagConstraints gbc_btnSavefile = new GridBagConstraints();
 		gbc_btnSavefile.gridwidth = 2;
-		gbc_btnSavefile.insets = new Insets(0, 0, 5, 0);
+		gbc_btnSavefile.insets = new Insets(0, 0, 5, 5);
 		gbc_btnSavefile.gridx = 3;
 		gbc_btnSavefile.gridy = 1;
 		subPanelTwo.add(btnSavefile, gbc_btnSavefile);
@@ -119,7 +122,7 @@ public class ControlPanel extends JPanel {
 		GridBagConstraints gbc_tfClassDir = new GridBagConstraints();
 		gbc_tfClassDir.gridwidth = 4;
 		gbc_tfClassDir.fill = GridBagConstraints.HORIZONTAL;
-		gbc_tfClassDir.insets = new Insets(0, 0, 5, 0);
+		gbc_tfClassDir.insets = new Insets(0, 0, 5, 5);
 		gbc_tfClassDir.gridx = 1;
 		gbc_tfClassDir.gridy = 4;
 		subPanelTwo.add(tfClassDir, gbc_tfClassDir);
@@ -136,7 +139,7 @@ public class ControlPanel extends JPanel {
 		
 				GridBagConstraints c2 = new GridBagConstraints();
 				c2.gridwidth = 4;
-				c2.insets = new Insets(0, 0, 5, 0);
+				c2.insets = new Insets(0, 0, 5, 5);
 				c2.gridx = 1;
 				c2.gridy = 5;
 				c2.weightx = 1.0;
@@ -152,9 +155,9 @@ public class ControlPanel extends JPanel {
 		btnAnalyze.setActionCommand("Analyze");
 		btnAnalyze.addActionListener(aListener);
 		GridBagConstraints gbc_btnAnalyze = new GridBagConstraints();
-		gbc_btnAnalyze.gridwidth = 5;
-		gbc_btnAnalyze.insets = new Insets(0, 0, 5, 0);
-		gbc_btnAnalyze.gridx = 1;
+		gbc_btnAnalyze.gridwidth = 2;
+		gbc_btnAnalyze.insets = new Insets(0, 0, 5, 5);
+		gbc_btnAnalyze.gridx = 0;
 		gbc_btnAnalyze.gridy = 6;
 		subPanelTwo.add(btnAnalyze, gbc_btnAnalyze);
 		
@@ -169,11 +172,27 @@ public class ControlPanel extends JPanel {
 		btnLoadjar.setActionCommand("LoadJar");
 		btnLoadjar.addActionListener(aListener);
 		GridBagConstraints gbc_btnLoadjar = new GridBagConstraints();
-		gbc_btnLoadjar.insets = new Insets(0, 0, 5, 0);
-		gbc_btnLoadjar.gridwidth = 5;
-		gbc_btnLoadjar.gridx = 1;
+		gbc_btnLoadjar.gridwidth = 2;
+		gbc_btnLoadjar.insets = new Insets(0, 0, 5, 5);
+		gbc_btnLoadjar.gridx = 0;
 		gbc_btnLoadjar.gridy = 8;
 		subPanelTwo.add(btnLoadjar, gbc_btnLoadjar);
+		
+		JLabel lblFunctions = new JLabel("Functions");
+		GridBagConstraints gbc_lblFunctions = new GridBagConstraints();
+		gbc_lblFunctions.insets = new Insets(0, 0, 5, 5);
+		gbc_lblFunctions.anchor = GridBagConstraints.EAST;
+		gbc_lblFunctions.gridx = 3;
+		gbc_lblFunctions.gridy = 8;
+		subPanelTwo.add(lblFunctions, gbc_lblFunctions);
+		
+		cmbFunctions = new JComboBox();
+		GridBagConstraints gbc_cmbFunctions = new GridBagConstraints();
+		gbc_cmbFunctions.insets = new Insets(0, 0, 5, 5);
+		gbc_cmbFunctions.fill = GridBagConstraints.HORIZONTAL;
+		gbc_cmbFunctions.gridx = 4;
+		gbc_cmbFunctions.gridy = 8;
+		subPanelTwo.add(cmbFunctions, gbc_cmbFunctions);
 		
 		JTextArea txtrTwoRunOptions = new JTextArea();
 		txtrTwoRunOptions.setLineWrap(true);
@@ -182,6 +201,7 @@ public class ControlPanel extends JPanel {
 		txtrTwoRunOptions.setText("The text options above are examples and should be changed.\nTwo run options exist.  ClassPath and OutputFile are relevant to both.  Classpath is only needed if there are external references which are not on your default jara class path.  OutputFile will be where the output will be stored.  \nThe first option is to analyze .class files in a directory.  Choose the directory next to ClassDir and the MainClass, then Analyze.\nThe second option is to analyze a jar file.  Click the Analyze button, and you will be prompted to select the jar file to analyze.");
 		txtrTwoRunOptions.setEditable(false);
 		GridBagConstraints gbc_txtrTwoRunOptions = new GridBagConstraints();
+		gbc_txtrTwoRunOptions.insets = new Insets(0, 0, 0, 5);
 		gbc_txtrTwoRunOptions.gridwidth = 5;
 		gbc_txtrTwoRunOptions.fill = GridBagConstraints.BOTH;
 		gbc_txtrTwoRunOptions.gridx = 0;

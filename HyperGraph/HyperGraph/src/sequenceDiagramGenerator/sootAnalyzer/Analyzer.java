@@ -224,7 +224,8 @@ public class Analyzer {
 			ShimpleBody sb = Shimple.v().newBody(b);
 			PatchingChain<Unit> pcu = sb.getUnits();
 			BranchableStmt bs = ReduceToInvokesAndBranches(MakeBranchableStmts(pcu));
-			MethodNodeAnnot theAnnot = new MethodNodeAnnot(sm, bs);
+			GroupableStmt gs = GroupStmts(bs, new ArrayList<BranchableStmt>());
+			MethodNodeAnnot theAnnot = new MethodNodeAnnot(sm, gs);
 			return theAnnot;
 		}
 		catch(java.lang.RuntimeException ex){

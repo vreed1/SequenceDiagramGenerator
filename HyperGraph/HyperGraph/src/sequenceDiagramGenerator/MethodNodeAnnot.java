@@ -3,10 +3,10 @@ package sequenceDiagramGenerator;
 import soot.SootMethod;
 
 public class MethodNodeAnnot {
-	private BranchableStmt theStmts;
+	private GroupableStmt theStmts;
 	private SootMethod theMethod;
 	
-	public MethodNodeAnnot(SootMethod aMethod, BranchableStmt aStmt){
+	public MethodNodeAnnot(SootMethod aMethod, GroupableStmt aStmt){
 		theMethod = aMethod;
 		theStmts = aStmt;
 	}

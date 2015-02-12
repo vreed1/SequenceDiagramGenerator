@@ -16,9 +16,11 @@ import java.util.zip.ZipInputStream;
 import javax.swing.JFileChooser;
 import javax.swing.JFrame;
 
+import sequenceDiagramGenerator.MethodNodeAnnot;
 import sequenceDiagramGenerator.SDGenerator;
 import sequenceDiagramGenerator.SourceCodeType;
 import sequenceDiagramGenerator.hypergraph.EdgeAnnotation;
+import sequenceDiagramGenerator.hypergraph.HyperNode;
 import sequenceDiagramGenerator.hypergraph.Hypergraph;
 import sequenceDiagramGenerator.sootAnalyzer.Analyzer;
 import utilities.Utilities;
@@ -27,6 +29,8 @@ public class TestUI implements ActionListener{
 
 	private JFrame frame;
 	private ControlPanel theControlPanel;
+	
+	public Hypergraph<MethodNodeAnnot, EdgeAnnotation> currentHypergraph;
 
 	/**
 	 * Launch the application.
@@ -65,6 +69,17 @@ public class TestUI implements ActionListener{
 		
 	}
 	
+	private void PopulateCmb(){
+		theControlPanel.cmbFunctions.removeAllItems();
+		if(currentHypergraph != null){
+			List<HyperNode<MethodNodeAnnot,EdgeAnnotation>> lh = currentHypergraph.GetNodes();
+			for(int i = 0; i < lh.size(); i++){
+				//lh.get(i).data.
+				//STARTHERE, still in progress.
+			}
+		}
+	}
+	
 
 	@Override
 	public void actionPerformed(ActionEvent e) {
@@ -73,7 +88,9 @@ public class TestUI implements ActionListener{
 			String ClassPath = theControlPanel.tfClassPath.getText();
 			String ClassDir = theControlPanel.tfClassDir.getText();
 			
-			SDGenerator.Generate(ClassName, ClassDir, ClassPath, this.theControlPanel.tfSaveFile.getText());
+			//SDGenerator.Generate(ClassName, ClassDir, ClassPath, this.theControlPanel.tfSaveFile.getText());
+			currentHypergraph = Analyzer.AnalyzeSpecificClasses(ClassName, ClassDir, ClassPath);
+			PopulateCmb();
 		}
 		if(e.getActionCommand().equals("LoadJar")){
 			
@@ -95,8 +112,11 @@ public class TestUI implements ActionListener{
 							parentDir = jars[i].getCanonicalPath();
 						ClassPath = ClassPath + ":" + parentDir;
 					}
+					currentHypergraph = Analyzer.AnalyzeSpecificClasses(listClasses, ClassPath);
+					PopulateCmb();
 
-					SDGenerator.Generate(listClasses, ClassPath, this.theControlPanel.tfSaveFile.getText());
+					//SDGenerator.Generate(listClasses, ClassPath, this.theControlPanel.tfSaveFile.getText());
+				
 				} catch (IOException e1) {
 					// TODO Auto-generated catch block
 					e1.printStackTrace();
