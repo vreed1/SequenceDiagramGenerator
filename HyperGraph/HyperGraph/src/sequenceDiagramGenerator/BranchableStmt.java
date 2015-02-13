@@ -14,6 +14,8 @@ public class BranchableStmt {
 	
 	public GroupableStmt theEquiv;
 	
+	public int seen = 0;
+	
 	public BranchableStmt(AbstractStmt aStmt){
 		theStmt = aStmt;
 	}

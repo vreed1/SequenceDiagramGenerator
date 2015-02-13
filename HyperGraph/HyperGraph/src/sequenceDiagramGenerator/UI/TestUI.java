@@ -23,6 +23,8 @@ import sequenceDiagramGenerator.hypergraph.EdgeAnnotation;
 import sequenceDiagramGenerator.hypergraph.HyperNode;
 import sequenceDiagramGenerator.hypergraph.Hypergraph;
 import sequenceDiagramGenerator.sootAnalyzer.Analyzer;
+import soot.SootClass;
+import soot.SootMethod;
 import utilities.Utilities;
 
 public class TestUI implements ActionListener{
@@ -76,6 +78,10 @@ public class TestUI implements ActionListener{
 			for(int i = 0; i < lh.size(); i++){
 				//lh.get(i).data.
 				//STARTHERE, still in progress.
+				SootMethod sm = lh.get(i).data.theMethod;
+				SootClass sc = sm.getDeclaringClass();
+				String mName = sc.getName() + "." + sm.getName();
+				theControlPanel.cmbFunctions.addItem(mName);
 			}
 		}
 	}

@@ -105,10 +105,10 @@ public class Analyzer {
 		for(int i= 0; i < listClassNames.size(); i++){
 			SootClass c = Scene.v().loadClassAndSupport(listClassNames.get(i));
 			
-			List<SootMethod> listSM = c.getMethods();
-			for(int j = 0; j < listSM.size(); j++){
-				AnalyzeMethod(listSM.get(j));
-			}
+//			List<SootMethod> listSM = c.getMethods();
+//			for(int j = 0; j < listSM.size(); j++){
+//				AnalyzeMethod(listSM.get(j));
+//			}
 			
 			AddClassToHypergraph(
 					toReturn,
@@ -219,23 +219,29 @@ public class Analyzer {
 	
 	public static MethodNodeAnnot BuildAnnotFromMethod(
 			SootMethod sm){
+		PatchingChain<Unit> pcu = null;
 		try{
 			Body b = sm.retrieveActiveBody();
 			ShimpleBody sb = Shimple.v().newBody(b);
-			PatchingChain<Unit> pcu = sb.getUnits();
+			pcu = sb.getUnits();
+		}
+		catch(java.lang.RuntimeException ex){
+			System.out.println("Not possible to analyze method: " + sm.getName() + " Error: " + ex.getMessage());
+		}
+		if(pcu != null){
 			BranchableStmt bs = ReduceToInvokesAndBranches(MakeBranchableStmts(pcu));
 			GroupableStmt gs = GroupStmts(bs, new ArrayList<BranchableStmt>());
 			MethodNodeAnnot theAnnot = new MethodNodeAnnot(sm, gs);
 			return theAnnot;
 		}
-		catch(java.lang.RuntimeException ex){
-			System.out.println(ex.getMessage());
-		}
 		return new MethodNodeAnnot(sm, null);
 	}
 	
 	private static GroupableStmt GroupStmts(BranchableStmt aBStmt, List<BranchableStmt> loopDetect){
-		if(loopDetect.contains(aBStmt)){
+		if(aBStmt == null){
+			return null;
+		}
+		else if(loopDetect.contains(aBStmt)){
 			return new GroupableStmt(true, aBStmt.theStmt);
 		}
 		else if(aBStmt.theStmt instanceof JIfStmt){
@@ -272,6 +278,7 @@ public class Analyzer {
 					aBStmt.theEquiv = toReturn;
 					return toReturn;
 				}
+				trueBranch = trueBranch.theNext;
 			}
 			
 			trueBranch = tempTrue.theEquiv;
@@ -296,7 +303,7 @@ public class Analyzer {
 					aBStmt.theEquiv = toReturn;
 					return toReturn;
 				}
-				
+				falseBranch = falseBranch.theNext;
 			}
 			
 			GroupableStmt common = null;
@@ -332,6 +339,10 @@ public class Analyzer {
 	}
 	
 	private static BranchableStmt ReduceToInvokesAndBranches(BranchableStmt aStmt){
+		aStmt.seen++;
+		if(aStmt.seen == 2){
+			return aStmt;
+		}
 		if(aStmt.theStmt.containsInvokeExpr()  || aStmt.theStmt.branches()){
 			if(aStmt.theNext != null)
 			{
@@ -340,7 +351,7 @@ public class Analyzer {
 			if(aStmt.theElse != null){
 				aStmt.theElse = ReduceToInvokesAndBranches(aStmt.theElse);
 			}
-			if(aStmt.theElse == null && aStmt.theNext == null){
+			if(aStmt.theElse == null && aStmt.theNext == null && !aStmt.theStmt.containsInvokeExpr()){
 				return null;
 			}
 			else
