@@ -20,6 +20,7 @@ import sequenceDiagramGenerator.MethodNodeAnnot;
 import sequenceDiagramGenerator.SDGenerator;
 import sequenceDiagramGenerator.SourceCodeType;
 import sequenceDiagramGenerator.hypergraph.EdgeAnnotation;
+import sequenceDiagramGenerator.hypergraph.GroupableHyperNode;
 import sequenceDiagramGenerator.hypergraph.HyperNode;
 import sequenceDiagramGenerator.hypergraph.Hypergraph;
 import sequenceDiagramGenerator.sootAnalyzer.Analyzer;
@@ -142,7 +143,7 @@ public class TestUI implements ActionListener{
 			if(currentHypergraph == null){return;}
 			CmbBoxItem cbi = (CmbBoxItem) this.theControlPanel.cmbFunctions.getSelectedItem();
 			if(cbi == null){return;}
-			HyperNode<MethodNodeAnnot, EdgeAnnotation> aNode = (HyperNode<MethodNodeAnnot, EdgeAnnotation>) cbi.theObject;
+			GroupableHyperNode<MethodNodeAnnot, EdgeAnnotation> aNode = (GroupableHyperNode<MethodNodeAnnot, EdgeAnnotation>) cbi.theObject;
 			if(aNode == null){return;}
 			String saveFile = this.theControlPanel.tfSaveFile.getText();
 			
@@ -153,7 +154,7 @@ public class TestUI implements ActionListener{
 			if(aFile.exists()){
 				aFile.delete();
 			}
-			SDGenerator.Generate(currentHypergraph, aNode, saveFile);
+			SDGenerator.Generate(aNode, saveFile);
 		}
 	}
 

@@ -6,6 +6,8 @@ import java.util.ArrayList;
 import java.util.List;
 
 import sequenceDiagramGenerator.hypergraph.EdgeAnnotation;
+import sequenceDiagramGenerator.hypergraph.GroupableHyperEdge;
+import sequenceDiagramGenerator.hypergraph.GroupableHyperNode;
 import sequenceDiagramGenerator.hypergraph.HyperEdge;
 import sequenceDiagramGenerator.hypergraph.HyperNode;
 import sequenceDiagramGenerator.hypergraph.Hypergraph;
@@ -66,8 +68,7 @@ public class SDGenerator {
 	}
 	
 	public static void Generate(
-			Hypergraph<MethodNodeAnnot, EdgeAnnotation> aGraph, 
-			HyperNode<MethodNodeAnnot, EdgeAnnotation> aNode,
+			GroupableHyperNode<MethodNodeAnnot, EdgeAnnotation> aGNode,
 			String SaveFile){
 		
 	}

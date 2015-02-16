@@ -23,14 +23,14 @@ public class Hypergraph<T, A>
     
     public Hypergraph()
     {
-    	theNodeFactory = new IPHyperNodeFactory<T,A>();
+    	theNodeFactory = new GroupableHyperNodeFactory<T,A>();
         vertices = new ArrayList<HyperNode<T, A>>();
         edgeCount = 0;
     }
 
     public Hypergraph(int capacity)
     {
-    	theNodeFactory = new IPHyperNodeFactory<T,A>();
+    	theNodeFactory = new GroupableHyperNodeFactory<T,A>();
         vertices = new ArrayList<HyperNode<T, A>>(capacity);
         edgeCount = 0;
     }

@@ -12,7 +12,7 @@ import sequenceDiagramGenerator.SourceCodeType;
 import sequenceDiagramGenerator.hypergraph.EdgeAnnotation;
 import sequenceDiagramGenerator.hypergraph.HyperNode;
 import sequenceDiagramGenerator.hypergraph.Hypergraph;
-import sequenceDiagramGenerator.hypergraph.IPHyperNodeFactory;
+import sequenceDiagramGenerator.hypergraph.GroupableHyperNodeFactory;
 import soot.Body;
 import soot.PatchingChain;
 import soot.Scene;
