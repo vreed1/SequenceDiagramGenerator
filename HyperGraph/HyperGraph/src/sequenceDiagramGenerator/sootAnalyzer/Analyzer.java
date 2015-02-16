@@ -270,7 +270,7 @@ public class Analyzer {
 					return toReturn;
 				}
 				
-				if(trueBranch.theNext.equals(falseBranch)){
+				if(trueBranch.theNext != null && trueBranch.theNext.equals(falseBranch)){
 					trueBranch.theNext = null;
 					GroupableStmt toReturn = new GroupableStmt(false, aBStmt.theStmt);
 					toReturn.theTrueBranch = trueBranch;
@@ -295,7 +295,7 @@ public class Analyzer {
 					return toReturn;
 				}
 				
-				if(falseBranch.theNext.equals(trueBranch)){
+				if(falseBranch.theNext != null && falseBranch.theNext.equals(trueBranch)){
 					falseBranch.theNext = null;
 					GroupableStmt toReturn = new GroupableStmt(false, aBStmt.theStmt);
 					toReturn.theFalseBranch = falseBranch;
@@ -311,7 +311,7 @@ public class Analyzer {
 			while(trueBranch != null){
 				falseBranch = tempFalse.theEquiv;
 				while(falseBranch != null){
-					if(trueBranch.theNext.equals(falseBranch.theNext)){
+					if(trueBranch.theNext != null && trueBranch.theNext.equals(falseBranch.theNext)){
 						common = trueBranch.theNext;
 						trueBranch.theNext = null;
 						falseBranch.theNext = null;

@@ -64,4 +64,11 @@ public class SDGenerator {
 
 		//SDGenerator.GenerateNaiveSequenceDiagram(hg, SaveFile);
 	}
+	
+	public static void Generate(
+			Hypergraph<MethodNodeAnnot, EdgeAnnotation> aGraph, 
+			HyperNode<MethodNodeAnnot, EdgeAnnotation> aNode,
+			String SaveFile){
+		
+	}
 }

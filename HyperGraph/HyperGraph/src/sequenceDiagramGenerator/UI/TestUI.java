@@ -81,7 +81,8 @@ public class TestUI implements ActionListener{
 				SootMethod sm = lh.get(i).data.theMethod;
 				SootClass sc = sm.getDeclaringClass();
 				String mName = sc.getName() + "." + sm.getName();
-				theControlPanel.cmbFunctions.addItem(mName);
+				CmbBoxItem cbi = new CmbBoxItem(lh.get(i), mName);
+				theControlPanel.cmbFunctions.addItem(cbi);
 			}
 		}
 	}
@@ -136,6 +137,23 @@ public class TestUI implements ActionListener{
 			if(fc.showOpenDialog(frame) == JFileChooser.APPROVE_OPTION){
 				this.theControlPanel.tfSaveFile.setText(fc.getSelectedFile().getAbsolutePath());
 			}
+		}
+		if(e.getActionCommand().equals("MakeSequenceDiagram")){
+			if(currentHypergraph == null){return;}
+			CmbBoxItem cbi = (CmbBoxItem) this.theControlPanel.cmbFunctions.getSelectedItem();
+			if(cbi == null){return;}
+			HyperNode<MethodNodeAnnot, EdgeAnnotation> aNode = (HyperNode<MethodNodeAnnot, EdgeAnnotation>) cbi.theObject;
+			if(aNode == null){return;}
+			String saveFile = this.theControlPanel.tfSaveFile.getText();
+			
+			if(saveFile == null){return;}
+			if(saveFile.length() == 0){return;}
+			
+			File aFile = new File(saveFile);
+			if(aFile.exists()){
+				aFile.delete();
+			}
+			SDGenerator.Generate(currentHypergraph, aNode, saveFile);
 		}
 	}
 

@@ -43,7 +43,7 @@ public class ControlPanel extends JPanel {
 	public JTextField tfClassDir;
 	public JTextField tfSaveFile;
 	
-	public JComboBox cmbFunctions;
+	public JComboBox<CmbBoxItem> cmbFunctions;
 
 	/**
 	 * Create the panel.
@@ -161,6 +161,22 @@ public class ControlPanel extends JPanel {
 		gbc_btnAnalyze.gridy = 6;
 		subPanelTwo.add(btnAnalyze, gbc_btnAnalyze);
 		
+		JLabel lblFunctions = new JLabel("Functions");
+		GridBagConstraints gbc_lblFunctions = new GridBagConstraints();
+		gbc_lblFunctions.insets = new Insets(0, 0, 5, 5);
+		gbc_lblFunctions.anchor = GridBagConstraints.EAST;
+		gbc_lblFunctions.gridx = 3;
+		gbc_lblFunctions.gridy = 6;
+		subPanelTwo.add(lblFunctions, gbc_lblFunctions);
+		
+		cmbFunctions = new JComboBox<CmbBoxItem>();
+		GridBagConstraints gbc_cmbFunctions = new GridBagConstraints();
+		gbc_cmbFunctions.insets = new Insets(0, 0, 5, 5);
+		gbc_cmbFunctions.fill = GridBagConstraints.HORIZONTAL;
+		gbc_cmbFunctions.gridx = 4;
+		gbc_cmbFunctions.gridy = 6;
+		subPanelTwo.add(cmbFunctions, gbc_cmbFunctions);
+		
 		Component verticalStrut_1 = Box.createVerticalStrut(20);
 		GridBagConstraints gbc_verticalStrut_1 = new GridBagConstraints();
 		gbc_verticalStrut_1.insets = new Insets(0, 0, 5, 5);
@@ -178,21 +194,14 @@ public class ControlPanel extends JPanel {
 		gbc_btnLoadjar.gridy = 8;
 		subPanelTwo.add(btnLoadjar, gbc_btnLoadjar);
 		
-		JLabel lblFunctions = new JLabel("Functions");
-		GridBagConstraints gbc_lblFunctions = new GridBagConstraints();
-		gbc_lblFunctions.insets = new Insets(0, 0, 5, 5);
-		gbc_lblFunctions.anchor = GridBagConstraints.EAST;
-		gbc_lblFunctions.gridx = 3;
-		gbc_lblFunctions.gridy = 8;
-		subPanelTwo.add(lblFunctions, gbc_lblFunctions);
-		
-		cmbFunctions = new JComboBox();
-		GridBagConstraints gbc_cmbFunctions = new GridBagConstraints();
-		gbc_cmbFunctions.insets = new Insets(0, 0, 5, 5);
-		gbc_cmbFunctions.fill = GridBagConstraints.HORIZONTAL;
-		gbc_cmbFunctions.gridx = 4;
-		gbc_cmbFunctions.gridy = 8;
-		subPanelTwo.add(cmbFunctions, gbc_cmbFunctions);
+		JButton btnMakeseqdia = new JButton("MakeSeqDia");
+		btnMakeseqdia.setActionCommand("MakeSequenceDiagram");
+		GridBagConstraints gbc_btnMakeseqdia = new GridBagConstraints();
+		gbc_btnMakeseqdia.gridwidth = 2;
+		gbc_btnMakeseqdia.insets = new Insets(0, 0, 5, 5);
+		gbc_btnMakeseqdia.gridx = 3;
+		gbc_btnMakeseqdia.gridy = 8;
+		subPanelTwo.add(btnMakeseqdia, gbc_btnMakeseqdia);
 		
 		JTextArea txtrTwoRunOptions = new JTextArea();
 		txtrTwoRunOptions.setLineWrap(true);
