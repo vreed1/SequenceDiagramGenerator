@@ -19,5 +19,14 @@ public class GroupableStmt {
 		EndsLoop = LoopsTo;
 		StartsLoop = false;
 	}
+	
+	@Override
+	public boolean equals(Object obj){
+		if(obj instanceof GroupableStmt){
+			GroupableStmt other = (GroupableStmt)obj;
+			return other.theStmt.equals(theStmt);
+		}
+		return false;
+	}
 
 }

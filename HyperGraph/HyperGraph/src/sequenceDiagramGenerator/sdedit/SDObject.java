@@ -3,6 +3,8 @@ package sequenceDiagramGenerator.sdedit;
 import java.util.ArrayList;
 import java.util.List;
 
+import soot.SootClass;
+
 public class SDObject
 {
     private String name;
@@ -47,5 +49,21 @@ public class SDObject
     }
 	public String GetName() {
 		return name;
+	}
+	
+	public SDObject(SootClass aClass){
+		name = GetUniqueName();
+		type = aClass.getName();
+	}
+	
+	public SDObject(SootClass aClass, String instanceName){
+		name = instanceName;
+		type = aClass.getName();
+	}
+	
+	private static int uniqueName = 0;
+	private static String GetUniqueName(){
+		uniqueName++;
+		return String.valueOf(uniqueName);
 	}
 }

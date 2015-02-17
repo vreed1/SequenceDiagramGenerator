@@ -104,6 +104,15 @@ public class Hypergraph<T, A>
         return vertices.get(id).data;
     }
     
+    public HyperNode<T,A> GetCompleteNode(int id){
+
+        if (id < 0 || id > vertices.size()) {
+            throw new IllegalArgumentException("Unexpected id in hypergraph node access: " + id);
+        }
+
+        return vertices.get(id);
+    }
+    
     public List<HyperNode<T,A>> GetNodes(){
     	List<HyperNode<T,A>> toReturn = new ArrayList<HyperNode<T,A>>();
     	toReturn.addAll(vertices);

@@ -11,9 +11,12 @@ import sequenceDiagramGenerator.hypergraph.GroupableHyperNode;
 import sequenceDiagramGenerator.hypergraph.HyperEdge;
 import sequenceDiagramGenerator.hypergraph.HyperNode;
 import sequenceDiagramGenerator.hypergraph.Hypergraph;
+import sequenceDiagramGenerator.sdedit.SDMessage;
 import sequenceDiagramGenerator.sdedit.SDObject;
 import sequenceDiagramGenerator.sdedit.SequenceDiagram;
 import sequenceDiagramGenerator.sootAnalyzer.Analyzer;
+import soot.SootClass;
+import soot.SootMethod;
 
 public class SDGenerator {
 	public static void GenerateNaiveSequenceDiagram(
@@ -68,8 +71,71 @@ public class SDGenerator {
 	}
 	
 	public static void Generate(
+			Hypergraph<MethodNodeAnnot, EdgeAnnotation> hg,
 			GroupableHyperNode<MethodNodeAnnot, EdgeAnnotation> aGNode,
 			String SaveFile){
+
+		SequenceDiagram sd = new SequenceDiagram();
+		RecFillNodeDiagram(hg,aGNode, sd);
 		
+		sd.CreatePDF(SaveFile);
+	}
+	
+	private static void RecFillStmtDiagram(
+			Hypergraph<MethodNodeAnnot, EdgeAnnotation> hg,
+			GroupableHyperNode<MethodNodeAnnot, EdgeAnnotation> aGNode,
+			GroupableStmt aStmt,
+			SequenceDiagram sd)
+	{
+		if(aStmt == null){return;}
+		if(aStmt.theTrueBranch != null){
+			//worry about this later
+			//SD stuff will have to be updated to 
+			//deal with if/else blocks
+			RecFillStmtDiagram(hg, aGNode, aStmt.theTrueBranch, sd);
+		}
+		if(aStmt.theFalseBranch != null){
+			//This also must be fixed.
+			RecFillStmtDiagram(hg, aGNode, aStmt.theFalseBranch, sd);
+		}
+		if(aStmt.theStmt.containsInvokeExpr()){
+			GroupableHyperEdge<EdgeAnnotation> gEdge = aGNode.GetGroupableEdge(aStmt);
+			if(gEdge != null){
+				GroupableHyperNode<MethodNodeAnnot, EdgeAnnotation> subGNode = 
+						(GroupableHyperNode<MethodNodeAnnot, EdgeAnnotation>) hg.GetCompleteNode(gEdge.targetNode);
+				
+				SootMethod sm = subGNode.data.theMethod;
+				SootClass scTarget = sm.getDeclaringClass();
+				SootClass scSource = aGNode.data.theMethod.getDeclaringClass();
+				
+				//This also needs to be improved to deal with 
+				//instance names.
+				SDObject sdSource = new SDObject(scSource);
+				SDObject sdTarget = new SDObject(scTarget);
+				sd.AddObject(sdSource);
+				sd.AddObject(sdTarget);
+				
+				SDMessage msg = new SDMessage(sdSource, sdTarget, sm);
+				sd.AddMessage(msg);
+				RecFillNodeDiagram(hg, subGNode, sd);
+			}
+			else
+			{
+				//This needs improvement as well
+				//this is a call to an outer object
+			}
+		}
+		GroupableHyperEdge<EdgeAnnotation> gEdge = null;
+		GroupableStmt aGStmt = aStmt.theNext;
+		RecFillStmtDiagram(hg, aGNode, aGStmt, sd);
+	}
+	
+	private static void RecFillNodeDiagram(
+			Hypergraph<MethodNodeAnnot, EdgeAnnotation> hg,
+			GroupableHyperNode<MethodNodeAnnot, EdgeAnnotation> aGNode,
+			SequenceDiagram sd){
+		if(aGNode == null){return;}
+		GroupableStmt aStmt = aGNode.data.theStmts;
+		RecFillStmtDiagram(hg, aGNode, aStmt, sd);
 	}
 }

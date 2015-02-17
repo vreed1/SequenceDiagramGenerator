@@ -196,6 +196,7 @@ public class ControlPanel extends JPanel {
 		
 		JButton btnMakeseqdia = new JButton("MakeSeqDia");
 		btnMakeseqdia.setActionCommand("MakeSequenceDiagram");
+		btnMakeseqdia.addActionListener(aListener);
 		GridBagConstraints gbc_btnMakeseqdia = new GridBagConstraints();
 		gbc_btnMakeseqdia.gridwidth = 2;
 		gbc_btnMakeseqdia.insets = new Insets(0, 0, 5, 5);

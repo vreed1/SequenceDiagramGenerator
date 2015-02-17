@@ -1,6 +1,8 @@
 package sequenceDiagramGenerator.sdedit;
 import java.util.Dictionary;
 
+import soot.SootMethod;
+
 
 public class SDMessage
 {
@@ -24,6 +26,12 @@ public class SDMessage
         this.answer = opts.get(MessageOpt.ANSWER);
         this.mnemonic = opts.get(MessageOpt.MNEMONIC);
         this.specifier = opts.get(MessageOpt.SPECIFIER);
+    }
+    
+    public SDMessage(SDObject sdCaller, SDObject sdCallee, SootMethod message){
+    	this.caller = sdCaller.GetName();
+    	this.callee = sdCallee.GetName();
+    	this.message = message.getName();
     }
     
     
