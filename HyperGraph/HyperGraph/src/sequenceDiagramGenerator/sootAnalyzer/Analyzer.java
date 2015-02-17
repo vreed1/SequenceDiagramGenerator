@@ -22,6 +22,7 @@ import soot.Unit;
 import soot.UnitBox;
 import soot.ValueBox;
 import soot.jimple.InvokeExpr;
+import soot.jimple.InvokeStmt;
 import soot.jimple.Stmt;
 import soot.jimple.internal.AbstractStmt;
 import soot.jimple.internal.JGotoStmt;
@@ -214,6 +215,35 @@ public class Analyzer {
 		}
 		catch(java.lang.RuntimeException ex){
 			System.out.println(ex.getMessage());
+		}
+	}
+	
+	private static void AddEdgesToHypergraph(
+			Hypergraph<MethodNodeAnnot, EdgeAnnotation> hg){
+		List<HyperNode<MethodNodeAnnot, EdgeAnnotation>> lNodes = hg.GetNodes();
+		for(int i = 0; i < lNodes.size(); i++){
+			GroupableStmt aStmt = lNodes.get(i).data.theStmts;
+			
+		}
+	}
+	
+	private static void AddRecStmts(
+			GroupableStmt aStmt, 
+			HyperNode<MethodNodeAnnot, EdgeAnnotation> sourceNode, 
+			Hypergraph<MethodNodeAnnot, EdgeAnnotation> hg){
+		if(aStmt.theStmt.containsInvokeExpr()){
+			InvokeStmt anInvoke = (InvokeStmt)aStmt.theStmt;
+			//STARTHERE filling out edges.
+			//anInvoke.
+		}
+		if(aStmt.theTrueBranch != null){
+			
+		}
+		if(aStmt.theFalseBranch != null){
+			
+		}
+		if(aStmt.theNext != null){
+			
 		}
 	}
 	
