@@ -140,6 +140,13 @@ public class Hypergraph<T, A>
 
         return null;
     }
+    
+    public HyperNode<T,A> GetCompleteNode(T inputData){
+    	for (HyperNode<T,A> vertex : vertices){
+    		if(vertex.data.equals(inputData)) return vertex;
+    	}
+    	return null;
+    }
 
     //
     // Check if the graph contains this specific grounded clause

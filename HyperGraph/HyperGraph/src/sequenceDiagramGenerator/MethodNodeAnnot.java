@@ -10,4 +10,13 @@ public class MethodNodeAnnot {
 		theMethod = aMethod;
 		theStmts = aStmt;
 	}
+	
+	@Override 
+	public boolean equals(Object obj){
+		if(obj instanceof MethodNodeAnnot){
+			MethodNodeAnnot other = (MethodNodeAnnot) obj;
+			return other.theMethod.equals(theMethod);
+		}
+		return false;
+	}
 }

@@ -10,6 +10,7 @@ import sequenceDiagramGenerator.GroupableStmt;
 import sequenceDiagramGenerator.MethodNodeAnnot;
 import sequenceDiagramGenerator.SourceCodeType;
 import sequenceDiagramGenerator.hypergraph.EdgeAnnotation;
+import sequenceDiagramGenerator.hypergraph.GroupableHyperNode;
 import sequenceDiagramGenerator.hypergraph.HyperNode;
 import sequenceDiagramGenerator.hypergraph.Hypergraph;
 import sequenceDiagramGenerator.hypergraph.GroupableHyperNodeFactory;
@@ -115,6 +116,8 @@ public class Analyzer {
 					toReturn,
 					c);
 		}
+		
+		Analyzer.AddEdgesToHypergraph(toReturn);
 		return toReturn;
 		
 	}
@@ -153,7 +156,8 @@ public class Analyzer {
 					aClass);
 			}
 		}
-		
+
+		Analyzer.AddEdgesToHypergraph(toReturn);
 		return toReturn;
 	}
 	
@@ -223,27 +227,44 @@ public class Analyzer {
 		List<HyperNode<MethodNodeAnnot, EdgeAnnotation>> lNodes = hg.GetNodes();
 		for(int i = 0; i < lNodes.size(); i++){
 			GroupableStmt aStmt = lNodes.get(i).data.theStmts;
-			
+			GroupableHyperNode<MethodNodeAnnot, EdgeAnnotation> gNode = (GroupableHyperNode<MethodNodeAnnot, EdgeAnnotation>) lNodes.get(i);
+			AddRecStmts(aStmt, gNode, hg);
 		}
 	}
 	
 	private static void AddRecStmts(
 			GroupableStmt aStmt, 
-			HyperNode<MethodNodeAnnot, EdgeAnnotation> sourceNode, 
+			GroupableHyperNode<MethodNodeAnnot, EdgeAnnotation> sourceNode, 
 			Hypergraph<MethodNodeAnnot, EdgeAnnotation> hg){
 		if(aStmt.theStmt.containsInvokeExpr()){
 			InvokeStmt anInvoke = (InvokeStmt)aStmt.theStmt;
-			//STARTHERE filling out edges.
-			//anInvoke.
+
+			InvokeExpr ie = anInvoke.getInvokeExpr();
+			SootMethod sm = ie.getMethod();
+			String methodName = sm.getName();
+			SootClass sc = sm.getDeclaringClass();
+			
+			MethodNodeAnnot finder = new MethodNodeAnnot(sm, null);
+			
+			HyperNode<MethodNodeAnnot, EdgeAnnotation> tarNode = hg.GetCompleteNode(finder);
+			
+			if(tarNode == null){
+				hg.AddNode(finder);
+				tarNode = hg.GetCompleteNode(finder);
+			}
+			List<MethodNodeAnnot> ante = new ArrayList<MethodNodeAnnot>();
+			ante.add(sourceNode.data);
+			EdgeAnnotation ea = new EdgeAnnotation();
+			hg.AddEdge(ante, tarNode.data, ea);
 		}
 		if(aStmt.theTrueBranch != null){
-			
+			AddRecStmts(aStmt.theTrueBranch, sourceNode, hg);
 		}
 		if(aStmt.theFalseBranch != null){
-			
+			AddRecStmts(aStmt.theFalseBranch, sourceNode, hg);
 		}
 		if(aStmt.theNext != null){
-			
+			AddRecStmts(aStmt.theNext, sourceNode, hg);
 		}
 	}
 	
