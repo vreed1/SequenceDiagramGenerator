@@ -154,7 +154,13 @@ public class TestUI implements ActionListener{
 			if(aFile.exists()){
 				aFile.delete();
 			}
-			SDGenerator.Generate(currentHypergraph, aNode, saveFile);
+			
+			try {
+				SDGenerator.Generate(currentHypergraph, aNode, saveFile);
+			} catch (Exception e1) {
+				// TODO Auto-generated catch block				
+				e1.printStackTrace();
+			}
 		}
 	}
 

@@ -73,7 +73,7 @@ public class SDGenerator {
 	public static void Generate(
 			Hypergraph<MethodNodeAnnot, EdgeAnnotation> hg,
 			GroupableHyperNode<MethodNodeAnnot, EdgeAnnotation> aGNode,
-			String SaveFile){
+			String SaveFile) throws Exception{
 
 		SequenceDiagram sd = new SequenceDiagram();
 		RecFillNodeDiagram(hg,aGNode, sd);
@@ -85,7 +85,7 @@ public class SDGenerator {
 			Hypergraph<MethodNodeAnnot, EdgeAnnotation> hg,
 			GroupableHyperNode<MethodNodeAnnot, EdgeAnnotation> aGNode,
 			GroupableStmt aStmt,
-			SequenceDiagram sd)
+			SequenceDiagram sd) throws Exception
 	{
 		if(aStmt == null){return;}
 		if(aStmt.theTrueBranch != null){
@@ -121,8 +121,9 @@ public class SDGenerator {
 			}
 			else
 			{
-				//This needs improvement as well
-				//this is a call to an outer object
+				//throw new Exception("Incomplete Graph - This should not happen");
+				//this should not happen as hypergraph edge 
+				//filling should eliminate possibility
 			}
 		}
 		GroupableHyperEdge<EdgeAnnotation> gEdge = null;
@@ -133,7 +134,7 @@ public class SDGenerator {
 	private static void RecFillNodeDiagram(
 			Hypergraph<MethodNodeAnnot, EdgeAnnotation> hg,
 			GroupableHyperNode<MethodNodeAnnot, EdgeAnnotation> aGNode,
-			SequenceDiagram sd){
+			SequenceDiagram sd) throws Exception{
 		if(aGNode == null){return;}
 		GroupableStmt aStmt = aGNode.data.theStmts;
 		RecFillStmtDiagram(hg, aGNode, aStmt, sd);

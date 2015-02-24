@@ -26,6 +26,7 @@ import soot.jimple.InvokeExpr;
 import soot.jimple.InvokeStmt;
 import soot.jimple.Stmt;
 import soot.jimple.internal.AbstractStmt;
+import soot.jimple.internal.JAssignStmt;
 import soot.jimple.internal.JGotoStmt;
 import soot.jimple.internal.JIfStmt;
 import soot.shimple.Shimple;
@@ -237,9 +238,18 @@ public class Analyzer {
 			GroupableHyperNode<MethodNodeAnnot, EdgeAnnotation> sourceNode, 
 			Hypergraph<MethodNodeAnnot, EdgeAnnotation> hg){
 		if(aStmt.theStmt.containsInvokeExpr()){
-			InvokeStmt anInvoke = (InvokeStmt)aStmt.theStmt;
+			InvokeExpr ie = null;
+			if(aStmt.theStmt instanceof JAssignStmt){
+				JAssignStmt assignStmt = (JAssignStmt)aStmt.theStmt;
+				ie = assignStmt.getInvokeExpr();
+				
+			}
+			else{
+				InvokeStmt anInvoke = (InvokeStmt)aStmt.theStmt;
 
-			InvokeExpr ie = anInvoke.getInvokeExpr();
+				ie = anInvoke.getInvokeExpr();
+			}
+			
 			SootMethod sm = ie.getMethod();
 			String methodName = sm.getName();
 			SootClass sc = sm.getDeclaringClass();
@@ -280,7 +290,8 @@ public class Analyzer {
 			System.out.println("Not possible to analyze method: " + sm.getName() + " Error: " + ex.getMessage());
 		}
 		if(pcu != null){
-			BranchableStmt bs = ReduceToInvokesAndBranches(MakeBranchableStmts(pcu));
+			BranchableStmt bs = MakeBranchableStmts(pcu);
+			//bs = ReduceToInvokesAndBranches(bs);
 			GroupableStmt gs = GroupStmts(bs, new ArrayList<BranchableStmt>());
 			MethodNodeAnnot theAnnot = new MethodNodeAnnot(sm, gs);
 			return theAnnot;
@@ -304,6 +315,11 @@ public class Analyzer {
 			newDetect.add(aBStmt);
 			
 			GroupableStmt trueBranch = GroupStmts(tempTrue, newDetect);
+			
+			newDetect = new ArrayList<BranchableStmt>();
+			newDetect.addAll(loopDetect);
+			newDetect.add(aBStmt);
+			
 			GroupableStmt falseBranch = GroupStmts(tempFalse, newDetect);
 			
 			if(trueBranch.equals(falseBranch)){
@@ -314,7 +330,7 @@ public class Analyzer {
 				
 				if(trueBranch.EndsLoop && trueBranch.theStmt.equals(aBStmt.theStmt)){
 					GroupableStmt toReturn = new GroupableStmt(false, aBStmt.theStmt);
-					toReturn.theTrueBranch = trueBranch;
+					toReturn.theTrueBranch = tempTrue.theEquiv;
 					toReturn.theNext = falseBranch;
 					toReturn.StartsLoop = true;
 					aBStmt.theEquiv = toReturn;
@@ -324,7 +340,7 @@ public class Analyzer {
 				if(trueBranch.theNext != null && trueBranch.theNext.equals(falseBranch)){
 					trueBranch.theNext = null;
 					GroupableStmt toReturn = new GroupableStmt(false, aBStmt.theStmt);
-					toReturn.theTrueBranch = trueBranch;
+					toReturn.theTrueBranch = tempTrue.theEquiv;
 					toReturn.theNext = falseBranch;
 					aBStmt.theEquiv = toReturn;
 					return toReturn;
@@ -339,7 +355,7 @@ public class Analyzer {
 				if(falseBranch.EndsLoop && falseBranch.theStmt.equals(aBStmt.theStmt)){
 
 					GroupableStmt toReturn = new GroupableStmt(false, aBStmt.theStmt);
-					toReturn.theFalseBranch = falseBranch;
+					toReturn.theFalseBranch = tempFalse.theEquiv;
 					toReturn.theNext = trueBranch;
 					toReturn.StartsLoop = true;
 					aBStmt.theEquiv = toReturn;
@@ -349,7 +365,7 @@ public class Analyzer {
 				if(falseBranch.theNext != null && falseBranch.theNext.equals(trueBranch)){
 					falseBranch.theNext = null;
 					GroupableStmt toReturn = new GroupableStmt(false, aBStmt.theStmt);
-					toReturn.theFalseBranch = falseBranch;
+					toReturn.theFalseBranch = tempFalse.theEquiv;
 					toReturn.theNext = trueBranch;
 					aBStmt.theEquiv = toReturn;
 					return toReturn;
@@ -374,8 +390,8 @@ public class Analyzer {
 			}
 			
 			GroupableStmt toReturn = new GroupableStmt(false, aBStmt.theStmt);
-			toReturn.theFalseBranch = falseBranch;
-			toReturn.theTrueBranch = trueBranch;
+			toReturn.theFalseBranch = tempFalse.theEquiv;
+			toReturn.theTrueBranch = tempTrue.theEquiv;
 			toReturn.theNext = common;
 			aBStmt.theEquiv = toReturn;
 			return toReturn;
