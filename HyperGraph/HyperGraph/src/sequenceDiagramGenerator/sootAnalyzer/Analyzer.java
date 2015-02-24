@@ -11,6 +11,7 @@ import sequenceDiagramGenerator.MethodNodeAnnot;
 import sequenceDiagramGenerator.SourceCodeType;
 import sequenceDiagramGenerator.hypergraph.EdgeAnnotation;
 import sequenceDiagramGenerator.hypergraph.GroupableHyperNode;
+import sequenceDiagramGenerator.hypergraph.GroupableHypergraph;
 import sequenceDiagramGenerator.hypergraph.HyperNode;
 import sequenceDiagramGenerator.hypergraph.Hypergraph;
 import sequenceDiagramGenerator.hypergraph.GroupableHyperNodeFactory;
@@ -99,7 +100,7 @@ public class Analyzer {
 			}
 		}
 
-		Hypergraph<MethodNodeAnnot, EdgeAnnotation> toReturn = new Hypergraph<MethodNodeAnnot, EdgeAnnotation>();
+		GroupableHypergraph<MethodNodeAnnot, EdgeAnnotation> toReturn = new GroupableHypergraph<MethodNodeAnnot, EdgeAnnotation>();
 		
 		//the addition of this line is probably evidence of paranoia on my part.
 		//but it took me a long time to figure out these magic words.
@@ -134,7 +135,7 @@ public class Analyzer {
 			}
 		}
 		
-		Hypergraph<MethodNodeAnnot, EdgeAnnotation> toReturn = new Hypergraph<MethodNodeAnnot, EdgeAnnotation>();
+		GroupableHypergraph<MethodNodeAnnot, EdgeAnnotation> toReturn = new GroupableHypergraph<MethodNodeAnnot, EdgeAnnotation>();
 		
 		//the addition of this line is probably evidence of paranoia on my part.
 		//but it took me a long time to figure out these magic words.
@@ -184,7 +185,7 @@ public class Analyzer {
 			}
 		}
 		
-		Hypergraph<MethodNodeAnnot, EdgeAnnotation> toReturn = new Hypergraph<MethodNodeAnnot, EdgeAnnotation>();
+		GroupableHypergraph<MethodNodeAnnot, EdgeAnnotation> toReturn = new GroupableHypergraph<MethodNodeAnnot, EdgeAnnotation>();
 		
 		//the addition of this line is probably evidence of paranoia on my part.
 		//but it took me a long time to figure out these magic words.
@@ -224,7 +225,7 @@ public class Analyzer {
 	}
 	
 	private static void AddEdgesToHypergraph(
-			Hypergraph<MethodNodeAnnot, EdgeAnnotation> hg){
+			GroupableHypergraph<MethodNodeAnnot, EdgeAnnotation> hg){
 		List<HyperNode<MethodNodeAnnot, EdgeAnnotation>> lNodes = hg.GetNodes();
 		for(int i = 0; i < lNodes.size(); i++){
 			GroupableStmt aStmt = lNodes.get(i).data.theStmts;
@@ -236,7 +237,7 @@ public class Analyzer {
 	private static void AddRecStmts(
 			GroupableStmt aStmt, 
 			GroupableHyperNode<MethodNodeAnnot, EdgeAnnotation> sourceNode, 
-			Hypergraph<MethodNodeAnnot, EdgeAnnotation> hg){
+			GroupableHypergraph<MethodNodeAnnot, EdgeAnnotation> hg){
 		if(aStmt.theStmt.containsInvokeExpr()){
 			InvokeExpr ie = null;
 			if(aStmt.theStmt instanceof JAssignStmt){
@@ -265,7 +266,7 @@ public class Analyzer {
 			List<MethodNodeAnnot> ante = new ArrayList<MethodNodeAnnot>();
 			ante.add(sourceNode.data);
 			EdgeAnnotation ea = new EdgeAnnotation();
-			hg.AddEdge(ante, tarNode.data, ea);
+			hg.AddGroupableEdge(ante, tarNode.data, ea, aStmt);
 		}
 		if(aStmt.theTrueBranch != null){
 			AddRecStmts(aStmt.theTrueBranch, sourceNode, hg);
@@ -405,6 +406,9 @@ public class Analyzer {
 		}
 	}
 	
+	//The method ReduceToInvokesAndBranches has bugs
+	//As it is non-crucial i have commented out references to it
+	//but it remains as it may be fixable and viable at some point.
 	private static BranchableStmt ReduceToInvokesAndBranches(BranchableStmt aStmt){
 		aStmt.seen++;
 		if(aStmt.seen == 2){

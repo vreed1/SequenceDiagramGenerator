@@ -12,25 +12,25 @@ import sequenceDiagramGenerator.pebbler.*;
 public class Hypergraph<T, A>
 {
     // The main graph data structure
-    private List<HyperNode<T, A>> vertices;
+	protected List<HyperNode<T, A>> vertices;
     public List<HyperNode<T,A>> getVertices() { return vertices; }
     public int size() { return vertices.size(); }
 
-    private int edgeCount;
+    protected int edgeCount;
     public int EdgeCount() { return edgeCount; }
     
     private HyperNodeFactory<T,A> theNodeFactory;
     
-    public Hypergraph()
+    public Hypergraph(HyperNodeFactory<T,A> aFactory)
     {
-    	theNodeFactory = new GroupableHyperNodeFactory<T,A>();
+    	theNodeFactory = aFactory;
         vertices = new ArrayList<HyperNode<T, A>>();
         edgeCount = 0;
     }
 
-    public Hypergraph(int capacity)
+    public Hypergraph(int capacity, HyperNodeFactory<T,A> aFactory)
     {
-    	theNodeFactory = new GroupableHyperNodeFactory<T,A>();
+    	theNodeFactory = aFactory;
         vertices = new ArrayList<HyperNode<T, A>>(capacity);
         edgeCount = 0;
     }
@@ -199,7 +199,7 @@ public class Hypergraph<T, A>
     //
     // Convert information to local, integer-based representation
     //
-    private SimpleEntry<List<Integer>, Integer> ConvertToLocal(List<T> antecedent, T consequent) {
+    protected SimpleEntry<List<Integer>, Integer> ConvertToLocal(List<T> antecedent, T consequent) {
         List<Integer> localAnte = new ArrayList<Integer>();
 
         for (T ante : antecedent) {
