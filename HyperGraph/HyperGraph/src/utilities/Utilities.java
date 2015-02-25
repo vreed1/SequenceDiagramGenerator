@@ -11,6 +11,8 @@ import java.util.zip.ZipInputStream;
 
 public final class Utilities {
     private Utilities() {}
+    
+    private static String OS = System.getProperty("os.name").toLowerCase();
 
     //In GeoTutor, the pebbler accounted for restrictions on theorems and axioms to be used
     //Not sure if there would be any restrictions for sequence diagram generation, so using a placeholder for now
@@ -33,6 +35,27 @@ public final class Utilities {
         for (T o : objList) {
             AddUnique(list, o);
         }
+    }
+    
+    public static String GetClassPathDelim(){
+    	if(isWindows()){
+    		return ";";
+    	}
+    	return ":";
+    }
+    
+    //Brian got this method of detecting os from:
+    //http://stackoverflow.com/questions/14288185/detecting-windows-or-linux
+    public static boolean isWindows(){
+    	return (OS.indexOf("win") >= 0);
+    }
+    
+    public static boolean isUnix(){
+    	return (OS.indexOf("nix") >= 0 || OS.indexOf("nux") >= 0|| OS.indexOf("aix") > 0 );
+    }
+    
+    public static boolean isMac(){
+    	return (OS.indexOf("mac") >= 0);
     }
     
     public static List<String> ListClassesInJar(File aJar){

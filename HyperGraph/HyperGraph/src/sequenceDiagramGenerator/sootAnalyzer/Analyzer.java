@@ -34,6 +34,7 @@ import soot.shimple.Shimple;
 import soot.shimple.ShimpleBody;
 import soot.util.Chain;
 import soot.Type;
+import utilities.Utilities;
 
 public class Analyzer {
 	
@@ -96,7 +97,7 @@ public class Analyzer {
 
 		if(AppendtoClassPath != null ){
 			if(!AppendtoClassPath.isEmpty()){
-				setSootClassPath(getSootClassPath() + ":" + AppendtoClassPath);
+				setSootClassPath(getSootClassPath() +Utilities.GetClassPathDelim()  + AppendtoClassPath);
 			}
 		}
 

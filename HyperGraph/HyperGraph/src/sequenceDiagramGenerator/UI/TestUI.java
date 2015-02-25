@@ -118,7 +118,7 @@ public class TestUI implements ActionListener{
 						listClasses.addAll(Utilities.ListClassesInJar(jars[i]));
 						String parentDir;
 							parentDir = jars[i].getCanonicalPath();
-						ClassPath = ClassPath + ":" + parentDir;
+						ClassPath = ClassPath + Utilities.GetClassPathDelim() + parentDir;
 					}
 					currentHypergraph = Analyzer.AnalyzeSpecificClasses(listClasses, ClassPath);
 					PopulateCmb();

@@ -72,7 +72,7 @@ public class ControlPanel extends JPanel {
 		gbc_tfClassPath.gridx = 1;
 		gbc_tfClassPath.gridy = 0;
 		subPanelTwo.add(tfClassPath, gbc_tfClassPath);
-		tfClassPath.setText("/home/brian/git/SequenceDiagramGenerator/ControlFlowGraphTest/bin");
+		tfClassPath.setText("");
 		tfClassPath.setColumns(10);
 		
 		JLabel lblOutputfile = new JLabel("OutputFile");
@@ -84,7 +84,7 @@ public class ControlPanel extends JPanel {
 		subPanelTwo.add(lblOutputfile, gbc_lblOutputfile);
 		
 		tfSaveFile = new JTextField();
-		tfSaveFile.setText("/home/brian/Desktop/out.pdf");
+		tfSaveFile.setText("");
 		GridBagConstraints gbc_tfSaveFile = new GridBagConstraints();
 		gbc_tfSaveFile.insets = new Insets(0, 0, 5, 5);
 		gbc_tfSaveFile.fill = GridBagConstraints.HORIZONTAL;
@@ -126,7 +126,7 @@ public class ControlPanel extends JPanel {
 		gbc_tfClassDir.gridx = 1;
 		gbc_tfClassDir.gridy = 4;
 		subPanelTwo.add(tfClassDir, gbc_tfClassDir);
-		tfClassDir.setText("/home/brian/git/SequenceDiagramGenerator/ControlFlowGraphTest/bin/ToBeAnalyzed");
+		tfClassDir.setText("");
 		tfClassDir.setColumns(10);
 				
 				JLabel lblAppclass = new JLabel("MainClass");
