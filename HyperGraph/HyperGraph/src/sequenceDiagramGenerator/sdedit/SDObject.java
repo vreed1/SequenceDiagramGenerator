@@ -7,7 +7,7 @@ import soot.SootClass;
 
 public class SDObject
 {
-    private String name;
+    public String name;
     private String type;
     private String label;
     private List<ObjectFlag> flags;
@@ -51,18 +51,35 @@ public class SDObject
 		return name;
 	}
 	
+	@Override
+	public boolean equals(Object obj){
+		if(obj instanceof SDObject){
+			SDObject other = (SDObject)obj;
+			if(!other.name.equals(name)){
+				return false;
+			}
+			if(!other.type.equals(type)){
+				return false;
+			}
+			return true;
+		}
+		return false;
+	}
+	
 	public SDObject(SootClass aClass){
 		name = GetUniqueName();
 		type = aClass.getName();
+        this.flags = new ArrayList<ObjectFlag>();
 	}
 	
 	public SDObject(SootClass aClass, String instanceName){
 		name = instanceName;
 		type = aClass.getName();
+        this.flags = new ArrayList<ObjectFlag>();
 	}
 	
 	private static int uniqueName = 0;
-	private static String GetUniqueName(){
+	public static String GetUniqueName(){
 		uniqueName++;
 		return String.valueOf(uniqueName);
 	}

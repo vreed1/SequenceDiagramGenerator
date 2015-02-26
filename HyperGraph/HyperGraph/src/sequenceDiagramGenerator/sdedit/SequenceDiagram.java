@@ -39,7 +39,7 @@ public class SequenceDiagram {
     
     public void AddObject(SDObject obj) {
     	for(SDObject oldObject : objects){
-    		if(oldObject.GetName().equals(obj.GetName())){
+    		if(oldObject.equals(obj)){
     			return;
     		}
     	}
@@ -50,8 +50,21 @@ public class SequenceDiagram {
         messages.add(msg);
     }
     
+    private void NameSafetyCheck(){
+    	List<String> listUsedNames = new ArrayList<String>();
+    	for(SDObject sdo : objects){
+    		int i = 1;
+    		String baseName = sdo.GetName();
+    		while(listUsedNames.contains(sdo.GetName())){
+    			sdo.name = baseName + i;
+    			i++;
+    		}
+    		listUsedNames.add(sdo.GetName());
+    	}
+    }
     
-    public void CreatePDF(String outFile) {       
+    public void CreatePDF(String outFile) {    
+    	NameSafetyCheck();
         InputStream in = new ByteArrayInputStream(this.toString().getBytes());
         OutputStream out = null;
         try {

@@ -42,15 +42,15 @@ public class DiagramMessageAggregator
 	//
 	// Acquire the message for this particular edge / Message
 	//
-	public SDMessage GenerateSDEditMessage()
-    {
-		String callee = "";
-		if(this.sources.size() > 0){
-			callee = this.sources.get(0).getObjectName();
-		}
-		                     // caller              // message    // options : TO BE Completed
-        return new SDMessage(target.getObjectName(), this.message, ConstructMessage(callee, "a", "", "c"));
-    }
+//	public SDMessage GenerateSDEditMessage()
+//    {
+//		String callee = "";
+//		if(this.sources.size() > 0){
+//			callee = this.sources.get(0).getObjectName();
+//		}
+//		                     // caller              // message    // options : TO BE Completed
+//        return new SDMessage(target.getObjectName(), this.message, ConstructMessage(callee, "a", "", "c"));
+//    }
     
     protected Dictionary<MessageOpt, String> ConstructMessage(String callee, String answer, String specifier, String mnemonic)
     {    
