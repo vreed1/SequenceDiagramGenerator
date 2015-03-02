@@ -38,6 +38,14 @@ import utilities.Utilities;
 
 public class Analyzer {
 	
+	//Many methods here are helper methods designed to 
+	//work around different ways of specifying classes
+	//to be analyzed.
+	
+	//The meat of the work is in:
+	//AddClassToHypergraph
+	//AddEdgesToHypergraph
+	
 	//The soot class path is the class path that soot can look through
 	//when you give it a class or method to analyze.  If you want to analyze
 	//code outside this built project, you should set this.
@@ -54,7 +62,11 @@ public class Analyzer {
 		Scene.v().setSootClassPath(val);
 	}
 	
-	public static Hypergraph<MethodNodeAnnot, EdgeAnnotation> AnalyzeSpecificClasses(
+	
+	//one of two possible entry points for hypergraph generation
+	//this is called if the user provides a list of .class files
+	//or a directory to search.
+	public static Hypergraph<MethodNodeAnnot, EdgeAnnotation> AnalyzeFromSpecificClasses(
 			String ApplicationClassName,
 			String ClassDirectory,
 			String AppendToClassPath){
@@ -91,7 +103,10 @@ public class Analyzer {
 		}
 	}
 
-	public static Hypergraph<MethodNodeAnnot, EdgeAnnotation> AnalyzeSpecificClasses(
+	//uninteresting, except this is the entry point from UI
+	//for JARs.  AddClassToHypergraph and AddEdgeToHypergraph are 
+	//common between all entries.
+	public static Hypergraph<MethodNodeAnnot, EdgeAnnotation> AnalyzeFromJAR(
 			List<String> listClassNames,
 			String AppendtoClassPath){
 
@@ -103,18 +118,15 @@ public class Analyzer {
 
 		GroupableHypergraph<MethodNodeAnnot, EdgeAnnotation> toReturn = new GroupableHypergraph<MethodNodeAnnot, EdgeAnnotation>();
 		
-		//the addition of this line is probably evidence of paranoia on my part.
-		//but it took me a long time to figure out these magic words.
+		//The following statement makes soot/jimple 
+		//preserve original variable names
+		//it is crucial to leave this in, even if it seems like 
+		//gibberish
 		soot.PhaseOptions.v().setPhaseOptionIfUnset("jb", "use-original-names");
 		
 		for(int i= 0; i < listClassNames.size(); i++){
 			SootClass c = Scene.v().loadClassAndSupport(listClassNames.get(i));
-			
-//			List<SootMethod> listSM = c.getMethods();
-//			for(int j = 0; j < listSM.size(); j++){
-//				AnalyzeMethod(listSM.get(j));
-//			}
-			
+		
 			AddClassToHypergraph(
 					toReturn,
 					c);
@@ -125,6 +137,7 @@ public class Analyzer {
 		
 	}
 	
+	//also calls AddClasstoHyperGraph and AddEdgesToHypergraph.
 	public static Hypergraph<MethodNodeAnnot, EdgeAnnotation> AnalyzeSpecificClasses(
 			String ApplicationClassName,
 			List<String> otherClassNames,
@@ -138,8 +151,10 @@ public class Analyzer {
 		
 		GroupableHypergraph<MethodNodeAnnot, EdgeAnnotation> toReturn = new GroupableHypergraph<MethodNodeAnnot, EdgeAnnotation>();
 		
-		//the addition of this line is probably evidence of paranoia on my part.
-		//but it took me a long time to figure out these magic words.
+		//The following statement makes soot/jimple 
+		//preserve original variable names
+		//it is crucial to leave this in, even if it seems like 
+		//gibberish
 		soot.PhaseOptions.v().setPhaseOptionIfUnset("jb", "use-original-names");
 		
 		SootClass c = Scene.v().loadClassAndSupport(ApplicationClassName);
@@ -164,67 +179,10 @@ public class Analyzer {
 		return toReturn;
 	}
 	
-	//The idea here is to take a Class to let soot load, and then grab as much as we can.
-	//Loading the class and support will load other classes that are relied upon.
-	//Any class that is loaded will be scanned and put in the hypergraph.
-	//other approaches are possible, including a trace of called methods
-	//I (Brian) figured we could just go back later and trim out if this 
-	//is pulling too much.
-	//For best results, use the class with the static void main call
-	//that will necessarily pull in all dependencies of the program that
-	//are accessible given the defined class path at call time.
-	//This doesn't use any Shimple functionality, because all we care about is types
-	//and Shimple isn't invoked by soot analysis until we start pulling
-	//method bodies.
-	public static Hypergraph<MethodNodeAnnot, EdgeAnnotation> AnalyzeAllReachableClasses(
-			String FromClassName,
-			String AppendToClassPath){
-
-		if(AppendToClassPath != null ){
-			if(!AppendToClassPath.isEmpty()){
-				setSootClassPath(getSootClassPath() + ":" + AppendToClassPath);
-			}
-		}
-		
-		GroupableHypergraph<MethodNodeAnnot, EdgeAnnotation> toReturn = new GroupableHypergraph<MethodNodeAnnot, EdgeAnnotation>();
-		
-		//the addition of this line is probably evidence of paranoia on my part.
-		//but it took me a long time to figure out these magic words.
-		soot.PhaseOptions.v().setPhaseOptionIfUnset("jb", "use-original-names");
-		
-		SootClass c = Scene.v().loadClassAndSupport(FromClassName);
-
-		c.setApplicationClass();
-		Chain<SootClass> chainClasses = Scene.v().getClasses();
-		
-		Iterator<SootClass> iSootClasses = chainClasses.iterator();
-		
-		while(iSootClasses.hasNext()){
-			SootClass aClass = iSootClasses.next();
-			
-			AddClassToHypergraph(
-					toReturn,
-					aClass);
-		}
-		
-		return toReturn;
-	}
-	
-	public static void AnalyzeMethod(SootMethod sm){
-		try{
-			Body b = sm.retrieveActiveBody();
-			ShimpleBody sb = Shimple.v().newBody(b);
-			PatchingChain<Unit> pcu = sb.getUnits();
-			Unit u = pcu.getFirst();
-			System.out.println("---------");
-			AnalyzePC(pcu, u, new ArrayList<Unit>());
-			System.out.println("---------");
-		}
-		catch(java.lang.RuntimeException ex){
-			System.out.println(ex.getMessage());
-		}
-	}
-	
+	//traverses each node in the hypergraph,
+	//and then calls methods to traverse each stmt
+	//in the node to find invoke statements
+	//after which we can add edges for those statements.
 	private static void AddEdgesToHypergraph(
 			GroupableHypergraph<MethodNodeAnnot, EdgeAnnotation> hg){
 		List<HyperNode<MethodNodeAnnot, EdgeAnnotation>> lNodes = hg.GetNodes();
@@ -235,6 +193,9 @@ public class Analyzer {
 		}
 	}
 	
+	//checks aStmt.theStmt to see if it contains an invoke expression.
+	//if it does, then build an edge and add that edge to the hypergraph.
+	//then traverse any possible child statements and do the same thing.
 	private static void AddRecStmts(
 			GroupableStmt aStmt, 
 			GroupableHyperNode<MethodNodeAnnot, EdgeAnnotation> sourceNode, 
@@ -280,6 +241,11 @@ public class Analyzer {
 		}
 	}
 	
+	//Builds the method annotation which we will traverse
+	//internal to each node in the graph.
+	//This method annotation must be constructed from
+	//the PatchingChain of statements available in
+	//the body of the sootmethod.
 	public static MethodNodeAnnot BuildAnnotFromMethod(
 			SootMethod sm){
 		PatchingChain<Unit> pcu = null;
@@ -292,155 +258,54 @@ public class Analyzer {
 			System.out.println("Not possible to analyze method: " + sm.getName() + " Error: " + ex.getMessage());
 		}
 		if(pcu != null){
+			//First we create the branching representation
+			//which transforms the conceptual statement graph
+			//from a connected directional graph with potential backwards 
+			//edges into a tree in which even loops simply terminate
+			//with a marker.  The branchablestmt representation is a tree
+			//If/Else branches, for example, do not "reconnect" they simply
+			//contain identical objects after a certain point
+			//(if the function continues after the if else)
 			BranchableStmt bs = MakeBranchableStmts(pcu);
+			//I have removed the reduction step
+			//it was buggy.  We may reinclude a reduction step
+			//but it would probably be easier to rewrite it
+			//and do it after creating the GrouapbleStmt representation.
 			//bs = ReduceToInvokesAndBranches(bs);
+			
+			//The GroupableStmt representation takes the tree representation
+			//and finds groups in it.
+			//It essentially reconnects branches with identical suffixes,
+			//and then places the distinct parts of that branch into groups.
+			//This is difficult to describe without illustration.
+			//While BranchableStmt simply has two possible child BranchableStmts
+			//Groupable has three.  A True GroupableStmt and a False GroupableStmt
+			//which are both groups, and a Next GroupableStmt which is the next 
+			//statement on the same level. 
 			GroupableStmt gs = GroupStmts(bs, new ArrayList<BranchableStmt>());
 			MethodNodeAnnot theAnnot = new MethodNodeAnnot(sm, gs);
 			return theAnnot;
 		}
+		//note that even if we cannot analyze the method
+		//we still return a node for it.  Traversal will simply
+		//return from such a node.
 		return new MethodNodeAnnot(sm, null);
 	}
-	
-	private static GroupableStmt GroupStmts(BranchableStmt aBStmt, List<BranchableStmt> loopDetect){
-		if(aBStmt == null){
-			return null;
-		}
-		else if(loopDetect.contains(aBStmt)){
-			return new GroupableStmt(true, aBStmt.theStmt);
-		}
-		else if(aBStmt.theStmt instanceof JIfStmt){
-			BranchableStmt tempTrue = aBStmt.theNext;
-			BranchableStmt tempFalse = aBStmt.theElse;
-			
-			List<BranchableStmt> newDetect = new ArrayList<BranchableStmt>();
-			newDetect.addAll(loopDetect);
-			newDetect.add(aBStmt);
-			
-			GroupableStmt trueBranch = GroupStmts(tempTrue, newDetect);
-			
-			newDetect = new ArrayList<BranchableStmt>();
-			newDetect.addAll(loopDetect);
-			newDetect.add(aBStmt);
-			
-			GroupableStmt falseBranch = GroupStmts(tempFalse, newDetect);
-			
-			if(trueBranch.equals(falseBranch)){
-				return trueBranch;
-			}
-			
-			while(trueBranch != null){
-				
-				if(trueBranch.EndsLoop && trueBranch.theStmt.equals(aBStmt.theStmt)){
-					GroupableStmt toReturn = new GroupableStmt(false, aBStmt.theStmt);
-					toReturn.theTrueBranch = tempTrue.theEquiv;
-					toReturn.theNext = falseBranch;
-					toReturn.StartsLoop = true;
-					aBStmt.theEquiv = toReturn;
-					return toReturn;
-				}
-				
-				if(trueBranch.theNext != null && trueBranch.theNext.equals(falseBranch)){
-					trueBranch.theNext = null;
-					GroupableStmt toReturn = new GroupableStmt(false, aBStmt.theStmt);
-					toReturn.theTrueBranch = tempTrue.theEquiv;
-					toReturn.theNext = falseBranch;
-					aBStmt.theEquiv = toReturn;
-					return toReturn;
-				}
-				trueBranch = trueBranch.theNext;
-			}
-			
-			trueBranch = tempTrue.theEquiv;
-			
-			while(falseBranch != null){
 
-				if(falseBranch.EndsLoop && falseBranch.theStmt.equals(aBStmt.theStmt)){
-
-					GroupableStmt toReturn = new GroupableStmt(false, aBStmt.theStmt);
-					toReturn.theFalseBranch = tempFalse.theEquiv;
-					toReturn.theNext = trueBranch;
-					toReturn.StartsLoop = true;
-					aBStmt.theEquiv = toReturn;
-					return toReturn;
-				}
-				
-				if(falseBranch.theNext != null && falseBranch.theNext.equals(trueBranch)){
-					falseBranch.theNext = null;
-					GroupableStmt toReturn = new GroupableStmt(false, aBStmt.theStmt);
-					toReturn.theFalseBranch = tempFalse.theEquiv;
-					toReturn.theNext = trueBranch;
-					aBStmt.theEquiv = toReturn;
-					return toReturn;
-				}
-				falseBranch = falseBranch.theNext;
-			}
-			
-			GroupableStmt common = null;
-			
-			while(trueBranch != null){
-				falseBranch = tempFalse.theEquiv;
-				while(falseBranch != null){
-					if(trueBranch.theNext != null && trueBranch.theNext.equals(falseBranch.theNext)){
-						common = trueBranch.theNext;
-						trueBranch.theNext = null;
-						falseBranch.theNext = null;
-					}
-					
-					falseBranch = falseBranch.theNext;
-				}
-				trueBranch = trueBranch.theNext;
-			}
-			
-			GroupableStmt toReturn = new GroupableStmt(false, aBStmt.theStmt);
-			toReturn.theFalseBranch = tempFalse.theEquiv;
-			toReturn.theTrueBranch = tempTrue.theEquiv;
-			toReturn.theNext = common;
-			aBStmt.theEquiv = toReturn;
-			return toReturn;
-			
-		}
-		else{
-			GroupableStmt toReturn = new GroupableStmt(false, aBStmt.theStmt);
-			toReturn.theNext = GroupStmts(aBStmt.theNext, loopDetect);
-			aBStmt.theEquiv = toReturn;
-			return toReturn;
-		}
-	}
-	
-	//The method ReduceToInvokesAndBranches has bugs
-	//As it is non-crucial i have commented out references to it
-	//but it remains as it may be fixable and viable at some point.
-	private static BranchableStmt ReduceToInvokesAndBranches(BranchableStmt aStmt){
-		aStmt.seen++;
-		if(aStmt.seen == 2){
-			return aStmt;
-		}
-		if(aStmt.theStmt.containsInvokeExpr()  || aStmt.theStmt.branches()){
-			if(aStmt.theNext != null)
-			{
-				aStmt.theNext= ReduceToInvokesAndBranches(aStmt.theNext);
-			}
-			if(aStmt.theElse != null){
-				aStmt.theElse = ReduceToInvokesAndBranches(aStmt.theElse);
-			}
-			if(aStmt.theElse == null && aStmt.theNext == null && !aStmt.theStmt.containsInvokeExpr()){
-				return null;
-			}
-			else
-			{
-				return aStmt;
-			}
-		}
-		if(aStmt.theNext!= null){
-			return ReduceToInvokesAndBranches(aStmt.theNext);
-		}
-		return null;
-	}
-
+	//creates the branching representation from soot's patchingchain
+	//representation.
+	//this step creates a tree from a potentially arbitrary
+	//directed graph.
+	//if there is a loop it will simply be fully traversed in the tree
+	//and the leaf will be marked with a boolean to indicate that 
+	//it loops.
 	private static BranchableStmt MakeBranchableStmts(
 			PatchingChain<Unit> pcu){
 		Iterator<Unit> i = pcu.iterator();
 		List<BranchableStmt> listStmt = new ArrayList<BranchableStmt>();
+		//bit lazy, but i prefer a list representation to
+		//a iterator representation because i want to be able to look
+		//at objects by index.
 		while(i.hasNext()){
 			Unit u = i.next();
 			if(!(u instanceof soot.jimple.internal.AbstractStmt))
@@ -456,6 +321,13 @@ public class Analyzer {
 			
 		}
 		
+		//now that we have a list of branchable statements
+		//we need to actually connect the nexts, and elses.
+		//technically, JIfStmts do fallthrough but we handle
+		//that fact in their own if block.
+		//JGotoStmts do not fall through.  The fallthrough
+		//check may be pointless except for the final statement
+		//in the list.
 		for(int j = 0; j < listStmt.size(); j++){
 			if(listStmt.get(j).theStmt instanceof JIfStmt){
 				JIfStmt ifStmt = (JIfStmt) listStmt.get(j).theStmt;
@@ -482,72 +354,173 @@ public class Analyzer {
 				}
 			}
 		}
+		//return the first statement which points to the root
+		//of the tree, or the entire function.
 		return listStmt.get(0);
 	}
 	
-	private static void AnalyzePC(PatchingChain<Unit> pcu, Unit u, List<Unit> seen){
-		if(seen.contains(u)){
-			return;
+	//GroupStmts Takes the tree representation of the function
+	//and groups things into blocks.
+	//this function could probably be more efficient.
+	//it essentially traverses branches, and finds common suffixes 
+	//for those branches, and assumes that that is the end of the branch.
+	private static GroupableStmt GroupStmts(BranchableStmt aBStmt, List<BranchableStmt> loopDetect){
+		if(aBStmt == null){
+			//if we terminate in a normal leaf
+			return null;
+		}
+		else if(loopDetect.contains(aBStmt)){
+			//if we've already seen this branchable statement
+			//we can terminate and return.
+			//this is because we've correctly identified every preceding statement
+			//and this statement's branch will be resolved when
+			//we revisit it where it was seen earlier in the recursion
+			return new GroupableStmt(true, aBStmt.theStmt);
+		}
+		else if(aBStmt.theStmt instanceof JIfStmt){
+			//if statements are the fundamental object we're concerned with
+			//because if statements are the only things with two unique
+			//destinations.
+			BranchableStmt tempTrue = aBStmt.theNext;
+			BranchableStmt tempFalse = aBStmt.theElse;
+			
+			//first we recursively solve each branch independently.
+			//they may have their own sub-branches.
+			List<BranchableStmt> newDetect = new ArrayList<BranchableStmt>();
+			newDetect.addAll(loopDetect);
+			newDetect.add(aBStmt);
+			
+			GroupableStmt trueBranch = GroupStmts(tempTrue, newDetect);
+			
+			newDetect = new ArrayList<BranchableStmt>();
+			newDetect.addAll(loopDetect);
+			newDetect.add(aBStmt);
+			
+			GroupableStmt falseBranch = GroupStmts(tempFalse, newDetect);
+			
+			//now we have each branch in groupablestmt form.
+			
+			//if the branches are equivalent we can simply 
+			//return the true branch as the only thing.
+			//i don't think this is actually something that
+			//will occur, but it essentially annihilates the if statement
+			if(trueBranch.equals(falseBranch)){
+				return trueBranch;
 			}
-		System.out.println(u.toString());
-		seen.add(u);
-		
-		if(!(u instanceof soot.jimple.internal.AbstractStmt))
-		{
-			//I don't believe this is possible, which reduces the amount of 
-			//the subtree we have to deal with in practice.
-			throw new java.lang.RuntimeException("Unit is not a subclass of soot.jimple.internal.AbstractStmt");
+			
+			//now we're checking if the false branch is a complete
+			//suffix of the true branch, i.e. there is no else 
+			//this would mean that there is an if block or loop block only.
+			while(trueBranch != null){
+				
+				//if we get to a point in the true branch that ends the loop.
+				if(trueBranch.EndsLoop && trueBranch.theStmt.equals(aBStmt.theStmt)){
+					GroupableStmt toReturn = new GroupableStmt(false, aBStmt.theStmt);
+					toReturn.theTrueBranch = tempTrue.theEquiv;
+					toReturn.theNext = falseBranch;
+					toReturn.StartsLoop = true;
+					aBStmt.theEquiv = toReturn;
+					return toReturn;
+				}
+				
+				//if we get to a point after which the false branch is equal
+				//to the "rest" of the true branch, if with no else.
+				//then we have a true branch and a next branch
+				//but no real false branch.
+				if(trueBranch.theNext != null && trueBranch.theNext.equals(falseBranch)){
+					trueBranch.theNext = null;
+					GroupableStmt toReturn = new GroupableStmt(false, aBStmt.theStmt);
+					toReturn.theTrueBranch = tempTrue.theEquiv;
+					toReturn.theNext = falseBranch;
+					aBStmt.theEquiv = toReturn;
+					return toReturn;
+				}
+				trueBranch = trueBranch.theNext;
+			}
+			
+			trueBranch = tempTrue.theEquiv;
+			
+			//now we're checking the opposite case, 
+			//the true branch is a suffix of the false branch.
+			//this means we have an else case but an empty if
+			//this may not be very pretty coding but it is
+			//at least possible especially w/ bytecode.
+			while(falseBranch != null){
+
+				if(falseBranch.EndsLoop && falseBranch.theStmt.equals(aBStmt.theStmt)){
+
+					GroupableStmt toReturn = new GroupableStmt(false, aBStmt.theStmt);
+					toReturn.theFalseBranch = tempFalse.theEquiv;
+					toReturn.theNext = trueBranch;
+					toReturn.StartsLoop = true;
+					aBStmt.theEquiv = toReturn;
+					return toReturn;
+				}
+				
+				if(falseBranch.theNext != null && falseBranch.theNext.equals(trueBranch)){
+					falseBranch.theNext = null;
+					GroupableStmt toReturn = new GroupableStmt(false, aBStmt.theStmt);
+					toReturn.theFalseBranch = tempFalse.theEquiv;
+					toReturn.theNext = trueBranch;
+					aBStmt.theEquiv = toReturn;
+					return toReturn;
+				}
+				falseBranch = falseBranch.theNext;
+			}
+			
+			//if we get here, it means that both the false
+			//and true branches have unique and meaningful code
+			//and we have to look through both to find a common suffix.
+			GroupableStmt common = null;
+			
+			while(trueBranch != null){
+				falseBranch = tempFalse.theEquiv;
+				while(falseBranch != null){
+					if(trueBranch.theNext != null && trueBranch.theNext.equals(falseBranch.theNext)){
+						//if we find a common suffix, 
+						//we set it equal to common,
+						//and we kill the rest of the 
+						//true and false branches.
+						//now they are grouped as sub groups
+						//under the branch, and we can
+						//also detect the point at which
+						//execution "exits" the branch.
+						//starting at common
+						common = trueBranch.theNext;
+						trueBranch.theNext = null;
+						falseBranch.theNext = null;
+					}
+					
+					falseBranch = falseBranch.theNext;
+				}
+				trueBranch = trueBranch.theNext;
+			}
+			
+			GroupableStmt toReturn = new GroupableStmt(false, aBStmt.theStmt);
+			toReturn.theFalseBranch = tempFalse.theEquiv;
+			toReturn.theTrueBranch = tempTrue.theEquiv;
+			toReturn.theNext = common;
+			aBStmt.theEquiv = toReturn;
+			return toReturn;
+			
 		}
 		else{
-			soot.jimple.internal.AbstractStmt aStmt = (soot.jimple.internal.AbstractStmt)u;
-			if(aStmt.containsInvokeExpr())
-			{
-				InvokeExpr ie = aStmt.getInvokeExpr();
-				SootMethod sm = ie.getMethod();
-				String methodName = sm.getName();
-				SootClass sc = sm.getDeclaringClass();
-				String className = sc.getName();
-						
-				if(ie instanceof soot.jimple.internal.AbstractInvokeExpr){
-					soot.jimple.internal.AbstractInvokeExpr jie = (soot.jimple.internal.AbstractInvokeExpr)ie;
-					if(jie.getArgCount() > 0){
-						ValueBox vb = jie.getArgBox(0);
-						
-					}
-				}
-						
-				try{
-					Body bsub = sm.retrieveActiveBody();
-				}catch(RuntimeException ex){
-					//This may legitimately happen
-					//if the method is a call outside of the 
-					//analyzed code then we don't have 
-					//analysis of it, e.i.:
-					//   Random r = new Random();
-					//   int i = r.nextInt();
-					//we won't be able to retrieve nextInt body.
-				}
-			}
-			if(aStmt.branches()){
-				if((u instanceof JIfStmt))
-				{
-					JIfStmt ifStmt = (JIfStmt)aStmt;
-					//toReturn.append(tabs + "Branching Stmt Below\n");
-					//String s = aStmt.toString();
-					Stmt s = ifStmt.getTarget();
-					
-				}
-				else if(u instanceof JGotoStmt){
-					JGotoStmt gotoStmt = (JGotoStmt)aStmt;
-					Unit tarU = gotoStmt.getTarget();
-				}
-			}
+			//this is simply what we do if we're not looking at an if statement
+			//just wrap it using the new class and proceed to the 
+			//next statement.
+			GroupableStmt toReturn = new GroupableStmt(false, aBStmt.theStmt);
+			toReturn.theNext = GroupStmts(aBStmt.theNext, loopDetect);
+			aBStmt.theEquiv = toReturn;
+			return toReturn;
 		}
-		
-		
-		AnalyzePC(pcu, pcu.getSuccOf(u), seen);
 	}
+
+
+
 	
+	//Adds a class to the hypergraph
+	//by going through every method 
+	//and creating a node for it.
 	private static void AddClassToHypergraph(
 			Hypergraph<MethodNodeAnnot, EdgeAnnotation> hg,
 			SootClass aClass
@@ -561,39 +534,183 @@ public class Analyzer {
 		}
 	}
 	
-	private static void AddClassToHypergraphOLD(
-			Hypergraph<SourceCodeType, EdgeAnnotation> hg,
-			SootClass aClass){
-		soot.Type aType = aClass.getType();
-		SourceCodeType sct = new SourceCodeType();
-		sct.theSootType = aType;
-		hg.AddNode(sct);
-		
-		List<SootMethod> listMethods = aClass.getMethods();
-		for(int i = 0; i < listMethods.size(); i++){
-			SootMethod m = listMethods.get(i);
-			
-			Type methodReturn = m.getReturnType();
-			SourceCodeType sctMethodRet = new SourceCodeType();
-			sctMethodRet.theSootType = methodReturn;
-			hg.AddNode(sctMethodRet);
-			
-			List<SourceCodeType> listArgumentTypes = new ArrayList<SourceCodeType>();
-			
-			listArgumentTypes.add(sct);
-			
-			int argCount = m.getParameterCount();
-			for(int j = 0; j < argCount; j++){
-				Type tParam = m.getParameterType(j);
-				SourceCodeType sctParam = new SourceCodeType();
-				sctParam.theSootType = tParam;
-				listArgumentTypes.add(sctParam);
-				hg.AddNode(sctParam);
-			}
-			
-			EdgeAnnotation methodAnnot = new EdgeAnnotation(m.getName(), true);
-			methodAnnot.theSootMethod = m;
-			hg.AddEdge(listArgumentTypes, sctMethodRet, methodAnnot);
-		}
-	}
+	
+	//The method ReduceToInvokesAndBranches has bugs
+	//As it is non-crucial i have commented out references to it
+	//but it remains as it may be fixable and viable at some point.
+//	private static BranchableStmt ReduceToInvokesAndBranches(BranchableStmt aStmt){
+//		aStmt.seen++;
+//		if(aStmt.seen == 2){
+//			return aStmt;
+//		}
+//		if(aStmt.theStmt.containsInvokeExpr()  || aStmt.theStmt.branches()){
+//			if(aStmt.theNext != null)
+//			{
+//				aStmt.theNext= ReduceToInvokesAndBranches(aStmt.theNext);
+//			}
+//			if(aStmt.theElse != null){
+//				aStmt.theElse = ReduceToInvokesAndBranches(aStmt.theElse);
+//			}
+//			if(aStmt.theElse == null && aStmt.theNext == null && !aStmt.theStmt.containsInvokeExpr()){
+//				return null;
+//			}
+//			else
+//			{
+//				return aStmt;
+//			}
+//		}
+//		if(aStmt.theNext!= null){
+//			return ReduceToInvokesAndBranches(aStmt.theNext);
+//		}
+//		return null;
+//	}
+	
+//	public static Hypergraph<MethodNodeAnnot, EdgeAnnotation> AnalyzeAllReachableClasses(
+//			String FromClassName,
+//			String AppendToClassPath){
+//
+//		if(AppendToClassPath != null ){
+//			if(!AppendToClassPath.isEmpty()){
+//				setSootClassPath(getSootClassPath() + ":" + AppendToClassPath);
+//			}
+//		}
+//		
+//		GroupableHypergraph<MethodNodeAnnot, EdgeAnnotation> toReturn = new GroupableHypergraph<MethodNodeAnnot, EdgeAnnotation>();
+//		
+//		//the addition of this line is probably evidence of paranoia on my part.
+//		//but it took me a long time to figure out these magic words.
+//		soot.PhaseOptions.v().setPhaseOptionIfUnset("jb", "use-original-names");
+//		
+//		SootClass c = Scene.v().loadClassAndSupport(FromClassName);
+//
+//		c.setApplicationClass();
+//		Chain<SootClass> chainClasses = Scene.v().getClasses();
+//		
+//		Iterator<SootClass> iSootClasses = chainClasses.iterator();
+//		
+//		while(iSootClasses.hasNext()){
+//			SootClass aClass = iSootClasses.next();
+//			
+//			AddClassToHypergraph(
+//					toReturn,
+//					aClass);
+//		}
+//		
+//		return toReturn;
+//	}
+	
+	//This is a debug function which I am no longer using
+//	public static void AnalyzeMethod(SootMethod sm){
+//		try{
+//			Body b = sm.retrieveActiveBody();
+//			ShimpleBody sb = Shimple.v().newBody(b);
+//			PatchingChain<Unit> pcu = sb.getUnits();
+//			Unit u = pcu.getFirst();
+//			System.out.println("---------");
+//			AnalyzePC(pcu, u, new ArrayList<Unit>());
+//			System.out.println("---------");
+//		}
+//		catch(java.lang.RuntimeException ex){
+//			System.out.println(ex.getMessage());
+//		}
+//	}
+	
+//	private static void AnalyzePC(PatchingChain<Unit> pcu, Unit u, List<Unit> seen){
+//	if(seen.contains(u)){
+//		return;
+//		}
+//	System.out.println(u.toString());
+//	seen.add(u);
+//	
+//	if(!(u instanceof soot.jimple.internal.AbstractStmt))
+//	{
+//		//I don't believe this is possible, which reduces the amount of 
+//		//the subtree we have to deal with in practice.
+//		throw new java.lang.RuntimeException("Unit is not a subclass of soot.jimple.internal.AbstractStmt");
+//	}
+//	else{
+//		soot.jimple.internal.AbstractStmt aStmt = (soot.jimple.internal.AbstractStmt)u;
+//		if(aStmt.containsInvokeExpr())
+//		{
+//			InvokeExpr ie = aStmt.getInvokeExpr();
+//			SootMethod sm = ie.getMethod();
+//			String methodName = sm.getName();
+//			SootClass sc = sm.getDeclaringClass();
+//			String className = sc.getName();
+//					
+//			if(ie instanceof soot.jimple.internal.AbstractInvokeExpr){
+//				soot.jimple.internal.AbstractInvokeExpr jie = (soot.jimple.internal.AbstractInvokeExpr)ie;
+//				if(jie.getArgCount() > 0){
+//					ValueBox vb = jie.getArgBox(0);
+//					
+//				}
+//			}
+//					
+//			try{
+//				Body bsub = sm.retrieveActiveBody();
+//			}catch(RuntimeException ex){
+//				//This may legitimately happen
+//				//if the method is a call outside of the 
+//				//analyzed code then we don't have 
+//				//analysis of it, e.i.:
+//				//   Random r = new Random();
+//				//   int i = r.nextInt();
+//				//we won't be able to retrieve nextInt body.
+//			}
+//		}
+//		if(aStmt.branches()){
+//			if((u instanceof JIfStmt))
+//			{
+//				JIfStmt ifStmt = (JIfStmt)aStmt;
+//				//toReturn.append(tabs + "Branching Stmt Below\n");
+//				//String s = aStmt.toString();
+//				Stmt s = ifStmt.getTarget();
+//				
+//			}
+//			else if(u instanceof JGotoStmt){
+//				JGotoStmt gotoStmt = (JGotoStmt)aStmt;
+//				Unit tarU = gotoStmt.getTarget();
+//			}
+//		}
+//	}
+//	
+//	
+//	AnalyzePC(pcu, pcu.getSuccOf(u), seen);
+//}
+	
+//	private static void AddClassToHypergraphOLD(
+//			Hypergraph<SourceCodeType, EdgeAnnotation> hg,
+//			SootClass aClass){
+//		soot.Type aType = aClass.getType();
+//		SourceCodeType sct = new SourceCodeType();
+//		sct.theSootType = aType;
+//		hg.AddNode(sct);
+//		
+//		List<SootMethod> listMethods = aClass.getMethods();
+//		for(int i = 0; i < listMethods.size(); i++){
+//			SootMethod m = listMethods.get(i);
+//			
+//			Type methodReturn = m.getReturnType();
+//			SourceCodeType sctMethodRet = new SourceCodeType();
+//			sctMethodRet.theSootType = methodReturn;
+//			hg.AddNode(sctMethodRet);
+//			
+//			List<SourceCodeType> listArgumentTypes = new ArrayList<SourceCodeType>();
+//			
+//			listArgumentTypes.add(sct);
+//			
+//			int argCount = m.getParameterCount();
+//			for(int j = 0; j < argCount; j++){
+//				Type tParam = m.getParameterType(j);
+//				SourceCodeType sctParam = new SourceCodeType();
+//				sctParam.theSootType = tParam;
+//				listArgumentTypes.add(sctParam);
+//				hg.AddNode(sctParam);
+//			}
+//			
+//			EdgeAnnotation methodAnnot = new EdgeAnnotation(m.getName(), true);
+//			methodAnnot.theSootMethod = m;
+//			hg.AddEdge(listArgumentTypes, sctMethodRet, methodAnnot);
+//		}
+//	}
 }
