@@ -292,6 +292,9 @@ public class Analyzer {
 			System.out.println("Not possible to analyze method: " + sm.getName() + " Error: " + ex.getMessage());
 		}
 		if(pcu != null){
+			if(Utilities.DEBUG){
+				System.out.println(" " + sm.getName());
+			}
 			BranchableStmt bs = MakeBranchableStmts(pcu);
 			//bs = ReduceToInvokesAndBranches(bs);
 			GroupableStmt gs = GroupStmts(bs, new ArrayList<BranchableStmt>());
@@ -451,6 +454,10 @@ public class Analyzer {
 			}
 			else{
 				AbstractStmt aStmt = (soot.jimple.internal.AbstractStmt)u;
+				if(Utilities.DEBUG)
+				{
+					System.out.println("  " + aStmt.toString());
+				}
 				listStmt.add(new BranchableStmt(aStmt));
 			}
 			
@@ -553,6 +560,9 @@ public class Analyzer {
 			SootClass aClass
 			){
 
+		if(Utilities.DEBUG){
+			System.out.println(aClass.getName());
+		}
 		List<SootMethod> listMethods = aClass.getMethods();
 		for(int i = 0; i < listMethods.size(); i++){
 			SootMethod m = listMethods.get(i);

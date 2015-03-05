@@ -12,6 +12,8 @@ import java.util.zip.ZipInputStream;
 public final class Utilities {
     private Utilities() {}
     
+    public static final boolean DEBUG = true;
+    
     private static String OS = System.getProperty("os.name").toLowerCase();
 
     //In GeoTutor, the pebbler accounted for restrictions on theorems and axioms to be used

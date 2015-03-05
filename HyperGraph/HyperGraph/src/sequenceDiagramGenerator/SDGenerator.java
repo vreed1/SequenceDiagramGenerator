@@ -67,11 +67,11 @@ public class SDGenerator {
 		
 	}
 	
-	public static void Generate(List<String> listClasses, String ClassPath, String SaveFile){
-		Hypergraph<MethodNodeAnnot, EdgeAnnotation> hg = Analyzer.AnalyzeSpecificClasses(listClasses, ClassPath);
-
-		//SDGenerator.GenerateNaiveSequenceDiagram(hg, SaveFile);
-	}
+//	public static void Generate(List<String> listClasses, String ClassPath, String SaveFile){
+//		Hypergraph<MethodNodeAnnot, EdgeAnnotation> hg = Analyzer.AnalyzeSpecificClasses(listClasses, ClassPath);
+//
+//		//SDGenerator.GenerateNaiveSequenceDiagram(hg, SaveFile);
+//	}
 	
 	public static void Generate(
 			Hypergraph<MethodNodeAnnot, EdgeAnnotation> hg,
