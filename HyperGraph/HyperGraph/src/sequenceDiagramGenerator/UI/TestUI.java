@@ -30,6 +30,8 @@ import utilities.Utilities;
 
 public class TestUI implements ActionListener{
 
+	//all the interesting code here is in
+	//actionPerformed.
 	private JFrame frame;
 	private ControlPanel theControlPanel;
 	
@@ -88,7 +90,11 @@ public class TestUI implements ActionListener{
 		}
 	}
 	
-
+	//actionPerformed is called
+	//when any button is clicked in the UI
+	//each button is tagged with an 
+	//actioncommand, and that translates to 
+	//a different if block in this function.
 	@Override
 	public void actionPerformed(ActionEvent e) {
 		if(e.getActionCommand().equals("Analyze")){
@@ -96,12 +102,11 @@ public class TestUI implements ActionListener{
 			String ClassPath = theControlPanel.tfClassPath.getText();
 			String ClassDir = theControlPanel.tfClassDir.getText();
 			
-			//SDGenerator.Generate(ClassName, ClassDir, ClassPath, this.theControlPanel.tfSaveFile.getText());
-			currentHypergraph = Analyzer.AnalyzeSpecificClasses(ClassName, ClassDir, ClassPath);
+			currentHypergraph = Analyzer.AnalyzeFromSpecificClasses(ClassName, ClassDir, ClassPath);
 			PopulateCmb();
 		}
 		if(e.getActionCommand().equals("LoadJar")){
-			
+			//generate a hypergraph, store it in currentHypergraph
 			
 			JFileChooser fc = new JFileChooser();
 
@@ -120,11 +125,9 @@ public class TestUI implements ActionListener{
 							parentDir = jars[i].getCanonicalPath();
 						ClassPath = ClassPath + Utilities.GetClassPathDelim() + parentDir;
 					}
-					currentHypergraph = Analyzer.AnalyzeSpecificClasses(listClasses, ClassPath);
+					currentHypergraph = Analyzer.AnalyzeFromJAR(listClasses, ClassPath);
 					PopulateCmb();
 
-					//SDGenerator.Generate(listClasses, ClassPath, this.theControlPanel.tfSaveFile.getText());
-				
 				} catch (IOException e1) {
 					// TODO Auto-generated catch block
 					e1.printStackTrace();
@@ -132,7 +135,7 @@ public class TestUI implements ActionListener{
 			}
 		}
 		if(e.getActionCommand().equals("SaveFile")){
-
+			//just opens a window to choose a file from.
 			JFileChooser fc = new JFileChooser();
 
 			if(fc.showOpenDialog(frame) == JFileChooser.APPROVE_OPTION){
@@ -140,6 +143,10 @@ public class TestUI implements ActionListener{
 			}
 		}
 		if(e.getActionCommand().equals("MakeSequenceDiagram")){
+			//using a generated hypergraph in currentHypergraph
+			//and a function chosen from the combobox
+			//and a filename to save to
+			//generate a sequence diagram.
 			if(currentHypergraph == null){return;}
 			CmbBoxItem cbi = (CmbBoxItem) this.theControlPanel.cmbFunctions.getSelectedItem();
 			if(cbi == null){return;}
@@ -156,6 +163,7 @@ public class TestUI implements ActionListener{
 			}
 			
 			try {
+				//this is the interesting call.
 				SDGenerator.Generate(currentHypergraph, aNode, saveFile);
 			} catch (Exception e1) {
 				// TODO Auto-generated catch block				
