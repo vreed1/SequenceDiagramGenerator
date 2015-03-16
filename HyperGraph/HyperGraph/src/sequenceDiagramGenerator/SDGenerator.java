@@ -39,9 +39,20 @@ public class SDGenerator {
 			String SaveFile) throws Exception{
 
 		SequenceDiagram sd = new SequenceDiagram();
-		RecFillNodeDiagram(hg,aGNode, sd, SDObject.GetUniqueName());
+		MakeArbitraryDiagram(hg, aGNode, sd, SDObject.GetUniqueName());
+		//RecFillNodeDiagram(hg,aGNode, sd, SDObject.GetUniqueName());
 		
 		sd.CreatePDF(SaveFile);
+	}
+	
+	private static void MakeArbitraryDiagram(
+			Hypergraph<MethodNodeAnnot, EdgeAnnotation> hg,
+			GroupableHyperNode<MethodNodeAnnot, EdgeAnnotation> aGNode,
+			SequenceDiagram sd,
+			String sourceName) throws Exception{
+		if(aGNode == null){return;}
+		List<TraceStatement> tstmts = aGNode.data.theTraces;
+		
 	}
 	
 	//helper function to extract a local from a Value
@@ -103,6 +114,9 @@ public class SDGenerator {
 	//if we are currently traversing the drive method of class car
 	//the instance name "myToyota" is not locally available and must
 	//be passed in from outside.
+	
+	//This is the primary place i need to start
+	//TODO: Start Here
 	private static void RecFillStmtDiagram(
 			Hypergraph<MethodNodeAnnot, EdgeAnnotation> hg,
 			GroupableHyperNode<MethodNodeAnnot, EdgeAnnotation> aGNode,

@@ -25,19 +25,19 @@ public class DiagramMessageAggregator
     //
     // Acquire all SD objects for this particular message
     //
-	public List<SDObject> GetSDObjects()
-	{
-	    ArrayList<SDObject> names = new ArrayList<SDObject>();
-	    
-    	for (SourceCodeType src : sources)
-    	{
-            names.add(new SDObject(src.getObjectName(), src.getClassName()));
-    	}
-    	
-        names.add(new SDObject(target.getObjectName(), target.getClassName()));
-        
-        return names;
-	}
+//	public List<SDObject> GetSDObjects()
+//	{
+//	    ArrayList<SDObject> names = new ArrayList<SDObject>();
+//	    
+//    	for (SourceCodeType src : sources)
+//    	{
+//            names.add(new SDObject(src.getObjectName(), src.getClassName()));
+//    	}
+//    	
+//        names.add(new SDObject(target.getObjectName(), target.getClassName()));
+//        
+//        return names;
+//	}
     
 	//
 	// Acquire the message for this particular edge / Message

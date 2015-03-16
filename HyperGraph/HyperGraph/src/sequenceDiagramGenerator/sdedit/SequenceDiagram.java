@@ -50,17 +50,15 @@ public class SequenceDiagram {
         messages.add(msg);
     }
     
-    private void NameSafetyCheck(){
-    	List<String> listUsedNames = new ArrayList<String>();
-    	for(SDObject sdo : objects){
-    		int i = 1;
-    		String baseName = sdo.GetName();
-    		while(listUsedNames.contains(sdo.GetName())){
-    			sdo.name = baseName + i;
-    			i++;
-    		}
-    		listUsedNames.add(sdo.GetName());
+    public void AttachNameToObject(String name, SDObject obj){
+    	for(SDObject anObj : objects){
+    		anObj.DetachName(name);
     	}
+    	obj.AttachName(name);
+    }
+    
+    private void NameSafetyCheck(){
+
     }
     
     public void CreatePDF(String outFile) {    

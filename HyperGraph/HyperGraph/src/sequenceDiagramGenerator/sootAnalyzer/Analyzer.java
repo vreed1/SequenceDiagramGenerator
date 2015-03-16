@@ -9,6 +9,8 @@ import sequenceDiagramGenerator.BranchableStmt;
 import sequenceDiagramGenerator.GroupableStmt;
 import sequenceDiagramGenerator.MethodNodeAnnot;
 import sequenceDiagramGenerator.SourceCodeType;
+import sequenceDiagramGenerator.TraceStatement;
+import sequenceDiagramGenerator.TraceStatement.BranchStatus;
 import sequenceDiagramGenerator.hypergraph.EdgeAnnotation;
 import sequenceDiagramGenerator.hypergraph.GroupableHyperNode;
 import sequenceDiagramGenerator.hypergraph.GroupableHypergraph;
@@ -214,10 +216,8 @@ public class Analyzer {
 			}
 			
 			SootMethod sm = ie.getMethod();
-			String methodName = sm.getName();
-			SootClass sc = sm.getDeclaringClass();
 			
-			MethodNodeAnnot finder = new MethodNodeAnnot(sm, null);
+			MethodNodeAnnot finder = new MethodNodeAnnot(sm, null, null);
 			
 			HyperNode<MethodNodeAnnot, EdgeAnnotation> tarNode = hg.GetCompleteNode(finder);
 			
@@ -286,13 +286,15 @@ public class Analyzer {
 			//which are both groups, and a Next GroupableStmt which is the next 
 			//statement on the same level. 
 			GroupableStmt gs = GroupStmts(bs, new ArrayList<BranchableStmt>());
-			MethodNodeAnnot theAnnot = new MethodNodeAnnot(sm, gs);
+			List<TraceStatement> ts = GenerateAllPotentialTraces(gs, new ArrayList<TraceStatement>());
+			MethodNodeAnnot theAnnot = new MethodNodeAnnot(sm, gs, ts);
+			
 			return theAnnot;
 		}
 		//note that even if we cannot analyze the method
 		//we still return a node for it.  Traversal will simply
 		//return from such a node.
-		return new MethodNodeAnnot(sm, null);
+		return new MethodNodeAnnot(sm, null, new ArrayList<TraceStatement>());
 	}
 
 	//creates the branching representation from soot's patchingchain
@@ -364,6 +366,58 @@ public class Analyzer {
 		//return the first statement which points to the root
 		//of the tree, or the entire function.
 		return listStmt.get(0);
+	}
+	
+	private static List<TraceStatement> GenerateAllPotentialTraces(
+			GroupableStmt aGStmt,
+			List<TraceStatement> tieUp
+			){
+		
+		if(aGStmt == null){return tieUp;}
+		
+		List<TraceStatement> toReturn = GenerateAllPotentialTraces(
+				aGStmt.theNext, new ArrayList<TraceStatement>());
+		
+		if(aGStmt.theTrueBranch != null || aGStmt.theFalseBranch != null){
+			List<TraceStatement> trueTrace, falseTrace;
+			if(aGStmt.theTrueBranch != null){
+				trueTrace = GenerateAllPotentialTraces(
+						aGStmt.theTrueBranch,
+						toReturn);
+			}
+			else{
+				trueTrace = toReturn;
+			}
+			if(aGStmt.theFalseBranch != null){
+				falseTrace = GenerateAllPotentialTraces(
+						aGStmt.theFalseBranch,
+						toReturn);
+			}
+			else{
+				falseTrace = toReturn;
+			}
+			for(int i = 0; i < trueTrace.size(); i++){
+				TraceStatement aTStmt = new TraceStatement(aGStmt.theStmt, trueTrace.get(i));
+				aTStmt.theBranchStatus = BranchStatus.TrueChosen;
+				trueTrace.set(i, aTStmt);
+			}
+			for(int i = 0; i < falseTrace.size(); i++){
+				TraceStatement aTStmt = new TraceStatement(aGStmt.theStmt, falseTrace.get(i));
+				aTStmt.theBranchStatus = BranchStatus.FalseChosen;
+				falseTrace.set(i, aTStmt);
+			}
+			toReturn = new ArrayList<TraceStatement>();
+			toReturn.addAll(trueTrace);
+			toReturn.addAll(falseTrace);
+		}
+		else{
+			for(int i = 0; i < toReturn.size(); i++){
+				TraceStatement aTStmt = new TraceStatement(aGStmt.theStmt, toReturn.get(i));
+				toReturn.set(i, aTStmt);
+			}
+		}
+		return toReturn;
+		
 	}
 	
 	//GroupStmts Takes the tree representation of the function

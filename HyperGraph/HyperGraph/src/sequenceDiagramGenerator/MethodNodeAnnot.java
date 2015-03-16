@@ -1,5 +1,7 @@
 package sequenceDiagramGenerator;
 
+import java.util.List;
+
 import soot.SootMethod;
 
 //BP
@@ -13,10 +15,15 @@ import soot.SootMethod;
 public class MethodNodeAnnot {
 	public GroupableStmt theStmts;
 	public SootMethod theMethod;
+	public List<TraceStatement> theTraces;
 	
-	public MethodNodeAnnot(SootMethod aMethod, GroupableStmt aStmt){
+	public MethodNodeAnnot(
+			SootMethod aMethod, 
+			GroupableStmt aStmt,
+			List<TraceStatement> aTraces){
 		theMethod = aMethod;
 		theStmts = aStmt;
+		theTraces = aTraces;
 	}
 	
 	@Override 
