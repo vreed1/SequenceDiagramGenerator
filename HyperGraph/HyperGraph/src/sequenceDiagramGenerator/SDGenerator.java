@@ -19,6 +19,7 @@ import soot.SootClass;
 import soot.SootMethod;
 import soot.Value;
 import soot.jimple.AssignStmt;
+import soot.jimple.internal.JNewExpr;
 import soot.jimple.internal.JimpleLocal;
 import soot.jimple.internal.JimpleLocalBox;
 
@@ -76,9 +77,20 @@ public class SDGenerator {
 			AssignStmt assignStmt = (AssignStmt)aStmt.theStmt;
 			JimpleLocal jlLeft = extractValue(assignStmt.getLeftOp());
 			JimpleLocal jlRight = extractValue(assignStmt.getRightOp());
-			//variety of possible actions here.
-			//pretty sure something like Chris's dictionary idea
-			//will be necessary.
+			
+			if(jlLeft != null && jlRight != null){
+				String leftName = jlLeft.getName();
+				String rightName = jlRight.getName();
+				SDObject sdRight = sd.GetObjectFromName(rightName);
+				sd.AttachNameToObject(leftName, sdRight);
+			}
+			JNewExpr jne = extractNew(assignStmt.getRightOp());
+			if(jlLeft != null && jne != null){
+				String leftName = jlLeft.getName();
+				SootClass sc = jne.getBaseType().getSootClass();
+				SDObject newObj = new SDObject(sc, leftName);
+				sd.AddObject(newObj);
+			}
 		}
 		//If a statement contains an invoke expression
 		//that expression must be extracted, we must find
@@ -184,6 +196,14 @@ public class SDGenerator {
 		if(obj instanceof JimpleLocal){
 			JimpleLocal jl = (JimpleLocal)obj;
 			return jl;
+		}
+		return null;
+	}
+	
+	private static JNewExpr extractNew(Object v){
+		if(v instanceof JNewExpr){
+			JNewExpr ret = (JNewExpr)v;
+			return ret;
 		}
 		return null;
 	}
