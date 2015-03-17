@@ -57,6 +57,15 @@ public class SequenceDiagram {
     	obj.AttachName(name);
     }
     
+    public SDObject GetObjectFromName(String name){
+    	for(SDObject anObj : objects){
+    		if(anObj.MatchesName(name)){
+    			return anObj;
+    		}
+    	}
+    	return null;
+    }
+    
     private void NameSafetyCheck(){
 
     }

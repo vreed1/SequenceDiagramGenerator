@@ -4,6 +4,7 @@ import java.util.List;
 import java.util.AbstractMap.SimpleEntry;
 
 import sequenceDiagramGenerator.GroupableStmt;
+import soot.SootMethod;
 
 public class GroupableHypergraph<T,A> extends Hypergraph<T,A> {
 	
@@ -15,7 +16,11 @@ public class GroupableHypergraph<T,A> extends Hypergraph<T,A> {
 		super(capacity, new GroupableHyperNodeFactory<T,A>());
     }
 
-	public boolean AddGroupableEdge(List<T> antecedent, T consequent, A annotation, GroupableStmt aSubSource)
+	public boolean AddGroupableEdge(
+			List<T> antecedent, 
+			T consequent, 
+			A annotation, 
+			SootMethod aSubSource)
     {
         //
         // Add a local representation of this edge to each node in which it is applicable
@@ -28,7 +33,11 @@ public class GroupableHypergraph<T,A> extends Hypergraph<T,A> {
         SimpleEntry<List<Integer>, Integer> local = ConvertToLocal(antecedent, consequent);
 
         
-        GroupableHyperEdge<A> edge = new GroupableHyperEdge<A>(local.getKey(), local.getValue(), annotation, aSubSource);
+        GroupableHyperEdge<A> edge = new GroupableHyperEdge<A>(
+        		local.getKey(), 
+        		local.getValue(), 
+        		annotation, 
+        		aSubSource);
 
         for (int src : local.getKey()) {
             ((GroupableHyperNode<T,A>)vertices.get(src)).AddGroupableEdge(edge);

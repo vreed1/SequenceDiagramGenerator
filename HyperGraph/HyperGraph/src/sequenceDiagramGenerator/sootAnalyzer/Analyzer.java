@@ -228,7 +228,7 @@ public class Analyzer {
 			List<MethodNodeAnnot> ante = new ArrayList<MethodNodeAnnot>();
 			ante.add(sourceNode.data);
 			EdgeAnnotation ea = new EdgeAnnotation();
-			hg.AddGroupableEdge(ante, tarNode.data, ea, aStmt);
+			hg.AddGroupableEdge(ante, tarNode.data, ea, sm);
 		}
 		if(aStmt.theTrueBranch != null){
 			AddRecStmts(aStmt.theTrueBranch, sourceNode, hg);

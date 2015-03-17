@@ -24,6 +24,9 @@ public class SDObject
     		theCurrentNames.remove(oldName);
     	}
     }
+    public boolean MatchesName(String testName){
+    	return (theCurrentNames.contains(testName));
+    }
     
 //    public SDObject(String name, String type) {
 //        this.name = name;
