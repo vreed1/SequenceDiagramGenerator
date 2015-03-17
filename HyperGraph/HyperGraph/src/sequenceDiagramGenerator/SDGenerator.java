@@ -52,6 +52,7 @@ public class SDGenerator {
 			String sourceName) throws Exception{
 		if(aGNode == null){return;}
 		List<TraceStatement> tstmts = aGNode.data.theTraces;
+		if(tstmts == null || tstmts.size() == 0){return;}
 		RecFillTraceStmtDiagram(hg,
 				aGNode,
 				tstmts.get(0),
@@ -99,7 +100,8 @@ public class SDGenerator {
 				
 				String tarObjName = "";
 				if(lv.size() > 0){
-					JimpleLocal jl = extractValue(lv.get(0));
+					Object v = lv.get(0);
+					JimpleLocal jl = extractValue(v);
 					tarObjName = jl.getName();
 				}
 				
@@ -169,7 +171,7 @@ public class SDGenerator {
 	//one format or another, 0 will not
 	//so this method CAN return null.
 	//in general, at the moment, we don't care about constants.
-	private static JimpleLocal extractValue(Value v){
+	private static JimpleLocal extractValue(Object v){
 		Object obj = null;
 		if(v instanceof JimpleLocalBox){
 			JimpleLocalBox jlb = (JimpleLocalBox)v;

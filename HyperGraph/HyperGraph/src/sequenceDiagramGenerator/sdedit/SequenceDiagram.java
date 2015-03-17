@@ -9,6 +9,7 @@ import java.io.OutputStream;
 import java.util.ArrayList;
 import java.util.List;
 
+import utilities.Utilities;
 import net.sf.sdedit.config.Configuration;
 import net.sf.sdedit.config.ConfigurationManager;
 import net.sf.sdedit.diagram.Diagram;
@@ -38,11 +39,11 @@ public class SequenceDiagram {
     }
     
     public void AddObject(SDObject obj) {
-    	for(SDObject oldObject : objects){
-    		if(oldObject.equals(obj)){
-    			return;
-    		}
-    	}
+//    	for(SDObject oldObject : objects){
+//    		if(oldObject.equals(obj)){
+//    			return;
+//    		}
+//    	}
     	objects.add(obj);
     }
     
@@ -67,11 +68,20 @@ public class SequenceDiagram {
     }
     
     private void NameSafetyCheck(){
-
+    	List<String> listUsedStrings = new ArrayList<String>();
+    	for(SDObject anObj : objects){
+    		anObj.fixFinalName(listUsedStrings);
+    		listUsedStrings.add(anObj.GetName());
+    	}
     }
     
     public void CreatePDF(String outFile) {    
     	NameSafetyCheck();
+    	if(Utilities.DEBUG){
+    		System.out.println("---------SD---------");
+    		System.out.println(this.toString());
+    		System.out.println("--------------------");
+    	}
         InputStream in = new ByteArrayInputStream(this.toString().getBytes());
         OutputStream out = null;
         try {

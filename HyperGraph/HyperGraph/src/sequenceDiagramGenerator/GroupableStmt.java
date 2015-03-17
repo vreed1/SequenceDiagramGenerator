@@ -4,6 +4,7 @@ import java.util.ArrayList;
 import java.util.List;
 
 import soot.jimple.internal.AbstractStmt;
+import utilities.Utilities;
 
 //BP this class is meant to let us look at statement groups
 //as they will be looked at in a sequence diagram
@@ -45,4 +46,25 @@ public class GroupableStmt {
 		return false;
 	}
 
+	@Override
+	public String toString(){
+		return toString("");
+	}
+	
+	public String toString(String tab){
+		StringBuilder sb = new StringBuilder();
+		sb.append(tab);
+		sb.append(theStmt.toString());
+		sb.append(Utilities.NEWLINE);
+		if(theTrueBranch != null){
+			sb.append(theTrueBranch.toString("  "+tab));
+		}
+		if(theFalseBranch != null){
+			sb.append(theFalseBranch.toString("  "+tab));
+		}
+		if(theNext != null){
+			sb.append(theNext.toString(tab));
+		}
+		return sb.toString();
+	}
 }

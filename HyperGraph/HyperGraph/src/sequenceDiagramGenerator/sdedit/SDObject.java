@@ -101,4 +101,20 @@ public class SDObject
 		uniqueName++;
 		return String.valueOf(uniqueName);
 	}
+	public void fixFinalName(List<String> listUsedStrings) {
+		String bestFound = GetUniqueName();
+		for(int i = 0; i < theNameHistory.size(); i++){
+			String testName = theNameHistory.get(i);
+			if(listUsedStrings.contains(testName)){
+				continue;
+			}
+			if(testName.startsWith("$")){
+				continue;
+			}
+			if(testName.length() > bestFound.length()){
+				bestFound = testName;
+			}
+		}
+		name = bestFound;
+	}
 }

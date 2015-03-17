@@ -14,6 +14,8 @@ public final class Utilities {
     
     public static final boolean DEBUG = true;
     
+    public static final String NEWLINE = System.getProperty("line.separator");
+    
     private static String OS = System.getProperty("os.name").toLowerCase();
 
     //In GeoTutor, the pebbler accounted for restrictions on theorems and axioms to be used

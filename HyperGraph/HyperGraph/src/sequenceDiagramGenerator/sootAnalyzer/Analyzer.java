@@ -286,7 +286,22 @@ public class Analyzer {
 			//which are both groups, and a Next GroupableStmt which is the next 
 			//statement on the same level. 
 			GroupableStmt gs = GroupStmts(bs, new ArrayList<BranchableStmt>());
+			if(Utilities.DEBUG){
+				System.out.println("--------GS--------");
+				System.out.println(gs.toString());
+				System.out.println("------------------");
+			}
+			
 			List<TraceStatement> ts = GenerateAllPotentialTraces(gs, new ArrayList<TraceStatement>());
+			if(Utilities.DEBUG){
+				System.out.println("--------TS--------");
+				for(int i = 0; i < ts.size(); i++){
+					System.out.println("****"+i+"****");
+					System.out.println(ts.get(i).toString());
+				}
+				System.out.println("------------------");
+			}
+			
 			MethodNodeAnnot theAnnot = new MethodNodeAnnot(sm, gs, ts);
 			
 			return theAnnot;
@@ -396,24 +411,39 @@ public class Analyzer {
 			else{
 				falseTrace = toReturn;
 			}
-			for(int i = 0; i < trueTrace.size(); i++){
-				TraceStatement aTStmt = new TraceStatement(aGStmt.theStmt, trueTrace.get(i));
-				aTStmt.theBranchStatus = BranchStatus.TrueChosen;
-				trueTrace.set(i, aTStmt);
+			if(trueTrace.size() > 0){
+				for(int i = 0; i < trueTrace.size(); i++){
+					TraceStatement aTStmt = new TraceStatement(aGStmt.theStmt, trueTrace.get(i));
+					aTStmt.theBranchStatus = BranchStatus.TrueChosen;
+					trueTrace.set(i, aTStmt);
+				}
 			}
-			for(int i = 0; i < falseTrace.size(); i++){
-				TraceStatement aTStmt = new TraceStatement(aGStmt.theStmt, falseTrace.get(i));
-				aTStmt.theBranchStatus = BranchStatus.FalseChosen;
-				falseTrace.set(i, aTStmt);
+			else{
+				trueTrace.add(new TraceStatement(aGStmt.theStmt, null));
+			}
+			if(falseTrace.size() > 0){
+				for(int i = 0; i < falseTrace.size(); i++){
+					TraceStatement aTStmt = new TraceStatement(aGStmt.theStmt, falseTrace.get(i));
+					aTStmt.theBranchStatus = BranchStatus.FalseChosen;
+					falseTrace.set(i, aTStmt);
+				}
+			}
+			else{
+				falseTrace.add(new TraceStatement(aGStmt.theStmt, null));
 			}
 			toReturn = new ArrayList<TraceStatement>();
 			toReturn.addAll(trueTrace);
 			toReturn.addAll(falseTrace);
 		}
 		else{
-			for(int i = 0; i < toReturn.size(); i++){
-				TraceStatement aTStmt = new TraceStatement(aGStmt.theStmt, toReturn.get(i));
-				toReturn.set(i, aTStmt);
+			if(toReturn.size() > 0){
+				for(int i = 0; i < toReturn.size(); i++){
+					TraceStatement aTStmt = new TraceStatement(aGStmt.theStmt, toReturn.get(i));
+					toReturn.set(i, aTStmt);
+				}
+			}
+			else{
+				toReturn.add(new TraceStatement(aGStmt.theStmt, null));
 			}
 		}
 		return toReturn;
