@@ -40,7 +40,9 @@ public class SDGenerator {
 			String SaveFile) throws Exception{
 
 		SequenceDiagram sd = new SequenceDiagram();
-		MakeArbitraryDiagram(hg, aGNode, sd, SDObject.GetUniqueName());
+		SDObject outerObject = new SDObject(aGNode.data.theMethod.getDeclaringClass(), SDObject.GetUniqueName());
+		sd.AddObject(outerObject);
+		MakeArbitraryDiagram(hg, aGNode, sd, outerObject);
 		//RecFillNodeDiagram(hg,aGNode, sd, SDObject.GetUniqueName());
 		
 		sd.CreatePDF(SaveFile);
@@ -50,7 +52,7 @@ public class SDGenerator {
 			Hypergraph<MethodNodeAnnot, EdgeAnnotation> hg,
 			GroupableHyperNode<MethodNodeAnnot, EdgeAnnotation> aGNode,
 			SequenceDiagram sd,
-			String sourceName) throws Exception{
+			SDObject outerObject) throws Exception{
 		if(aGNode == null){return;}
 		List<TraceStatement> tstmts = aGNode.data.theTraces;
 		if(tstmts == null || tstmts.size() == 0){return;}
@@ -58,7 +60,7 @@ public class SDGenerator {
 				aGNode,
 				tstmts.get(0),
 				sd,
-				sourceName);
+				outerObject);
 	}
 	
 	private static void RecFillTraceStmtDiagram(
@@ -66,7 +68,7 @@ public class SDGenerator {
 			GroupableHyperNode<MethodNodeAnnot, EdgeAnnotation> aGNode,
 			TraceStatement aStmt,
 			SequenceDiagram sd,
-			String sourceName) throws Exception
+			SDObject sourceObj) throws Exception
 	{
 		if(aStmt == null){return;}
 		
@@ -128,21 +130,14 @@ public class SDGenerator {
 				//two piece of information, class and instance name
 				//note source's instance name is passed in from above.
 				//target's is locally available to us.
-				SDObject sdSource = sd.GetObjectFromName(sourceName);
+				//SDObject sdSource = sd.GetObjectFromName(sourceName);
 				SDObject sdTarget = sd.GetObjectFromName(tarObjName);
 				
 				//If there is already a matching SDObject in sd
 				//this will silently fail and we will simply link
 				//to the existing object.  This may need to change
 				//per the assignment statement problem.
-				if(sdSource == null){
-					if(sourceName == null || sourceName.length() == 0){
-						sourceName = SDObject.GetUniqueName();
-					}
-					sdSource = new SDObject(scSource, sourceName);
-					sd.AddObject(sdSource);
-				}
-				else if(sdTarget == null){
+				if(sdTarget == null){
 					if(tarObjName == null || tarObjName.length() == 0){
 						tarObjName = SDObject.GetUniqueName();
 					}
@@ -152,13 +147,13 @@ public class SDGenerator {
 				
 				//now that the sd has a source and target, we can
 				//add the message.
-				SDMessage msg = new SDMessage(sdSource, sdTarget, sm);
+				SDMessage msg = new SDMessage(sourceObj, sdTarget, sm);
 				sd.AddMessage(msg);
 				
 				//now that we are "at" the destination point
 				//of the message, we traverse into
 				//the relevant hypernode for that new method.
-				MakeArbitraryDiagram(hg, subGNode, sd, tarObjName);
+				MakeArbitraryDiagram(hg, subGNode, sd, sdTarget);
 			}
 			else
 			{
@@ -171,7 +166,7 @@ public class SDGenerator {
 		//after we've handled everything in this statement
 		//including any calls and subsequent calls generated
 		//we traverse to the next statement.
-		RecFillTraceStmtDiagram(hg, aGNode, aStmt.theNext, sd, sourceName);
+		RecFillTraceStmtDiagram(hg, aGNode, aStmt.theNext, sd, sourceObj);
 	}
 	
 	//helper function to extract a local from a Value
