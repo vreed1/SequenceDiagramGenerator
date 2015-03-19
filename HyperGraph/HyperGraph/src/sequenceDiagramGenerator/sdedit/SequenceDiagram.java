@@ -51,6 +51,18 @@ public class SequenceDiagram {
         messages.add(msg);
     }
     
+    public void PushNames(){
+    	for(SDObject anObj : objects){
+    		anObj.PushNames();
+    	}
+    }
+    
+    public void PopNames(){
+    	for(SDObject anObj : objects){
+    		anObj.PopNames();
+    	}
+    }
+    
     public void AttachNameToObject(String name, SDObject obj){
     	for(SDObject anObj : objects){
     		anObj.DetachName(name);

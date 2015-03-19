@@ -154,7 +154,9 @@ public class SDGenerator {
 				//now that we are "at" the destination point
 				//of the message, we traverse into
 				//the relevant hypernode for that new method.
+				sd.PushNames();
 				MakeArbitraryDiagram(hg, subGNode, sd, sdTarget);
+				sd.PopNames();
 			}
 			else
 			{

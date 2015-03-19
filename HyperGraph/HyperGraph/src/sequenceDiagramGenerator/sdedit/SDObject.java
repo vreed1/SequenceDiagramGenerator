@@ -2,6 +2,7 @@ package sequenceDiagramGenerator.sdedit;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Stack;
 
 import soot.SootClass;
 
@@ -14,6 +15,33 @@ public class SDObject
     
     private List<String> theCurrentNames;
     private List<String> theNameHistory;
+    
+    private Stack<List<String>> theCallStackNames;
+
+	public SDObject(SootClass aClass, String startName){
+		theCurrentNames = new ArrayList<String>();
+		theNameHistory = new ArrayList<String>();
+		theCallStackNames = new Stack<List<String>>();
+		AttachName(startName);
+		type = aClass.getName();
+        this.flags = new ArrayList<ObjectFlag>();
+	}
+	
+	public void PushNames(){
+		theCallStackNames.push(CloneNames());
+		theCurrentNames = new ArrayList<String>();
+	}
+	public void PopNames(){
+		theCurrentNames = theCallStackNames.pop();
+	}
+	
+	private List<String> CloneNames(){
+		List<String> toReturn = new ArrayList<String>();
+		for(int i = 0; i < theCurrentNames.size(); i++){
+			toReturn.add(theCurrentNames.get(i));
+		}
+		return toReturn;
+	}
     
     public void AttachName(String newName){
     	theCurrentNames.add(newName);
@@ -88,13 +116,6 @@ public class SDObject
 //        this.flags = new ArrayList<ObjectFlag>();
 //	}
 	
-	public SDObject(SootClass aClass, String startName){
-		theCurrentNames = new ArrayList<String>();
-		theNameHistory = new ArrayList<String>();
-		AttachName(startName);
-		type = aClass.getName();
-        this.flags = new ArrayList<ObjectFlag>();
-	}
 	
 	private static int uniqueName = 0;
 	public static String GetUniqueName(){
