@@ -90,8 +90,9 @@ public class SDGenerator {
 			if(jlLeft != null && jne != null){
 				String leftName = jlLeft.getName();
 				SootClass sc = jne.getBaseType().getSootClass();
-				SDObject newObj = new SDObject(sc, leftName);
+				SDObject newObj = new SDObject(sc, "");
 				sd.AddObject(newObj);
+				sd.AttachNameToObject(leftName, newObj);
 			}
 		}
 		//If a statement contains an invoke expression
