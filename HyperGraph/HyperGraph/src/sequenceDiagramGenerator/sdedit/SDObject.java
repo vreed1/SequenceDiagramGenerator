@@ -32,7 +32,12 @@ public class SDObject
 		theCurrentNames = new ArrayList<String>();
 	}
 	public void PopNames(){
-		theCurrentNames = theCallStackNames.pop();
+		if(theCallStackNames.size() > 0){
+			theCurrentNames = theCallStackNames.pop();
+		}
+		else{
+			theCurrentNames = new ArrayList<String>();
+		}
 	}
 	
 	private List<String> CloneNames(){
