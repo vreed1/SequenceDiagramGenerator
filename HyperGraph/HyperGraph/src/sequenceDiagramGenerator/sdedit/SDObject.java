@@ -12,19 +12,21 @@ public class SDObject
     private String type;
     private String label;
     private List<ObjectFlag> flags;
+    private boolean isConstructed;
     
     private List<String> theCurrentNames;
     private List<String> theNameHistory;
     
     private Stack<List<String>> theCallStackNames;
 
-	public SDObject(SootClass aClass, String startName){
+	public SDObject(SootClass aClass, String startName, boolean aIsConstructed){
 		theCurrentNames = new ArrayList<String>();
 		theNameHistory = new ArrayList<String>();
 		theCallStackNames = new Stack<List<String>>();
 		AttachName(startName);
 		type = aClass.getName();
         this.flags = new ArrayList<ObjectFlag>();
+        isConstructed = aIsConstructed;
 	}
 	
 	public void PushNames(){
@@ -88,6 +90,9 @@ public class SDObject
     public String toString() {
         // Object in sdedit format
         StringBuilder obj = new StringBuilder();
+        if(isConstructed){
+        	obj.append("/");
+        }
         obj.append(String.format("%s:%s", name, type));
         for (ObjectFlag f : flags) {
             obj.append(String.format("[%s]", f.tag()));

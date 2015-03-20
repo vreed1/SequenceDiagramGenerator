@@ -39,11 +39,6 @@ public class SequenceDiagram {
     }
     
     public void AddObject(SDObject obj) {
-//    	for(SDObject oldObject : objects){
-//    		if(oldObject.equals(obj)){
-//    			return;
-//    		}
-//    	}
     	objects.add(obj);
     }
     

@@ -40,7 +40,7 @@ public class SDGenerator {
 			String SaveFile) throws Exception{
 
 		SequenceDiagram sd = new SequenceDiagram();
-		SDObject outerObject = new SDObject(aGNode.data.theMethod.getDeclaringClass(), SDObject.GetUniqueName());
+		SDObject outerObject = new SDObject(aGNode.data.theMethod.getDeclaringClass(), SDObject.GetUniqueName(), false);
 		sd.AddObject(outerObject);
 		MakeArbitraryDiagram(hg, aGNode, sd, outerObject);
 		//RecFillNodeDiagram(hg,aGNode, sd, SDObject.GetUniqueName());
@@ -90,9 +90,12 @@ public class SDGenerator {
 			if(jlLeft != null && jne != null){
 				String leftName = jlLeft.getName();
 				SootClass sc = jne.getBaseType().getSootClass();
-				SDObject newObj = new SDObject(sc, "");
+				SDObject newObj = new SDObject(sc, "", true);
 				sd.AddObject(newObj);
 				sd.AttachNameToObject(leftName, newObj);
+				
+				SDMessage creationMessage = new SDMessage(sourceObj, newObj);
+				sd.AddMessage(creationMessage);
 			}
 		}
 		//If a statement contains an invoke expression
@@ -142,7 +145,7 @@ public class SDGenerator {
 					if(tarObjName == null || tarObjName.length() == 0){
 						tarObjName = SDObject.GetUniqueName();
 					}
-					sdTarget = new SDObject(scTarget, tarObjName);
+					sdTarget = new SDObject(scTarget, tarObjName, false);
 					sd.AddObject(sdTarget);
 				}
 				

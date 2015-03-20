@@ -16,6 +16,7 @@ public class SDMessage
     private String message;
     private String specifier;
     private String mnemonic;
+    private boolean isConstruction;
     
     
     // Simplest possible message <caller>:.<message>
@@ -34,29 +35,48 @@ public class SDMessage
     	this.caller = sdCaller;
     	this.callee = sdCallee;
     	this.message = message.getName();
+    	isConstruction = false;
+    }
+    
+    public SDMessage(SDObject sdCaller, SDObject sdCallee){
+    	this.caller = sdCaller;
+    	this.callee = sdCallee;
+    	isConstruction = true;
     }
     
     
     @Override
     public String toString() {
-        StringBuilder msg = new StringBuilder();
-        
-        msg.append(caller.GetName());
-        if (specifier != null) {
-            msg.append(String.format("[%s]", specifier));
-        }
-        msg.append(":");
-        if (answer != null) {
-            msg.append(String.format("%s=", answer));
-        }
-        if (callee != null) {
+    	if(isConstruction){
+	        StringBuilder msg = new StringBuilder();
+	        
+	        msg.append(caller.GetName());
+	        msg.append(":");
             msg.append(callee.GetName());
-        }
-        if (mnemonic != null) {
-            msg.append(String.format("[%s]", mnemonic));
-        }
-        msg.append(String.format(".%s", message));
-        
-        return msg.toString();
+	        msg.append(".new");
+	        
+	        return msg.toString();
+    	}
+    	else{
+	        StringBuilder msg = new StringBuilder();
+	        
+	        msg.append(caller.GetName());
+	        if (specifier != null) {
+	            msg.append(String.format("[%s]", specifier));
+	        }
+	        msg.append(":");
+	        if (answer != null) {
+	            msg.append(String.format("%s=", answer));
+	        }
+	        if (callee != null) {
+	            msg.append(callee.GetName());
+	        }
+	        if (mnemonic != null) {
+	            msg.append(String.format("[%s]", mnemonic));
+	        }
+	        msg.append(String.format(".%s", message));
+	        
+	        return msg.toString();
+    	}
     }
 }
