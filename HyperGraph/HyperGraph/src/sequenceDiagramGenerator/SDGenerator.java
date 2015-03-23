@@ -94,8 +94,8 @@ public class SDGenerator {
 				sd.AddObject(newObj);
 				sd.AttachNameToObject(leftName, newObj);
 				
-				SDMessage creationMessage = new SDMessage(sourceObj, newObj);
-				sd.AddMessage(creationMessage);
+				//SDMessage creationMessage = new SDMessage(sourceObj, newObj);
+				//sd.AddMessage(creationMessage);
 			}
 		}
 		//If a statement contains an invoke expression
@@ -135,7 +135,13 @@ public class SDGenerator {
 				//note source's instance name is passed in from above.
 				//target's is locally available to us.
 				//SDObject sdSource = sd.GetObjectFromName(sourceName);
-				SDObject sdTarget = sd.GetObjectFromName(tarObjName);
+				SDObject sdTarget = null;
+				if(tarObjName.equals("this")){
+					sdTarget = sourceObj;
+				}
+				else{
+					sdTarget = sd.GetObjectFromName(tarObjName);
+				}
 				
 				//If there is already a matching SDObject in sd
 				//this will silently fail and we will simply link

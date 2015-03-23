@@ -105,20 +105,20 @@ public class SDObject
 		return name;
 	}
 	
-	@Override
-	public boolean equals(Object obj){
-		if(obj instanceof SDObject){
-			SDObject other = (SDObject)obj;
-			if(!other.name.equals(name)){
-				return false;
-			}
-			if(!other.type.equals(type)){
-				return false;
-			}
-			return true;
-		}
-		return false;
-	}
+//	@Override
+//	public boolean equals(Object obj){
+//		if(obj instanceof SDObject){
+//			SDObject other = (SDObject)obj;
+//			if(!other.name.equals(name)){
+//				return false;
+//			}
+//			if(!other.type.equals(type)){
+//				return false;
+//			}
+//			return true;
+//		}
+//		return false;
+//	}
 	
 //	public SDObject(SootClass aClass){
 //		name = GetUniqueName();

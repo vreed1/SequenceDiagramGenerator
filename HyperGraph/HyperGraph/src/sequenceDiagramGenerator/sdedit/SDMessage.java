@@ -36,47 +36,40 @@ public class SDMessage
     	this.callee = sdCallee;
     	this.message = message.getName();
     	isConstruction = false;
-    }
-    
-    public SDMessage(SDObject sdCaller, SDObject sdCallee){
-    	this.caller = sdCaller;
-    	this.callee = sdCallee;
-    	isConstruction = true;
+    	if(this.message.equals("<init>")){
+    		if(this.caller.equals(this.callee)){
+    			this.message = "super";
+    		}
+    		else{
+    			this.message = "new";
+    			isConstruction = true;
+    		}
+    	}
     }
     
     
     @Override
     public String toString() {
-    	if(isConstruction){
-	        StringBuilder msg = new StringBuilder();
-	        
-	        msg.append(caller.GetName());
-	        msg.append(":");
+    	
+        StringBuilder msg = new StringBuilder();
+        
+        msg.append(caller.GetName());
+        if (specifier != null) {
+            msg.append(String.format("[%s]", specifier));
+        }
+        msg.append(":");
+        if (answer != null) {
+            msg.append(String.format("%s=", answer));
+        }
+        if (callee != null) {
             msg.append(callee.GetName());
-	        msg.append(".new");
-	        
-	        return msg.toString();
-    	}
-    	else{
-	        StringBuilder msg = new StringBuilder();
-	        
-	        msg.append(caller.GetName());
-	        if (specifier != null) {
-	            msg.append(String.format("[%s]", specifier));
-	        }
-	        msg.append(":");
-	        if (answer != null) {
-	            msg.append(String.format("%s=", answer));
-	        }
-	        if (callee != null) {
-	            msg.append(callee.GetName());
-	        }
-	        if (mnemonic != null) {
-	            msg.append(String.format("[%s]", mnemonic));
-	        }
-	        msg.append(String.format(".%s", message));
-	        
-	        return msg.toString();
-    	}
+        }
+        if (mnemonic != null) {
+            msg.append(String.format("[%s]", mnemonic));
+        }
+        msg.append(String.format(".%s", message));
+        
+        return msg.toString();
+    	
     }
 }
