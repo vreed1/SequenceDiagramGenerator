@@ -15,6 +15,7 @@ import sequenceDiagramGenerator.sdedit.SDMessage;
 import sequenceDiagramGenerator.sdedit.SDObject;
 import sequenceDiagramGenerator.sdedit.SequenceDiagram;
 import sequenceDiagramGenerator.sootAnalyzer.Analyzer;
+import soot.AbstractValueBox;
 import soot.SootClass;
 import soot.SootMethod;
 import soot.Value;
@@ -40,15 +41,22 @@ public class SDGenerator {
 			String SaveFile) throws Exception{
 
 		SequenceDiagram sd = new SequenceDiagram();
-		SDObject outerObject = new SDObject(aGNode.data.theMethod.getDeclaringClass(), SDObject.GetUniqueName(), false);
-		sd.AddObject(outerObject);
-		MakeArbitraryDiagram(hg, aGNode, sd, outerObject);
+		SDObject outerObject = null;
+		if(aGNode.data.theMethod.isStatic()){
+			outerObject = sd.GetStaticObject(aGNode.data.theMethod.getDeclaringClass());
+		}
+		else{
+			outerObject = new SDObject(aGNode.data.theMethod.getDeclaringClass(), SDObject.GetUniqueName(), false, false);
+			sd.AddObject(outerObject);
+		}
+		MakeArbitraryDiagram("", hg, aGNode, sd, outerObject);
 		//RecFillNodeDiagram(hg,aGNode, sd, SDObject.GetUniqueName());
 		
 		sd.CreatePDF(SaveFile);
 	}
 	
 	private static void MakeArbitraryDiagram(
+			String outerMethodName,
 			Hypergraph<MethodNodeAnnot, EdgeAnnotation> hg,
 			GroupableHyperNode<MethodNodeAnnot, EdgeAnnotation> aGNode,
 			SequenceDiagram sd,
@@ -56,7 +64,9 @@ public class SDGenerator {
 		if(aGNode == null){return;}
 		List<TraceStatement> tstmts = aGNode.data.theTraces;
 		if(tstmts == null || tstmts.size() == 0){return;}
-		RecFillTraceStmtDiagram(hg,
+		RecFillTraceStmtDiagram(
+				outerMethodName,
+				hg,
 				aGNode,
 				tstmts.get(0),
 				sd,
@@ -64,6 +74,7 @@ public class SDGenerator {
 	}
 	
 	private static void RecFillTraceStmtDiagram(
+			String outerMethodName,
 			Hypergraph<MethodNodeAnnot, EdgeAnnotation> hg,
 			GroupableHyperNode<MethodNodeAnnot, EdgeAnnotation> aGNode,
 			TraceStatement aStmt,
@@ -90,7 +101,7 @@ public class SDGenerator {
 			if(jlLeft != null && jne != null){
 				String leftName = jlLeft.getName();
 				SootClass sc = jne.getBaseType().getSootClass();
-				SDObject newObj = new SDObject(sc, "", true);
+				SDObject newObj = new SDObject(sc, "", true, false);
 				sd.AddObject(newObj);
 				sd.AttachNameToObject(leftName, newObj);
 				
@@ -120,7 +131,12 @@ public class SDGenerator {
 				if(lv.size() > 0){
 					Object v = lv.get(0);
 					JimpleLocal jl = extractValue(v);
-					tarObjName = jl.getName();
+					if(jl != null){
+						tarObjName = jl.getName();
+					}
+					else{
+						int hello = 0;
+					}
 				}
 				
 				//grab the three things we need to write a 
@@ -135,9 +151,13 @@ public class SDGenerator {
 				//note source's instance name is passed in from above.
 				//target's is locally available to us.
 				//SDObject sdSource = sd.GetObjectFromName(sourceName);
+				boolean isSuper = false;
 				SDObject sdTarget = null;
 				if(tarObjName.equals("this")){
 					sdTarget = sourceObj;
+					if(outerMethodName.equals(sm.getName())){
+						isSuper = true;
+					}
 				}
 				else{
 					sdTarget = sd.GetObjectFromName(tarObjName);
@@ -148,23 +168,28 @@ public class SDGenerator {
 				//to the existing object.  This may need to change
 				//per the assignment statement problem.
 				if(sdTarget == null){
-					if(tarObjName == null || tarObjName.length() == 0){
-						tarObjName = SDObject.GetUniqueName();
+					if(sm.isStatic()){
+						sdTarget= sd.GetStaticObject(scTarget);
 					}
-					sdTarget = new SDObject(scTarget, tarObjName, false);
-					sd.AddObject(sdTarget);
+					else{
+						if(tarObjName == null || tarObjName.length() == 0){
+							tarObjName = SDObject.GetUniqueName();
+						}
+						sdTarget = new SDObject(scTarget, tarObjName, false, false);
+						sd.AddObject(sdTarget);
+					}
 				}
 				
 				//now that the sd has a source and target, we can
 				//add the message.
-				SDMessage msg = new SDMessage(sourceObj, sdTarget, sm);
+				SDMessage msg = new SDMessage(sourceObj, sdTarget, sm, isSuper);
 				sd.AddMessage(msg);
 				
 				//now that we are "at" the destination point
 				//of the message, we traverse into
 				//the relevant hypernode for that new method.
 				sd.PushNames();
-				MakeArbitraryDiagram(hg, subGNode, sd, sdTarget);
+				MakeArbitraryDiagram(aGNode.data.theMethod.getName(), hg, subGNode, sd, sdTarget);
 				sd.PopNames();
 			}
 			else
@@ -178,7 +203,7 @@ public class SDGenerator {
 		//after we've handled everything in this statement
 		//including any calls and subsequent calls generated
 		//we traverse to the next statement.
-		RecFillTraceStmtDiagram(hg, aGNode, aStmt.theNext, sd, sourceObj);
+		RecFillTraceStmtDiagram(outerMethodName, hg, aGNode, aStmt.theNext, sd, sourceObj);
 	}
 	
 	//helper function to extract a local from a Value
@@ -192,8 +217,8 @@ public class SDGenerator {
 	//in general, at the moment, we don't care about constants.
 	private static JimpleLocal extractValue(Object v){
 		Object obj = null;
-		if(v instanceof JimpleLocalBox){
-			JimpleLocalBox jlb = (JimpleLocalBox)v;
+		if(v instanceof AbstractValueBox){
+			AbstractValueBox jlb = (AbstractValueBox)v;
 			obj = jlb.getValue();
 		}
 		else

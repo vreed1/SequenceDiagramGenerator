@@ -13,13 +13,14 @@ public class SDObject
     private String label;
     private List<ObjectFlag> flags;
     private boolean isConstructed;
+    private boolean isStatic;
     
     private List<String> theCurrentNames;
     private List<String> theNameHistory;
     
     private Stack<List<String>> theCallStackNames;
 
-	public SDObject(SootClass aClass, String startName, boolean aIsConstructed){
+	public SDObject(SootClass aClass, String startName, boolean aIsConstructed, boolean aIsStatic){
 		theCurrentNames = new ArrayList<String>();
 		theNameHistory = new ArrayList<String>();
 		theCallStackNames = new Stack<List<String>>();
@@ -27,6 +28,10 @@ public class SDObject
 		type = aClass.getName();
         this.flags = new ArrayList<ObjectFlag>();
         isConstructed = aIsConstructed;
+        isStatic = aIsStatic;
+        if(isStatic){
+        	label = "<static>:"+type;
+        }
 	}
 	
 	public void PushNames(){
@@ -130,7 +135,7 @@ public class SDObject
 	private static int uniqueName = 0;
 	public static String GetUniqueName(){
 		uniqueName++;
-		return String.valueOf(uniqueName);
+		return "$" + String.valueOf(uniqueName);
 	}
 	public void fixFinalName(List<String> listUsedStrings) {
 		String bestFound = GetUniqueName();

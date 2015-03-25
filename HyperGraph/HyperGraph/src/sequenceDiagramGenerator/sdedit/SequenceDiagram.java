@@ -7,8 +7,11 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 
+import soot.SootClass;
 import utilities.Utilities;
 import net.sf.sdedit.config.Configuration;
 import net.sf.sdedit.config.ConfigurationManager;
@@ -27,6 +30,7 @@ public class SequenceDiagram {
     
     private List<SDObject> objects;
     private List<SDMessage> messages;
+    private Map<SootClass, SDObject> theStaticObjects;
     
     private String diagType = "pdf";
     private String diagFormat = "A4";
@@ -36,6 +40,7 @@ public class SequenceDiagram {
     public SequenceDiagram() {
         objects = new ArrayList<SDObject>();
         messages = new ArrayList<SDMessage>();
+        theStaticObjects = new HashMap<SootClass,SDObject>();
     }
     
     public void AddObject(SDObject obj) {
@@ -58,6 +63,15 @@ public class SequenceDiagram {
     	}
     }
     
+    public SDObject GetStaticObject(SootClass sc){
+    	if(!theStaticObjects.containsKey(sc)){
+    		SDObject newObj = new SDObject(sc, SDObject.GetUniqueName(), false, true);
+    		theStaticObjects.put(sc,  newObj);
+    	}
+		return theStaticObjects.get(sc);
+    	
+    }
+    
     public void AttachNameToObject(String name, SDObject obj){
     	for(SDObject anObj : objects){
     		anObj.DetachName(name);
@@ -77,6 +91,10 @@ public class SequenceDiagram {
     private void NameSafetyCheck(){
     	List<String> listUsedStrings = new ArrayList<String>();
     	for(SDObject anObj : objects){
+    		anObj.fixFinalName(listUsedStrings);
+    		listUsedStrings.add(anObj.GetName());
+    	}
+    	for(SDObject anObj : theStaticObjects.values()){
     		anObj.fixFinalName(listUsedStrings);
     		listUsedStrings.add(anObj.GetName());
     	}
@@ -122,10 +140,16 @@ public class SequenceDiagram {
         String NEW_LINE = "\n";
         
         StringBuilder diagram = new StringBuilder();
+        
+        for(SDObject obj : theStaticObjects.values()){
+        	diagram.append(obj.toString());
+        	diagram.append(NEW_LINE);
+        }
         for (SDObject obj : objects) {
             diagram.append(obj.toString());
             diagram.append(NEW_LINE);
         }
+        
         
         diagram.append(NEW_LINE);
         diagram.append(NEW_LINE);

@@ -17,6 +17,7 @@ public class SDMessage
     private String specifier;
     private String mnemonic;
     private boolean isConstruction;
+    private boolean isSuper;
     
     
     // Simplest possible message <caller>:.<message>
@@ -31,12 +32,16 @@ public class SDMessage
 //        this.specifier = opts.get(MessageOpt.SPECIFIER);
 //    }
     
-    public SDMessage(SDObject sdCaller, SDObject sdCallee, SootMethod message){
+    public SDMessage(SDObject sdCaller, SDObject sdCallee, SootMethod message, boolean aIsSuper){
     	this.caller = sdCaller;
     	this.callee = sdCallee;
     	this.message = message.getName();
     	isConstruction = false;
-    	if(this.message.equals("<init>")){
+    	isSuper = aIsSuper;
+    	if(isSuper){
+    		this.message = "super";
+    	}
+    	else if(this.message.equals("<init>")){
     		if(this.caller.equals(this.callee)){
     			this.message = "super";
     		}
