@@ -34,4 +34,9 @@ public class MethodNodeAnnot {
 		}
 		return false;
 	}
+	
+	@Override
+	public String toString(){
+		return theMethod.getDeclaringClass().getName() + "." + theMethod.getName();
+	}
 }

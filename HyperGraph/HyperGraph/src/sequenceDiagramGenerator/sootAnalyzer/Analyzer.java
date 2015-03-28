@@ -108,7 +108,7 @@ public class Analyzer {
 	//uninteresting, except this is the entry point from UI
 	//for JARs.  AddClassToHypergraph and AddEdgeToHypergraph are 
 	//common between all entries.
-	public static Hypergraph<MethodNodeAnnot, EdgeAnnotation> AnalyzeFromJAR(
+	public static GroupableHypergraph<MethodNodeAnnot, EdgeAnnotation> AnalyzeFromJAR(
 			List<String> listClassNames,
 			String AppendtoClassPath){
 

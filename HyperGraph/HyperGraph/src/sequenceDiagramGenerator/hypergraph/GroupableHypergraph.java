@@ -4,6 +4,7 @@ import java.util.List;
 import java.util.AbstractMap.SimpleEntry;
 
 import sequenceDiagramGenerator.GroupableStmt;
+import sequenceDiagramGenerator.MethodNodeAnnot;
 import soot.SootMethod;
 
 public class GroupableHypergraph<T,A> extends Hypergraph<T,A> {
@@ -49,4 +50,15 @@ public class GroupableHypergraph<T,A> extends Hypergraph<T,A> {
 
         return true;
     }
+
+	public GroupableHyperNode<T, A> GetNodeByName(
+			String search) {
+		for(int i = 0; i < vertices.size(); i++){
+			GroupableHyperNode<T,A> v = (GroupableHyperNode<T,A>)vertices.get(i);
+			if(v.data.toString().equals(search)){
+				return v;
+			}
+		}
+		return null;
+	}
 }

@@ -21,6 +21,7 @@ import sequenceDiagramGenerator.SDGenerator;
 import sequenceDiagramGenerator.SourceCodeType;
 import sequenceDiagramGenerator.hypergraph.EdgeAnnotation;
 import sequenceDiagramGenerator.hypergraph.GroupableHyperNode;
+import sequenceDiagramGenerator.hypergraph.GroupableHypergraph;
 import sequenceDiagramGenerator.hypergraph.HyperNode;
 import sequenceDiagramGenerator.hypergraph.Hypergraph;
 import sequenceDiagramGenerator.sootAnalyzer.Analyzer;
@@ -41,6 +42,73 @@ public class TestUI implements ActionListener{
 	 * Launch the application.
 	 */
 	public static void main(String[] args) {
+		if(args == null || args.length == 0){
+			RunUI();
+		}
+		else if(args[0].equals("-c")){
+			RunCommandLine(args);
+		}
+		else if(args[0].equals("-t")){
+			
+		}
+	}
+	
+	private static void RunCommandLine(String[] args){
+		GroupableHypergraph<MethodNodeAnnot, EdgeAnnotation> hg = null;
+		String ClassPath = GetArgument(args, "-classpath");
+		String Files = GetArgument(args, "-jars");
+		String[] SplitFiles = Files.split(";");
+		File[] jars = new File[SplitFiles.length];
+		for(int i = 0; i < jars.length; i++){
+			jars[i] = new File(SplitFiles[i]);
+		}
+		List<String> listClasses = new ArrayList<String>();
+		try {
+			for(int i = 0; i < jars.length; i++){
+				listClasses.addAll(Utilities.ListClassesInJar(jars[i]));
+				String parentDir;
+					parentDir = jars[i].getCanonicalPath();
+				ClassPath = ClassPath + Utilities.GetClassPathDelim() + parentDir;
+			}
+			hg = Analyzer.AnalyzeFromJAR(listClasses, ClassPath);
+		} catch (IOException e1) {
+			// TODO Auto-generated catch block
+			e1.printStackTrace();
+		}
+		if(hg == null){
+			System.out.println("Could not generate hypergraph");
+			return;
+		}
+		
+		String startMethod = GetArgument(args, "-startmethod");
+		
+		GroupableHyperNode<MethodNodeAnnot, EdgeAnnotation> aNode = hg.GetNodeByName(startMethod);
+		if(aNode == null){
+			System.out.println("Could not find node by name: " + startMethod);
+			return;
+		}
+		String saveFile = GetArgument(args, "-outfile");
+		
+		if(saveFile == null || saveFile.length() == 0){
+			System.out.println("outfile not specified");
+			return;
+		}
+		
+		File aFile = new File(saveFile);
+		if(aFile.exists()){
+			aFile.delete();
+		}
+		
+		try {
+			//this is the interesting call.
+			SDGenerator.Generate(hg, aNode, saveFile);
+		} catch (Exception e1) {
+			// TODO Auto-generated catch block				
+			e1.printStackTrace();
+		}
+	}
+	
+	private static void RunUI(){
 		EventQueue.invokeLater(new Runnable() {
 			public void run() {
 				try {
@@ -51,6 +119,15 @@ public class TestUI implements ActionListener{
 				}
 			}
 		});
+	}
+	
+	private static String GetArgument(String[] args, String tag){
+		for(int i = 0; i < args.length-1; i++){
+			if(args[i].equals(tag)){
+				return args[i+1];
+			}
+		}
+		return "";
 	}
 
 	/**

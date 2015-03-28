@@ -49,7 +49,13 @@ public class SDGenerator {
 			outerObject = new SDObject(aGNode.data.theMethod.getDeclaringClass(), SDObject.GetUniqueName(), false, false);
 			sd.AddObject(outerObject);
 		}
-		MakeArbitraryDiagram("", hg, aGNode, sd, outerObject);
+		MakeArbitraryDiagram(
+				"", 
+				hg, 
+				aGNode, 
+				sd, 
+				outerObject,
+				new ArrayList<String>());
 		//RecFillNodeDiagram(hg,aGNode, sd, SDObject.GetUniqueName());
 		
 		sd.CreatePDF(SaveFile);
@@ -60,7 +66,8 @@ public class SDGenerator {
 			Hypergraph<MethodNodeAnnot, EdgeAnnotation> hg,
 			GroupableHyperNode<MethodNodeAnnot, EdgeAnnotation> aGNode,
 			SequenceDiagram sd,
-			SDObject outerObject) throws Exception{
+			SDObject outerObject,
+			List<String> listCallStack) throws Exception{
 		if(aGNode == null){return;}
 		List<TraceStatement> tstmts = aGNode.data.theTraces;
 		if(tstmts == null || tstmts.size() == 0){return;}
@@ -70,7 +77,8 @@ public class SDGenerator {
 				aGNode,
 				tstmts.get(0),
 				sd,
-				outerObject);
+				outerObject,
+				listCallStack);
 	}
 	
 	private static void RecFillTraceStmtDiagram(
@@ -79,7 +87,8 @@ public class SDGenerator {
 			GroupableHyperNode<MethodNodeAnnot, EdgeAnnotation> aGNode,
 			TraceStatement aStmt,
 			SequenceDiagram sd,
-			SDObject sourceObj) throws Exception
+			SDObject sourceObj,
+			List<String> listCallStack) throws Exception
 	{
 		if(aStmt == null){return;}
 		
@@ -185,12 +194,27 @@ public class SDGenerator {
 				SDMessage msg = new SDMessage(sourceObj, sdTarget, sm, isSuper);
 				sd.AddMessage(msg);
 				
-				//now that we are "at" the destination point
-				//of the message, we traverse into
-				//the relevant hypernode for that new method.
-				sd.PushNames();
-				MakeArbitraryDiagram(aGNode.data.theMethod.getName(), hg, subGNode, sd, sdTarget);
-				sd.PopNames();
+				String CallName = 
+						aGNode.data.theMethod.getDeclaringClass().getName() + 
+						"." +
+						aGNode.data.theMethod.getName();
+				
+				if(!listCallStack.contains(CallName)){
+					listCallStack.add(CallName);
+					//now that we are "at" the destination point
+					//of the message, we traverse into
+					//the relevant hypernode for that new method.
+					sd.PushNames();
+					MakeArbitraryDiagram(
+							aGNode.data.theMethod.getName(), 
+							hg, 
+							subGNode, 
+							sd, 
+							sdTarget,
+							listCallStack);
+					sd.PopNames();
+					listCallStack.remove(listCallStack.size() -1);
+				}
 			}
 			else
 			{
@@ -203,7 +227,14 @@ public class SDGenerator {
 		//after we've handled everything in this statement
 		//including any calls and subsequent calls generated
 		//we traverse to the next statement.
-		RecFillTraceStmtDiagram(outerMethodName, hg, aGNode, aStmt.theNext, sd, sourceObj);
+		RecFillTraceStmtDiagram(
+				outerMethodName, 
+				hg, 
+				aGNode, 
+				aStmt.theNext, 
+				sd, 
+				sourceObj,
+				listCallStack);
 	}
 	
 	//helper function to extract a local from a Value

@@ -6,6 +6,7 @@ import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
 
+import sequenceDiagramGenerator.MethodNodeAnnot;
 import sequenceDiagramGenerator.pebbler.*;
 
 
@@ -322,4 +323,5 @@ public class Hypergraph<T, A>
 		// TODO Auto-generated method stub
 		this.called = true;
 	}
+
 }
