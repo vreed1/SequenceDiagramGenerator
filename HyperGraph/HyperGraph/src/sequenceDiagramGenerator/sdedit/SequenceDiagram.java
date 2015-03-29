@@ -6,6 +6,7 @@ import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
+import java.io.OutputStreamWriter;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
@@ -162,4 +163,22 @@ public class SequenceDiagram {
         return diagram.toString();
         
     }
+
+	public void TestOutput(String saveFile) {
+		OutputStream out = null;
+        try {
+            out = new FileOutputStream(saveFile);
+            OutputStreamWriter sw = new OutputStreamWriter(out);
+            sw.append(this.toString());
+            sw.flush();
+            sw.close(); 
+            sw = null;
+            out = null;
+        }
+        catch(FileNotFoundException e){
+			e.printStackTrace();
+        } catch (IOException e) {
+			e.printStackTrace();
+		}
+	}
 }

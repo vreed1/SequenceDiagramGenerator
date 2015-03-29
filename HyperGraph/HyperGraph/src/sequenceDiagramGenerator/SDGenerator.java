@@ -8,6 +8,7 @@ import java.util.List;
 import sequenceDiagramGenerator.hypergraph.EdgeAnnotation;
 import sequenceDiagramGenerator.hypergraph.GroupableHyperEdge;
 import sequenceDiagramGenerator.hypergraph.GroupableHyperNode;
+import sequenceDiagramGenerator.hypergraph.GroupableHypergraph;
 import sequenceDiagramGenerator.hypergraph.HyperEdge;
 import sequenceDiagramGenerator.hypergraph.HyperNode;
 import sequenceDiagramGenerator.hypergraph.Hypergraph;
@@ -40,6 +41,23 @@ public class SDGenerator {
 			GroupableHyperNode<MethodNodeAnnot, EdgeAnnotation> aGNode,
 			String SaveFile) throws Exception{
 
+		SequenceDiagram sd = GenerateDiagramObj(hg, aGNode, SaveFile);
+		sd.CreatePDF(SaveFile);
+	}
+
+	public static void GenTest(
+			GroupableHypergraph<MethodNodeAnnot, EdgeAnnotation> hg,
+			GroupableHyperNode<MethodNodeAnnot, EdgeAnnotation> aNode,
+			String saveFile) throws Exception {
+		SequenceDiagram sd = GenerateDiagramObj(hg, aNode, saveFile);
+		sd.TestOutput(saveFile);
+	}
+	
+	private static SequenceDiagram GenerateDiagramObj(
+			Hypergraph<MethodNodeAnnot, EdgeAnnotation> hg,
+			GroupableHyperNode<MethodNodeAnnot, EdgeAnnotation> aGNode,
+			String SaveFile) throws Exception{
+
 		SequenceDiagram sd = new SequenceDiagram();
 		SDObject outerObject = null;
 		if(aGNode.data.theMethod.isStatic()){
@@ -57,8 +75,7 @@ public class SDGenerator {
 				outerObject,
 				new ArrayList<String>());
 		//RecFillNodeDiagram(hg,aGNode, sd, SDObject.GetUniqueName());
-		
-		sd.CreatePDF(SaveFile);
+		return sd;
 	}
 	
 	private static void MakeArbitraryDiagram(
@@ -270,6 +287,7 @@ public class SDGenerator {
 		}
 		return null;
 	}
+
 	
 	//Simply begins traversing at the first statement
 	//control will return here if an invoke statement is discovered.
