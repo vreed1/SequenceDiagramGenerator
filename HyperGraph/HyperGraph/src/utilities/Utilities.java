@@ -95,4 +95,17 @@ public final class Utilities {
 		}
 		return listClassNames;
     }
+
+	public static String endWithSlash(String saveDir) {
+		if(isWindows()){
+			if(saveDir.endsWith("\\")){
+				return saveDir;
+			}
+			return saveDir + "\\";
+		}
+		if(saveDir.endsWith("/")){
+			return saveDir;
+		}
+		return saveDir + "/";
+	}
 }

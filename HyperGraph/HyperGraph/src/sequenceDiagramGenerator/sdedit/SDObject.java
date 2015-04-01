@@ -132,10 +132,15 @@ public class SDObject
 //	}
 	
 	
-	private static int uniqueName = 0;
+	public static int uniqueName = 0;
 	public static String GetUniqueName(){
 		uniqueName++;
 		return "$" + String.valueOf(uniqueName);
+	}
+	public static int finalUnnamed = 0;
+	private static String GetFinalDefaultName(){
+		finalUnnamed++;
+		return "Unnamed " + String.valueOf(finalUnnamed);
 	}
 	public void fixFinalName(List<String> listUsedStrings) {
 		String bestFound = GetUniqueName();
@@ -150,6 +155,13 @@ public class SDObject
 			if(testName.length() > bestFound.length()){
 				bestFound = testName;
 			}
+		}
+		if(bestFound.startsWith("$")){
+			String s = GetFinalDefaultName();
+			while(listUsedStrings.contains(s)){
+				s = GetFinalDefaultName();
+			}
+			bestFound = s;
 		}
 		name = bestFound;
 	}

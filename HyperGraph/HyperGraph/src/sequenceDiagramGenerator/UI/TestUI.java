@@ -51,6 +51,9 @@ public class TestUI implements ActionListener{
 		else if(args[0].equals("-t")){
 			RunTest(args);
 		}
+		else if(args[0].equals("-a")){
+			RunAll(args);
+		}
 		else
 		{
 			System.out.println("Bad Input Arg 0 =" + args[0]);
@@ -162,6 +165,61 @@ public class TestUI implements ActionListener{
 		try {
 			//this is the interesting call.
 			SDGenerator.Generate(hg, aNode, saveFile);
+		} catch (Exception e1) {
+			// TODO Auto-generated catch block				
+			e1.printStackTrace();
+		}
+	}
+	
+	private static void RunAll(String[] args){
+		GroupableHypergraph<MethodNodeAnnot, EdgeAnnotation> hg = null;
+		String ClassPath = GetArgument(args, "-classpath");
+		String Files = GetArgument(args, "-jars");
+		String[] SplitFiles = Files.split(";");
+		File[] jars = new File[SplitFiles.length];
+		for(int i = 0; i < jars.length; i++){
+			jars[i] = new File(SplitFiles[i]);
+		}
+		List<String> listClasses = new ArrayList<String>();
+		try {
+			for(int i = 0; i < jars.length; i++){
+				listClasses.addAll(Utilities.ListClassesInJar(jars[i]));
+				String parentDir;
+					parentDir = jars[i].getCanonicalPath();
+				ClassPath = ClassPath + Utilities.GetClassPathDelim() + parentDir;
+			}
+			hg = Analyzer.AnalyzeFromJAR(listClasses, ClassPath);
+		} catch (IOException e1) {
+			// TODO Auto-generated catch block
+			e1.printStackTrace();
+		}
+		if(hg == null){
+			System.out.println("Could not generate hypergraph");
+			return;
+		}
+		
+		String startMethod = GetArgument(args, "-startmethod");
+		
+		GroupableHyperNode<MethodNodeAnnot, EdgeAnnotation> aNode = hg.GetNodeByName(startMethod);
+		if(aNode == null){
+			System.out.println("Could not find node by name: " + startMethod);
+			return;
+		}
+		String saveDir = GetArgument(args, "-outdir");
+		
+		if(saveDir == null || saveDir.length() == 0){
+			System.out.println("outdir not specified");
+			return;
+		}
+		
+		File aFile = new File(saveDir);
+		if(!aFile.isDirectory()){
+			System.out.println("outdir not directory");
+		}
+		
+		try {
+			//this is the interesting call.
+			SDGenerator.GenerateAll(hg, aNode, saveDir);
 		} catch (Exception e1) {
 			// TODO Auto-generated catch block				
 			e1.printStackTrace();

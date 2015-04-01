@@ -24,6 +24,8 @@ import soot.jimple.AssignStmt;
 import soot.jimple.internal.JNewExpr;
 import soot.jimple.internal.JimpleLocal;
 import soot.jimple.internal.JimpleLocalBox;
+import utilities.ByRefInt;
+import utilities.Utilities;
 
 public class SDGenerator {
 	
@@ -33,6 +35,20 @@ public class SDGenerator {
 //		//SDGenerator.GenerateNaiveSequenceDiagram(hg, SaveFile);
 //	}
 	
+	public static void GenerateAll(
+			GroupableHypergraph<MethodNodeAnnot, EdgeAnnotation> hg,
+			GroupableHyperNode<MethodNodeAnnot, EdgeAnnotation> aNode,
+			String saveDir) throws Exception {
+		// TODO Auto-generated method stub
+		List<SequenceDiagram> listSDs = GenerateAllDiagrams(hg, aNode);
+//		SequenceDiagram sd = GenerateDiagramObj(hg, aNode, SaveFile);
+		for(int i = 0; i < listSDs.size(); i++){
+			String outFile = Utilities.endWithSlash(saveDir) + "out" + String.valueOf(i) + ".pdf";
+			listSDs.get(i).CreatePDF(outFile);
+		}
+	}
+	
+
 	//Given a pre-constructed hypergraph
 	//and a hypernode at which to begin traversal
 	//generate a sequence diagram at SaveFile
@@ -53,6 +69,49 @@ public class SDGenerator {
 		sd.TestOutput(saveFile);
 	}
 	
+
+	private static List<SequenceDiagram> GenerateAllDiagrams(
+			GroupableHypergraph<MethodNodeAnnot, EdgeAnnotation> hg,
+			GroupableHyperNode<MethodNodeAnnot, EdgeAnnotation> aNode) throws Exception {
+		
+		List<SequenceDiagram> listToReturn  = new ArrayList<SequenceDiagram>();
+
+		List<List<Integer>> listOfOptions = GetAllChoicesFromNode(hg, aNode);
+		
+		for(int i = 0; i < listOfOptions.size(); i++){
+			SDObject.finalUnnamed = 0;
+			SequenceDiagram sd = new SequenceDiagram();
+			SDObject outerObject = null;
+			if(aNode.data.theMethod.isStatic()){
+				outerObject = sd.GetStaticObject(aNode.data.theMethod.getDeclaringClass());
+			}
+			else{
+				outerObject = new SDObject(aNode.data.theMethod.getDeclaringClass(), SDObject.GetUniqueName(), false, false);
+				sd.AddObject(outerObject);
+			}
+			MakeDiagram(
+					"", 
+					hg, 
+					aNode, 
+					sd, 
+					outerObject,
+					new ArrayList<String>(),
+					listOfOptions.get(i),
+					new ByRefInt(0));
+			listToReturn.add(sd);
+		}
+		return listToReturn;
+	}
+	
+	//STARTHERE.
+	private static List<List<Integer>> GetAllChoicesFromNode(
+			GroupableHypergraph<MethodNodeAnnot, EdgeAnnotation> hg, 
+			GroupableHyperNode<MethodNodeAnnot, EdgeAnnotation> aNode) {
+		//TODO: Write this or figure something else out here.
+		return new ArrayList<List<Integer>>();
+	}
+
+
 	private static SequenceDiagram GenerateDiagramObj(
 			Hypergraph<MethodNodeAnnot, EdgeAnnotation> hg,
 			GroupableHyperNode<MethodNodeAnnot, EdgeAnnotation> aGNode,
@@ -67,35 +126,49 @@ public class SDGenerator {
 			outerObject = new SDObject(aGNode.data.theMethod.getDeclaringClass(), SDObject.GetUniqueName(), false, false);
 			sd.AddObject(outerObject);
 		}
-		MakeArbitraryDiagram(
+		MakeDiagram(
 				"", 
 				hg, 
 				aGNode, 
 				sd, 
 				outerObject,
-				new ArrayList<String>());
+				new ArrayList<String>(),
+				null,
+				new ByRefInt(0));
 		//RecFillNodeDiagram(hg,aGNode, sd, SDObject.GetUniqueName());
 		return sd;
 	}
 	
-	private static void MakeArbitraryDiagram(
+	private static void MakeDiagram(
 			String outerMethodName,
 			Hypergraph<MethodNodeAnnot, EdgeAnnotation> hg,
 			GroupableHyperNode<MethodNodeAnnot, EdgeAnnotation> aGNode,
 			SequenceDiagram sd,
 			SDObject outerObject,
-			List<String> listCallStack) throws Exception{
+			List<String> listCallStack,
+			List<Integer> options,
+			ByRefInt optionIndex) throws Exception{
+	
 		if(aGNode == null){return;}
 		List<TraceStatement> tstmts = aGNode.data.theTraces;
 		if(tstmts == null || tstmts.size() == 0){return;}
+
+		int choice = 0;
+		if(options != null){
+			choice = options.get(optionIndex.theInt);
+		}
+		optionIndex.theInt = optionIndex.theInt + 1;
 		RecFillTraceStmtDiagram(
 				outerMethodName,
 				hg,
 				aGNode,
-				tstmts.get(0),
+				tstmts.get(choice),
 				sd,
 				outerObject,
-				listCallStack);
+				listCallStack,
+				options,
+				optionIndex);
+		return;
 	}
 	
 	private static void RecFillTraceStmtDiagram(
@@ -105,7 +178,9 @@ public class SDGenerator {
 			TraceStatement aStmt,
 			SequenceDiagram sd,
 			SDObject sourceObj,
-			List<String> listCallStack) throws Exception
+			List<String> listCallStack,
+			List<Integer> options,
+			ByRefInt optionIndex) throws Exception
 	{
 		if(aStmt == null){return;}
 		
@@ -222,13 +297,15 @@ public class SDGenerator {
 					//of the message, we traverse into
 					//the relevant hypernode for that new method.
 					sd.PushNames();
-					MakeArbitraryDiagram(
+					MakeDiagram(
 							aGNode.data.theMethod.getName(), 
 							hg, 
 							subGNode, 
 							sd, 
 							sdTarget,
-							listCallStack);
+							listCallStack,
+							options,
+							optionIndex);
 					sd.PopNames();
 					listCallStack.remove(listCallStack.size() -1);
 				}
@@ -251,7 +328,10 @@ public class SDGenerator {
 				aStmt.theNext, 
 				sd, 
 				sourceObj,
-				listCallStack);
+				listCallStack,
+				options,
+				optionIndex);
+		return;
 	}
 	
 	//helper function to extract a local from a Value
@@ -287,6 +367,8 @@ public class SDGenerator {
 		}
 		return null;
 	}
+
+
 
 	
 	//Simply begins traversing at the first statement
