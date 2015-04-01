@@ -149,7 +149,7 @@ public class SDObject
 		return "Unnamed " + String.valueOf(finalUnnamed);
 	}
 	public void fixFinalName(List<String> listUsedStrings) {
-		String bestFound = GetUniqueName();
+		String bestFound = "";
 		for(int i = 0; i < theNameHistory.size(); i++){
 			String testName = theNameHistory.get(i);
 			if(listUsedStrings.contains(testName)){
@@ -162,7 +162,7 @@ public class SDObject
 				bestFound = testName;
 			}
 		}
-		if(bestFound.startsWith("$")){
+		if(bestFound.equals("") || bestFound.startsWith("$")){
 			String s = GetFinalDefaultName();
 			while(listUsedStrings.contains(s)){
 				s = GetFinalDefaultName();
