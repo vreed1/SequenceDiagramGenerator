@@ -330,7 +330,9 @@ public class SDGenerator {
 							sd, 
 							sdTarget,
 							listCallStack);
-					sd.PopNames();
+					for(int i = 0; i < toReturn.size(); i++){
+						toReturn.get(i).PopNames();
+					}
 					listCallStack.remove(listCallStack.size() -1);
 				}
 			}
