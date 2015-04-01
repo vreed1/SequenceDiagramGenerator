@@ -5,6 +5,7 @@ import java.util.List;
 import java.util.Stack;
 
 import soot.SootClass;
+import soot.Type;
 
 public class SDObject
 {
@@ -22,6 +23,24 @@ public class SDObject
     private Stack<List<String>> theCallStackNames;
 
     private static int idbase = 0;
+
+	public SDObject(Type sc, String startName, boolean aIsConstructed,
+			boolean aIsStatic) {
+		theCurrentNames = new ArrayList<String>();
+		theNameHistory = new ArrayList<String>();
+		theCallStackNames = new Stack<List<String>>();
+		AttachName(startName);
+		type = sc.toString();
+        this.flags = new ArrayList<ObjectFlag>();
+        isConstructed = aIsConstructed;
+        isStatic = aIsStatic;
+        if(isStatic){
+        	label = "<static>:"+type;
+        }
+        ID = idbase;
+        idbase++;
+	}
+    
 	public SDObject(SootClass aClass, String startName, boolean aIsConstructed, boolean aIsStatic){
 		theCurrentNames = new ArrayList<String>();
 		theNameHistory = new ArrayList<String>();
@@ -61,6 +80,7 @@ public class SDObject
 		theCallStackNames = aCallStackNames;
 	}
 	
+
 	public SDObject clone(){
 		
 		List<String> newCurrentNames = new ArrayList<String>(theCurrentNames);
@@ -156,6 +176,9 @@ public class SDObject
 				continue;
 			}
 			if(testName.startsWith("$")){
+				continue;
+			}
+			if(testName.startsWith("@")){
 				continue;
 			}
 			if(testName.length() > bestFound.length()){

@@ -12,7 +12,7 @@ import java.util.zip.ZipInputStream;
 public final class Utilities {
     private Utilities() {}
     
-    public static final boolean DEBUG = false;
+    public static final boolean DEBUG = true;
     
     public static final String NEWLINE = System.getProperty("line.separator");
     
