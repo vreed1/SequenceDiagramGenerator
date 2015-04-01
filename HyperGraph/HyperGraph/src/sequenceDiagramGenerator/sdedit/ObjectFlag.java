@@ -7,4 +7,5 @@ public enum ObjectFlag {
     ObjectFlag(String t) { tag = t; }
     
     public String tag() { return tag; }
+    
 }

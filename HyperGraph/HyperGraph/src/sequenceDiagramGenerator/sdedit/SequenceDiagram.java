@@ -29,7 +29,7 @@ import net.sf.sdedit.util.Pair;
 
 public class SequenceDiagram {
     
-    private List<SDObject> objects;
+    private Map<Integer, SDObject> objects;
     private List<SDMessage> messages;
     private Map<SootClass, SDObject> theStaticObjects;
     
@@ -37,15 +37,42 @@ public class SequenceDiagram {
     private String diagFormat = "A4";
     private String diagOrientation = "portrait";
     
+    public SequenceDiagram clone(){
+    	SequenceDiagram aClone = new SequenceDiagram();
+    	for(SDObject anObj : objects.values()){
+    		SDObject aobjClone = anObj.clone();
+    		aClone.AddObject(aobjClone);
+    	}
+
+    	for(SootClass aClass : theStaticObjects.keySet()){
+    		SDObject anObj = theStaticObjects.get(aClass);
+    		SDObject aobjClone = anObj.clone();
+    		aClone.AddStaticObject(aClass, aobjClone);
+    	}
+    	
+    	for(SDMessage aMsg : messages){
+    		SDMessage aMsgClone = aMsg.clone();
+    		aClone.AddMessage(aMsgClone);
+    	}
+    	return aClone;
+    }
     
     public SequenceDiagram() {
-        objects = new ArrayList<SDObject>();
+        objects = new HashMap<Integer, SDObject>();
         messages = new ArrayList<SDMessage>();
         theStaticObjects = new HashMap<SootClass,SDObject>();
     }
     
+    private Map<Integer, SDObject> getCombinedMap(){
+    	Map<Integer,SDObject> aMap = new HashMap<Integer,SDObject>(objects);
+    	for(SDObject anObj : theStaticObjects.values()){
+    		aMap.put(anObj.ID, anObj);
+    	}
+    	return aMap;
+    }
+    
     public void AddObject(SDObject obj) {
-    	objects.add(obj);
+    	objects.put(new Integer(obj.ID), obj);
     }
     
     public void AddMessage(SDMessage msg) {
@@ -53,15 +80,19 @@ public class SequenceDiagram {
     }
     
     public void PushNames(){
-    	for(SDObject anObj : objects){
+    	for(SDObject anObj : objects.values()){
     		anObj.PushNames();
     	}
     }
     
     public void PopNames(){
-    	for(SDObject anObj : objects){
+    	for(SDObject anObj : objects.values()){
     		anObj.PopNames();
     	}
+    }
+    
+    public void AddStaticObject(SootClass key, SDObject value){
+    	theStaticObjects.put(key, value);
     }
     
     public SDObject GetStaticObject(SootClass sc){
@@ -74,14 +105,15 @@ public class SequenceDiagram {
     }
     
     public void AttachNameToObject(String name, SDObject obj){
-    	for(SDObject anObj : objects){
+    	for(SDObject anObj : objects.values()){
     		anObj.DetachName(name);
     	}
+    	//There is a problem here.
     	obj.AttachName(name);
     }
     
     public SDObject GetObjectFromName(String name){
-    	for(SDObject anObj : objects){
+    	for(SDObject anObj : objects.values()){
     		if(anObj.MatchesName(name)){
     			return anObj;
     		}
@@ -91,7 +123,7 @@ public class SequenceDiagram {
     
     private void NameSafetyCheck(){
     	List<String> listUsedStrings = new ArrayList<String>();
-    	for(SDObject anObj : objects){
+    	for(SDObject anObj : objects.values()){
     		anObj.fixFinalName(listUsedStrings);
     		listUsedStrings.add(anObj.GetName());
     	}
@@ -146,7 +178,7 @@ public class SequenceDiagram {
         	diagram.append(obj.toString());
         	diagram.append(NEW_LINE);
         }
-        for (SDObject obj : objects) {
+        for (SDObject obj : objects.values()) {
             diagram.append(obj.toString());
             diagram.append(NEW_LINE);
         }
@@ -155,8 +187,10 @@ public class SequenceDiagram {
         diagram.append(NEW_LINE);
         diagram.append(NEW_LINE);
         
+        Map<Integer, SDObject> aMap = getCombinedMap();
+        
         for (SDMessage msg : messages) {
-            diagram.append(msg.toString());
+            diagram.append(msg.toString(aMap));
             diagram.append(NEW_LINE);
         }
         
@@ -180,5 +214,17 @@ public class SequenceDiagram {
         } catch (IOException e) {
 			e.printStackTrace();
 		}
+	}
+
+	public SDObject GetObjectFromID(int sourceObjID) {
+		if(objects.containsKey(sourceObjID)){
+			return objects.get(sourceObjID);
+		}
+		for(SDObject anObj : theStaticObjects.values()){
+			if(anObj.ID == sourceObjID){
+				return anObj;
+			}
+		}
+		return null;
 	}
 }

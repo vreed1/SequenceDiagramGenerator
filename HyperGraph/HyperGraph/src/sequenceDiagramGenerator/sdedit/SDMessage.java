@@ -1,5 +1,6 @@
 package sequenceDiagramGenerator.sdedit;
 import java.util.Dictionary;
+import java.util.Map;
 
 import soot.SootMethod;
 
@@ -10,8 +11,12 @@ public class SDMessage
     // Only <caller>:.<message> is required
     //private String caller;
     //private String callee;
-	private SDObject caller;
-	private SDObject callee;
+	//private SDObject caller;
+	//private SDObject callee;
+	
+	private int callerID;
+	private int calleeID;
+	
     private String answer;
     private String message;
     private String specifier;
@@ -32,9 +37,36 @@ public class SDMessage
 //        this.specifier = opts.get(MessageOpt.SPECIFIER);
 //    }
     
+    public SDMessage clone(){
+    	return new SDMessage(callerID, calleeID, answer,
+    			message,specifier,mnemonic,isConstruction,isSuper);
+    }
+    
+    private SDMessage(
+    		int aCallerID,
+    		int aCalleeID,
+    		String aAnswer,
+    		String aMessage,
+    		String aSpecifier,
+    		String aMnemonic,
+    		boolean aIsCons,
+    		boolean aIsSuper){
+    	callerID = aCallerID;
+    	calleeID = aCalleeID;
+    	answer = aAnswer;
+    	message = aMessage;
+    	specifier = aSpecifier;
+    	mnemonic = aMnemonic;
+    	isConstruction = aIsCons;
+    	isSuper = aIsSuper;
+    }
+    
+    
     public SDMessage(SDObject sdCaller, SDObject sdCallee, SootMethod message, boolean aIsSuper){
-    	this.caller = sdCaller;
-    	this.callee = sdCallee;
+    	//this.caller = sdCaller;
+    	//this.callee = sdCallee;
+    	this.calleeID = sdCallee.ID;
+    	this.callerID = sdCaller.ID;
     	this.message = message.getName();
     	isConstruction = false;
     	isSuper = aIsSuper;
@@ -42,7 +74,7 @@ public class SDMessage
     		this.message = "super";
     	}
     	else if(this.message.equals("<init>")){
-    		if(this.caller.equals(this.callee)){
+    		if(sdCaller.equals(sdCallee)){
     			this.message = "super";
     		}
     		else{
@@ -52,12 +84,12 @@ public class SDMessage
     	}
     }
     
-    
-    @Override
-    public String toString() {
+  
+    public String toString(Map<Integer, SDObject> aMap) {
     	
         StringBuilder msg = new StringBuilder();
-        
+        SDObject caller = aMap.get(this.callerID);
+        SDObject callee = aMap.get(this.calleeID);
         msg.append(caller.GetName());
         if (specifier != null) {
             msg.append(String.format("[%s]", specifier));
