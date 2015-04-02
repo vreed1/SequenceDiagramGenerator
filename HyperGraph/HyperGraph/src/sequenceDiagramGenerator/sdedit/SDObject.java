@@ -2,6 +2,7 @@ package sequenceDiagramGenerator.sdedit;
 
 import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 import java.util.Stack;
@@ -122,7 +123,17 @@ public class SDObject
 		if(!theFields.containsKey(fname)){
 			SDObject newObj;
 			if(theSootClass != null){
-				SootField sf = theSootClass.getField(fname);
+				SootField sf = null;
+				Iterator<SootField> isf = theSootClass.getFields().iterator();
+				//this doesn't work.
+				//SootField sf = theSootClass.getField(fname);
+				while(isf.hasNext()){
+					SootField asf = isf.next();
+					if(asf.getName().equals(fname)){
+						sf = asf;
+						break;
+					}
+				}
 				Type t = sf.getType();
 				newObj = new SDObject(t, "", false, sf.isStatic());
 			}
@@ -217,10 +228,10 @@ public class SDObject
 		if(nameFixed){
 			return name;}
 		else{
-			if(this.theCurrentNames.size() > 0){
-				return this.theCurrentNames.get(0);
+			if(this.theCurrentNames.size() == 0){
+				this.AttachName(SDObject.GetUniqueName());
 			}
-			return "";
+			return this.theCurrentNames.get(0);
 		}
 	}
 	

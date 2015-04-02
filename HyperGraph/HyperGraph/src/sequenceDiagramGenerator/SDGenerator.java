@@ -24,6 +24,7 @@ import soot.Value;
 import soot.jimple.AssignStmt;
 import soot.jimple.IdentityStmt;
 import soot.jimple.ParameterRef;
+import soot.jimple.StaticFieldRef;
 import soot.jimple.internal.IdentityRefBox;
 import soot.jimple.internal.JInstanceFieldRef;
 import soot.jimple.internal.JNewExpr;
@@ -497,6 +498,20 @@ public class SDGenerator {
 		else if(v instanceof IdentityRefBox){
 			IdentityRefBox b = (IdentityRefBox)v;
 			obj = b.getValue();
+		}
+		else if(v instanceof StaticFieldRef){
+			StaticFieldRef sfr = (StaticFieldRef)v;
+			SootField sf = sfr.getField();
+			String s=sf.getName();
+			SootClass sc = sf.getDeclaringClass();
+			SDObject sdo = sd.GetStaticObject(sc);
+			if(mode == 0){
+				return sdo.getField(s, sd);
+			}
+			else{
+				return sdo.GetName() + "." + s;
+			}
+			
 		}
 		else if(v instanceof JInstanceFieldRef){
 			JInstanceFieldRef ret = (JInstanceFieldRef)v;
