@@ -26,7 +26,7 @@ public class SDObject
     
     private Stack<List<String>> theCallStackNames;
     
-    private Map<String, SDObject> theFields;
+    private Map<String, Integer> theFields;
 
     private static int idbase = 0;
     
@@ -37,7 +37,7 @@ public class SDObject
 		theCurrentNames = new ArrayList<String>();
 		theNameHistory = new ArrayList<String>();
 		theCallStackNames = new Stack<List<String>>();
-		theFields = new HashMap<String, SDObject>();
+		theFields = new HashMap<String, Integer>();
 		AttachName(startName);
 		type = sc.toString();
         this.flags = new ArrayList<ObjectFlag>();
@@ -48,14 +48,18 @@ public class SDObject
         }
         ID = idbase;
         idbase++;
-        theSootClass = Scene.v().getSootClass(type);
+        try{
+        	theSootClass = Scene.v().getSootClass(type);}
+        catch(java.lang.RuntimeException ex){
+        	System.out.println("Unfound SootClass: " + type);
+        }
 	}
     
 	public SDObject(SootClass aClass, String startName, boolean aIsConstructed, boolean aIsStatic){
 		theCurrentNames = new ArrayList<String>();
 		theNameHistory = new ArrayList<String>();
 		theCallStackNames = new Stack<List<String>>();
-		theFields = new HashMap<String, SDObject>();
+		theFields = new HashMap<String, Integer>();
 		AttachName(startName);
 		type = aClass.getName();
         this.flags = new ArrayList<ObjectFlag>();
@@ -69,11 +73,11 @@ public class SDObject
         theSootClass = aClass;
 	}
 	
-	private SDObject(String typeName, String startName, boolean isCons, boolean isStat){
+	public SDObject(String typeName, String startName, boolean isCons, boolean isStat){
 		theCurrentNames = new ArrayList<String>();
 		theNameHistory = new ArrayList<String>();
 		theCallStackNames = new Stack<List<String>>();
-		theFields = new HashMap<String, SDObject>();
+		theFields = new HashMap<String, Integer>();
 		AttachName(startName);
 		type = typeName;
         this.flags = new ArrayList<ObjectFlag>();
@@ -98,7 +102,7 @@ public class SDObject
 			List<String> aCurrentNames,
 			List<String> aNameHistory,
 			Stack<List<String>> aCallStackNames,
-			Map<String, SDObject> aFields,
+			Map<String, Integer> aFields,
 			SootClass sc){
 		ID = aID;
 		name = aName;
@@ -114,19 +118,21 @@ public class SDObject
 		theSootClass = sc;
 	}
 	
-	public SDObject getField(String fname){
+	public SDObject getField(String fname, SequenceDiagram sd){
 		if(!theFields.containsKey(fname)){
+			SDObject newObj;
 			if(theSootClass != null){
 				SootField sf = theSootClass.getField(fname);
 				Type t = sf.getType();
-				SDObject newObj = new SDObject(t, "", false, sf.isStatic());
+				newObj = new SDObject(t, "", false, sf.isStatic());
 			}
 			else{
-				SDObject newObj = new SDObject("UnknownType", "", false, false);
-				
+				newObj = new SDObject("UnknownType", "", false, false);
 			}
+			sd.AddObject(newObj);
+			theFields.put(fname, newObj.ID);
 		}
-		return theFields.get(fname);
+		return sd.GetObjectFromID(theFields.get(fname));
 	}
 
 	public SDObject clone(){
@@ -146,11 +152,9 @@ public class SDObject
 			theCallStackNames.push(l);
 			newNameStack.push(lCopy);
 		}
-		Map<String, SDObject> aFields = new HashMap<String, SDObject>();
+		Map<String, Integer> aFields = new HashMap<String, Integer>();
 		for(String fKey : theFields.keySet()){
-			SDObject oldField = theFields.get(fKey);
-			SDObject newObj = oldField.clone();
-			aFields.put(fKey, newObj);
+			aFields.put(fKey, theFields.get(fKey));
 		}
 		
 		SDObject anObj = new SDObject(ID,name,type,label,flags,
@@ -255,5 +259,10 @@ public class SDObject
 			bestFound = s;
 		}
 		name = bestFound;
+		nameFixed =true;
+	}
+
+	public void setField(String key, SDObject value) {
+		theFields.put(key, value.ID);
 	}
 }

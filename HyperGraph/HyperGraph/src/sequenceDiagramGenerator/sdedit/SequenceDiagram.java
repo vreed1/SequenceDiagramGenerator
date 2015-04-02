@@ -11,6 +11,7 @@ import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.regex.Pattern;
 
 import soot.SootClass;
 import utilities.Utilities;
@@ -105,11 +106,19 @@ public class SequenceDiagram {
     }
     
     public void AttachNameToObject(String name, SDObject obj){
-    	for(SDObject anObj : objects.values()){
-    		anObj.DetachName(name);
+    	if(name.contains(".")){
+    		String[] parts = name.split(Pattern.quote("."));
+    		if(parts.length > 2){throw new RuntimeException("Should not have mulitple-reference");}
+    		SDObject sdObj = this.GetObjectFromName(parts[0]);
+    		sdObj.setField(parts[1], obj);
     	}
-    	//There is a problem here.
-    	obj.AttachName(name);
+    	else{
+	    	for(SDObject anObj : objects.values()){
+	    		anObj.DetachName(name);
+	    	}
+	    	//There is a problem here.
+	    	obj.AttachName(name);
+    	}
     }
     
     public SDObject GetObjectFromName(String name){

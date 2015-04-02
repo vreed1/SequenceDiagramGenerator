@@ -252,33 +252,33 @@ public class SDGenerator {
 		if(aStmt.theStmt instanceof AssignStmt){
 			AssignStmt assignStmt = (AssignStmt)aStmt.theStmt;
 			
-			//HandleAssignment(assignStmt, sd);
+			HandleAssignment(assignStmt, sd);
 			
-			JimpleLocal jlLeft = extractValue(assignStmt.getLeftOp());
-			JimpleLocal jlRight = extractValue(assignStmt.getRightOp());
-			
-			if(jlLeft != null && jlRight != null){
-				String leftName = jlLeft.getName();
-				String rightName = jlRight.getName();
-				SDObject sdRight = sd.GetObjectFromName(rightName);
-				sd.AttachNameToObject(leftName, sdRight);
-			}
-			else{
-				JNewExpr jne = extractNew(assignStmt.getRightOp());
-				if(jlLeft != null && jne != null){
-					String leftName = jlLeft.getName();
-					SootClass sc = jne.getBaseType().getSootClass();
-					SDObject newObj = new SDObject(sc, "", true, false);
-					sd.AddObject(newObj);
-					sd.AttachNameToObject(leftName, newObj);
-					
-					//SDMessage creationMessage = new SDMessage(sourceObj, newObj);
-					//sd.AddMessage(creationMessage);
-				}
-				else{
-
-				}
-			}
+//			JimpleLocal jlLeft = extractValue(assignStmt.getLeftOp());
+//			JimpleLocal jlRight = extractValue(assignStmt.getRightOp());
+//			
+//			if(jlLeft != null && jlRight != null){
+//				String leftName = jlLeft.getName();
+//				String rightName = jlRight.getName();
+//				SDObject sdRight = sd.GetObjectFromName(rightName);
+//				sd.AttachNameToObject(leftName, sdRight);
+//			}
+//			else{
+//				JNewExpr jne = extractNew(assignStmt.getRightOp());
+//				if(jlLeft != null && jne != null){
+//					String leftName = jlLeft.getName();
+//					SootClass sc = jne.getBaseType().getSootClass();
+//					SDObject newObj = new SDObject(sc, "", true, false);
+//					sd.AddObject(newObj);
+//					sd.AttachNameToObject(leftName, newObj);
+//					
+//					//SDMessage creationMessage = new SDMessage(sourceObj, newObj);
+//					//sd.AddMessage(creationMessage);
+//				}
+//				else{
+//
+//				}
+//			}
 		}
 		//If a statement contains an invoke expression
 		//that expression must be extracted, we must find
@@ -473,6 +473,11 @@ public class SDGenerator {
 		if(rightObj != null){
 			sd.AttachNameToObject(leftName, rightObj);
 		}
+		else{
+			rightObj = new SDObject("UnknownType", leftName, false, false);
+			sd.AddObject(rightObj);
+			sd.AttachNameToObject(leftName, rightObj);
+		}
 
 	}
 	
@@ -499,11 +504,14 @@ public class SDGenerator {
 			SDObject baseObj = extractObject(val, sd);
 			SootField sf = ret.getField();
 			if(mode == 0){
-				return baseObj.getField(sf.getName());
+				return baseObj.getField(sf.getName(), sd);
 			}
 			else if(mode == 1){
 				return baseObj.GetName() + "." + sf.getName();
 			}
+		}
+		else{
+			obj = v;
 		}
 		if(obj instanceof JimpleLocal){
 			JimpleLocal jl = (JimpleLocal)obj;
