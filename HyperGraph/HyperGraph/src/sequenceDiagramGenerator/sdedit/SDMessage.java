@@ -14,8 +14,8 @@ public class SDMessage
 	//private SDObject caller;
 	//private SDObject callee;
 	
-	private int callerID;
-	private int calleeID;
+	public int callerID;
+	public int calleeID;
 	
     private String answer;
     private String message;

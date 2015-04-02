@@ -127,6 +127,11 @@ public class SequenceDiagram {
     			return anObj;
     		}
     	}
+    	for(SDObject anObj : theStaticObjects.values()){
+    		if(anObj.MatchesName(name)){
+    			return anObj;
+    		}
+    	}
     	return null;
     }
     
@@ -183,13 +188,23 @@ public class SequenceDiagram {
         
         StringBuilder diagram = new StringBuilder();
         
+        List<Integer> usedIDs = new ArrayList<Integer>();
+        for(SDMessage aMsg : messages){
+        	usedIDs.add(aMsg.calleeID);
+        	usedIDs.add(aMsg.callerID);
+        }
+        
         for(SDObject obj : theStaticObjects.values()){
-        	diagram.append(obj.toString());
-        	diagram.append(NEW_LINE);
+        	if(usedIDs.contains(obj.ID)){
+        		diagram.append(obj.toString());
+        		diagram.append(NEW_LINE);
+        	}
         }
         for (SDObject obj : objects.values()) {
-            diagram.append(obj.toString());
-            diagram.append(NEW_LINE);
+            if(usedIDs.contains(obj.ID)){
+            	diagram.append(obj.toString());
+            	diagram.append(NEW_LINE);
+            }
         }
         
         
