@@ -18,12 +18,14 @@ import sequenceDiagramGenerator.sdedit.SequenceDiagram;
 import sequenceDiagramGenerator.sootAnalyzer.Analyzer;
 import soot.AbstractValueBox;
 import soot.SootClass;
+import soot.SootField;
 import soot.SootMethod;
 import soot.Value;
 import soot.jimple.AssignStmt;
 import soot.jimple.IdentityStmt;
 import soot.jimple.ParameterRef;
 import soot.jimple.internal.IdentityRefBox;
+import soot.jimple.internal.JInstanceFieldRef;
 import soot.jimple.internal.JNewExpr;
 import soot.jimple.internal.JimpleLocal;
 import soot.jimple.internal.JimpleLocalBox;
@@ -249,6 +251,9 @@ public class SDGenerator {
 		}
 		if(aStmt.theStmt instanceof AssignStmt){
 			AssignStmt assignStmt = (AssignStmt)aStmt.theStmt;
+			
+			//HandleAssignment(assignStmt, sd);
+			
 			JimpleLocal jlLeft = extractValue(assignStmt.getLeftOp());
 			JimpleLocal jlRight = extractValue(assignStmt.getRightOp());
 			
@@ -269,6 +274,9 @@ public class SDGenerator {
 					
 					//SDMessage creationMessage = new SDMessage(sourceObj, newObj);
 					//sd.AddMessage(creationMessage);
+				}
+				else{
+
 				}
 			}
 		}
@@ -372,6 +380,9 @@ public class SDGenerator {
 							sd.AttachNameToObject("@parameter" + String.valueOf(i), params.get(i));
 						}
 					}
+					if(sdTarget != null && !sdTarget.isStatic){
+						sd.AttachNameToObject("this", sdTarget);
+					}
 					if(FindAll){
 						toReturn = MakeAllDiagrams(
 								aGNode.data.theMethod.getName(), 
@@ -443,168 +454,79 @@ public class SDGenerator {
 		}
 	}
 	
-//	private static void RecFillTraceStmtDiagram(
-//			String outerMethodName,
-//			Hypergraph<MethodNodeAnnot, EdgeAnnotation> hg,
-//			GroupableHyperNode<MethodNodeAnnot, EdgeAnnotation> aGNode,
-//			TraceStatement aStmt,
-//			SequenceDiagram sd,
-//			SDObject sourceObj,
-//			List<String> listCallStack,
-//			List<Integer> options,
-//			ByRefInt optionIndex) throws Exception
-//	{
-//		if(aStmt == null){return;}
-//		
-//		//This is the point where I am currently attempting to handle
-//		//assignment statements.
-//		//This is not completed.
-//		if(aStmt.theStmt instanceof AssignStmt){
-//			AssignStmt assignStmt = (AssignStmt)aStmt.theStmt;
-//			JimpleLocal jlLeft = extractValue(assignStmt.getLeftOp());
-//			JimpleLocal jlRight = extractValue(assignStmt.getRightOp());
-//			
-//			if(jlLeft != null && jlRight != null){
-//				String leftName = jlLeft.getName();
-//				String rightName = jlRight.getName();
-//				SDObject sdRight = sd.GetObjectFromName(rightName);
-//				sd.AttachNameToObject(leftName, sdRight);
-//			}
-//			JNewExpr jne = extractNew(assignStmt.getRightOp());
-//			if(jlLeft != null && jne != null){
-//				String leftName = jlLeft.getName();
-//				SootClass sc = jne.getBaseType().getSootClass();
-//				SDObject newObj = new SDObject(sc, "", true, false);
-//				sd.AddObject(newObj);
-//				sd.AttachNameToObject(leftName, newObj);
-//				
-//				//SDMessage creationMessage = new SDMessage(sourceObj, newObj);
-//				//sd.AddMessage(creationMessage);
-//			}
-//		}
-//		//If a statement contains an invoke expression
-//		//that expression must be extracted, we must find
-//		//the relevant hyperedge out of the current node
-//		//and traverse it.
-//		if(aStmt.theStmt.containsInvokeExpr()){
-//			SootMethod calledMethod = aStmt.theStmt.getInvokeExpr().getMethod();
-//			GroupableHyperEdge<EdgeAnnotation> gEdge = aGNode.GetGroupableEdge(calledMethod);
-//			if(gEdge != null){
-//				GroupableHyperNode<MethodNodeAnnot, EdgeAnnotation> subGNode = 
-//						(GroupableHyperNode<MethodNodeAnnot, EdgeAnnotation>) hg.GetCompleteNode(gEdge.targetNode);
-//				
-//				//If an object doesn't have an instance name
-//				//(might be static)
-//				//this might not work, in which case
-//				//the initial assignment to getuniquename
-//				//must suffice for the name
-//				List<Value> lv = aStmt.theStmt.getInvokeExpr().getUseBoxes();
-//				
-//				String tarObjName = "";
-//				if(lv.size() > 0){
-//					Object v = lv.get(0);
-//					JimpleLocal jl = extractValue(v);
-//					if(jl != null){
-//						tarObjName = jl.getName();
-//					}
-//					else{
-//						int hello = 0;
-//					}
-//				}
-//				
-//				//grab the three things we need to write a 
-//				//message into sd, source, target, message
-//				
-//				SootMethod sm = subGNode.data.theMethod;
-//				SootClass scTarget = sm.getDeclaringClass();
-//				SootClass scSource = aGNode.data.theMethod.getDeclaringClass();
-//				
-//				//SDObjects for source and target are created with
-//				//two piece of information, class and instance name
-//				//note source's instance name is passed in from above.
-//				//target's is locally available to us.
-//				//SDObject sdSource = sd.GetObjectFromName(sourceName);
-//				boolean isSuper = false;
-//				SDObject sdTarget = null;
-//				if(tarObjName.equals("this")){
-//					sdTarget = sourceObj;
-//					if(outerMethodName.equals(sm.getName())){
-//						isSuper = true;
-//					}
-//				}
-//				else{
-//					sdTarget = sd.GetObjectFromName(tarObjName);
-//				}
-//				
-//				//If there is already a matching SDObject in sd
-//				//this will silently fail and we will simply link
-//				//to the existing object.  This may need to change
-//				//per the assignment statement problem.
-//				if(sdTarget == null){
-//					if(sm.isStatic()){
-//						sdTarget= sd.GetStaticObject(scTarget);
-//					}
-//					else{
-//						if(tarObjName == null || tarObjName.length() == 0){
-//							tarObjName = SDObject.GetUniqueName();
-//						}
-//						sdTarget = new SDObject(scTarget, tarObjName, false, false);
-//						sd.AddObject(sdTarget);
-//					}
-//				}
-//				
-//				//now that the sd has a source and target, we can
-//				//add the message.
-//				SDMessage msg = new SDMessage(sourceObj, sdTarget, sm, isSuper);
-//				sd.AddMessage(msg);
-//				
-//				String CallName = 
-//						aGNode.data.theMethod.getDeclaringClass().getName() + 
-//						"." +
-//						aGNode.data.theMethod.getName();
-//				
-//				if(!listCallStack.contains(CallName)){
-//					listCallStack.add(CallName);
-//					//now that we are "at" the destination point
-//					//of the message, we traverse into
-//					//the relevant hypernode for that new method.
-//					sd.PushNames();
-//					MakeDiagram(
-//							aGNode.data.theMethod.getName(), 
-//							hg, 
-//							subGNode, 
-//							sd, 
-//							sdTarget,
-//							listCallStack,
-//							options,
-//							optionIndex);
-//					sd.PopNames();
-//					listCallStack.remove(listCallStack.size() -1);
-//				}
-//			}
-//			else
-//			{
-//				//need to revisit this once assignment problem is cleared up
-//				//it may either be impossible or may represent calls like
-//				//int x = (new Random()).nextInt()
-//				//where we don't have soot data on calls to "external" libraries
-//			}
-//		}
-//		//after we've handled everything in this statement
-//		//including any calls and subsequent calls generated
-//		//we traverse to the next statement.
-//		RecFillTraceStmtDiagram(
-//				outerMethodName, 
-//				hg, 
-//				aGNode, 
-//				aStmt.theNext, 
-//				sd, 
-//				sourceObj,
-//				listCallStack,
-//				options,
-//				optionIndex);
-//		return;
-//	}
+	private static void HandleAssignment(AssignStmt assignStmt, SequenceDiagram sd){
+
+		String leftName = extractName(assignStmt.getLeftOp(), sd);
+		if(leftName == null || leftName.equals("")){
+			return;
+		}
+		JNewExpr jne = extractNew(assignStmt.getRightOp());
+		if(jne != null){
+			SootClass sc = jne.getBaseType().getSootClass();
+			SDObject newObj = new SDObject(sc, "", true, false);
+			sd.AddObject(newObj);
+			sd.AttachNameToObject(leftName, newObj);
+			return;
+		}
+		SDObject rightObj = extractObject(assignStmt.getRightOp(), sd);
+		
+		if(rightObj != null){
+			sd.AttachNameToObject(leftName, rightObj);
+		}
+
+	}
+	
+	private static SDObject extractObject(Object v, SequenceDiagram sd){
+		return (SDObject)extract(v, sd, 0);
+	}
+	private static String extractName(Object v, SequenceDiagram sd){
+		return (String)extract(v, sd, 1);
+	}
+	
+	private static Object extract(Object v, SequenceDiagram sd, int mode){
+		Object obj = null;
+		if(v instanceof AbstractValueBox){
+			AbstractValueBox avb = (AbstractValueBox)v;
+			obj = avb.getValue();
+		}
+		else if(v instanceof IdentityRefBox){
+			IdentityRefBox b = (IdentityRefBox)v;
+			obj = b.getValue();
+		}
+		else if(v instanceof JInstanceFieldRef){
+			JInstanceFieldRef ret = (JInstanceFieldRef)v;
+			Value val = ret.getBase();
+			SDObject baseObj = extractObject(val, sd);
+			SootField sf = ret.getField();
+			if(mode == 0){
+				return baseObj.getField(sf.getName());
+			}
+			else if(mode == 1){
+				return baseObj.GetName() + "." + sf.getName();
+			}
+		}
+		if(obj instanceof JimpleLocal){
+			JimpleLocal jl = (JimpleLocal)obj;
+			if(mode == 0){
+				return sd.GetObjectFromName(jl.getName());
+			}
+			else if(mode == 1){
+				return jl.getName();
+			}
+		}
+		if(obj instanceof ParameterRef){
+			ParameterRef pr = (ParameterRef)obj;
+			int pind = pr.getIndex();
+			String prname = "@parameter" + String.valueOf(pind);
+			if(mode == 0){
+				return sd.GetObjectFromName(prname);
+			}
+			else{
+				return prname;
+			}
+		}
+		return null;
+	}
 	
 	//helper function to extract a local from a Value
 	//Values may or may not contain locals
@@ -655,8 +577,168 @@ public class SDGenerator {
 		return null;
 	}
 
-
-
+//	private static void RecFillTraceStmtDiagram(
+//	String outerMethodName,
+//	Hypergraph<MethodNodeAnnot, EdgeAnnotation> hg,
+//	GroupableHyperNode<MethodNodeAnnot, EdgeAnnotation> aGNode,
+//	TraceStatement aStmt,
+//	SequenceDiagram sd,
+//	SDObject sourceObj,
+//	List<String> listCallStack,
+//	List<Integer> options,
+//	ByRefInt optionIndex) throws Exception
+//{
+//if(aStmt == null){return;}
+//
+////This is the point where I am currently attempting to handle
+////assignment statements.
+////This is not completed.
+//if(aStmt.theStmt instanceof AssignStmt){
+//	AssignStmt assignStmt = (AssignStmt)aStmt.theStmt;
+//	JimpleLocal jlLeft = extractValue(assignStmt.getLeftOp());
+//	JimpleLocal jlRight = extractValue(assignStmt.getRightOp());
+//	
+//	if(jlLeft != null && jlRight != null){
+//		String leftName = jlLeft.getName();
+//		String rightName = jlRight.getName();
+//		SDObject sdRight = sd.GetObjectFromName(rightName);
+//		sd.AttachNameToObject(leftName, sdRight);
+//	}
+//	JNewExpr jne = extractNew(assignStmt.getRightOp());
+//	if(jlLeft != null && jne != null){
+//		String leftName = jlLeft.getName();
+//		SootClass sc = jne.getBaseType().getSootClass();
+//		SDObject newObj = new SDObject(sc, "", true, false);
+//		sd.AddObject(newObj);
+//		sd.AttachNameToObject(leftName, newObj);
+//		
+//		//SDMessage creationMessage = new SDMessage(sourceObj, newObj);
+//		//sd.AddMessage(creationMessage);
+//	}
+//}
+////If a statement contains an invoke expression
+////that expression must be extracted, we must find
+////the relevant hyperedge out of the current node
+////and traverse it.
+//if(aStmt.theStmt.containsInvokeExpr()){
+//	SootMethod calledMethod = aStmt.theStmt.getInvokeExpr().getMethod();
+//	GroupableHyperEdge<EdgeAnnotation> gEdge = aGNode.GetGroupableEdge(calledMethod);
+//	if(gEdge != null){
+//		GroupableHyperNode<MethodNodeAnnot, EdgeAnnotation> subGNode = 
+//				(GroupableHyperNode<MethodNodeAnnot, EdgeAnnotation>) hg.GetCompleteNode(gEdge.targetNode);
+//		
+//		//If an object doesn't have an instance name
+//		//(might be static)
+//		//this might not work, in which case
+//		//the initial assignment to getuniquename
+//		//must suffice for the name
+//		List<Value> lv = aStmt.theStmt.getInvokeExpr().getUseBoxes();
+//		
+//		String tarObjName = "";
+//		if(lv.size() > 0){
+//			Object v = lv.get(0);
+//			JimpleLocal jl = extractValue(v);
+//			if(jl != null){
+//				tarObjName = jl.getName();
+//			}
+//			else{
+//				int hello = 0;
+//			}
+//		}
+//		
+//		//grab the three things we need to write a 
+//		//message into sd, source, target, message
+//		
+//		SootMethod sm = subGNode.data.theMethod;
+//		SootClass scTarget = sm.getDeclaringClass();
+//		SootClass scSource = aGNode.data.theMethod.getDeclaringClass();
+//		
+//		//SDObjects for source and target are created with
+//		//two piece of information, class and instance name
+//		//note source's instance name is passed in from above.
+//		//target's is locally available to us.
+//		//SDObject sdSource = sd.GetObjectFromName(sourceName);
+//		boolean isSuper = false;
+//		SDObject sdTarget = null;
+//		if(tarObjName.equals("this")){
+//			sdTarget = sourceObj;
+//			if(outerMethodName.equals(sm.getName())){
+//				isSuper = true;
+//			}
+//		}
+//		else{
+//			sdTarget = sd.GetObjectFromName(tarObjName);
+//		}
+//		
+//		//If there is already a matching SDObject in sd
+//		//this will silently fail and we will simply link
+//		//to the existing object.  This may need to change
+//		//per the assignment statement problem.
+//		if(sdTarget == null){
+//			if(sm.isStatic()){
+//				sdTarget= sd.GetStaticObject(scTarget);
+//			}
+//			else{
+//				if(tarObjName == null || tarObjName.length() == 0){
+//					tarObjName = SDObject.GetUniqueName();
+//				}
+//				sdTarget = new SDObject(scTarget, tarObjName, false, false);
+//				sd.AddObject(sdTarget);
+//			}
+//		}
+//		
+//		//now that the sd has a source and target, we can
+//		//add the message.
+//		SDMessage msg = new SDMessage(sourceObj, sdTarget, sm, isSuper);
+//		sd.AddMessage(msg);
+//		
+//		String CallName = 
+//				aGNode.data.theMethod.getDeclaringClass().getName() + 
+//				"." +
+//				aGNode.data.theMethod.getName();
+//		
+//		if(!listCallStack.contains(CallName)){
+//			listCallStack.add(CallName);
+//			//now that we are "at" the destination point
+//			//of the message, we traverse into
+//			//the relevant hypernode for that new method.
+//			sd.PushNames();
+//			MakeDiagram(
+//					aGNode.data.theMethod.getName(), 
+//					hg, 
+//					subGNode, 
+//					sd, 
+//					sdTarget,
+//					listCallStack,
+//					options,
+//					optionIndex);
+//			sd.PopNames();
+//			listCallStack.remove(listCallStack.size() -1);
+//		}
+//	}
+//	else
+//	{
+//		//need to revisit this once assignment problem is cleared up
+//		//it may either be impossible or may represent calls like
+//		//int x = (new Random()).nextInt()
+//		//where we don't have soot data on calls to "external" libraries
+//	}
+//}
+////after we've handled everything in this statement
+////including any calls and subsequent calls generated
+////we traverse to the next statement.
+//RecFillTraceStmtDiagram(
+//		outerMethodName, 
+//		hg, 
+//		aGNode, 
+//		aStmt.theNext, 
+//		sd, 
+//		sourceObj,
+//		listCallStack,
+//		options,
+//		optionIndex);
+//return;
+//}
 	
 	//Simply begins traversing at the first statement
 	//control will return here if an invoke statement is discovered.

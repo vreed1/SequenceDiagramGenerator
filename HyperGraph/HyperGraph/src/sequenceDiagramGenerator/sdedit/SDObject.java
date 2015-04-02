@@ -1,10 +1,14 @@
 package sequenceDiagramGenerator.sdedit;
 
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 import java.util.Stack;
 
+import soot.Scene;
 import soot.SootClass;
+import soot.SootField;
 import soot.Type;
 
 public class SDObject
@@ -15,20 +19,25 @@ public class SDObject
     private String label;
     private List<ObjectFlag> flags;
     private boolean isConstructed;
-    private boolean isStatic;
+    public boolean isStatic;
     
     private List<String> theCurrentNames;
     private List<String> theNameHistory;
     
     private Stack<List<String>> theCallStackNames;
+    
+    private Map<String, SDObject> theFields;
 
     private static int idbase = 0;
+    
+    private SootClass theSootClass;
 
 	public SDObject(Type sc, String startName, boolean aIsConstructed,
 			boolean aIsStatic) {
 		theCurrentNames = new ArrayList<String>();
 		theNameHistory = new ArrayList<String>();
 		theCallStackNames = new Stack<List<String>>();
+		theFields = new HashMap<String, SDObject>();
 		AttachName(startName);
 		type = sc.toString();
         this.flags = new ArrayList<ObjectFlag>();
@@ -39,12 +48,14 @@ public class SDObject
         }
         ID = idbase;
         idbase++;
+        theSootClass = Scene.v().getSootClass(type);
 	}
     
 	public SDObject(SootClass aClass, String startName, boolean aIsConstructed, boolean aIsStatic){
 		theCurrentNames = new ArrayList<String>();
 		theNameHistory = new ArrayList<String>();
 		theCallStackNames = new Stack<List<String>>();
+		theFields = new HashMap<String, SDObject>();
 		AttachName(startName);
 		type = aClass.getName();
         this.flags = new ArrayList<ObjectFlag>();
@@ -55,6 +66,25 @@ public class SDObject
         }
         ID = idbase;
         idbase++;
+        theSootClass = aClass;
+	}
+	
+	private SDObject(String typeName, String startName, boolean isCons, boolean isStat){
+		theCurrentNames = new ArrayList<String>();
+		theNameHistory = new ArrayList<String>();
+		theCallStackNames = new Stack<List<String>>();
+		theFields = new HashMap<String, SDObject>();
+		AttachName(startName);
+		type = typeName;
+        this.flags = new ArrayList<ObjectFlag>();
+        isConstructed = isCons;
+        isStatic = isStat;
+        if(isStatic){
+        	label = "<static>:"+type;
+        }
+        ID = idbase;
+        idbase++;
+        theSootClass = null;
 	}
 	
 	private SDObject(
@@ -67,7 +97,9 @@ public class SDObject
 			boolean aIsStatic,
 			List<String> aCurrentNames,
 			List<String> aNameHistory,
-			Stack<List<String>> aCallStackNames){
+			Stack<List<String>> aCallStackNames,
+			Map<String, SDObject> aFields,
+			SootClass sc){
 		ID = aID;
 		name = aName;
 		type = aType;
@@ -78,8 +110,24 @@ public class SDObject
 		theCurrentNames = aCurrentNames;
 		theNameHistory = aNameHistory;
 		theCallStackNames = aCallStackNames;
+		theFields = aFields;
+		theSootClass = sc;
 	}
 	
+	public SDObject getField(String fname){
+		if(!theFields.containsKey(fname)){
+			if(theSootClass != null){
+				SootField sf = theSootClass.getField(fname);
+				Type t = sf.getType();
+				SDObject newObj = new SDObject(t, "", false, sf.isStatic());
+			}
+			else{
+				SDObject newObj = new SDObject("UnknownType", "", false, false);
+				
+			}
+		}
+		return theFields.get(fname);
+	}
 
 	public SDObject clone(){
 		
@@ -98,10 +146,16 @@ public class SDObject
 			theCallStackNames.push(l);
 			newNameStack.push(lCopy);
 		}
+		Map<String, SDObject> aFields = new HashMap<String, SDObject>();
+		for(String fKey : theFields.keySet()){
+			SDObject oldField = theFields.get(fKey);
+			SDObject newObj = oldField.clone();
+			aFields.put(fKey, newObj);
+		}
 		
 		SDObject anObj = new SDObject(ID,name,type,label,flags,
 				isConstructed,isStatic,newCurrentNames, newNameHistory,
-				newNameStack);
+				newNameStack, aFields, theSootClass);
 		return anObj;
 	}
 	
@@ -154,8 +208,16 @@ public class SDObject
             obj.append(String.format("\"%s\"", label));
         return obj.toString();
     }
+    private boolean nameFixed = false;
 	public String GetName() {
-		return name;
+		if(nameFixed){
+			return name;}
+		else{
+			if(this.theCurrentNames.size() > 0){
+				return this.theCurrentNames.get(0);
+			}
+			return "";
+		}
 	}
 	
 	public static int uniqueName = 0;
