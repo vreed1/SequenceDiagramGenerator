@@ -197,6 +197,18 @@ public class TestUI implements ActionListener{
 			System.out.println("Could not generate hypergraph");
 			return;
 		}
+		if(Utilities.DEBUG){
+			System.out.println("*********METHODS**********");
+			List<HyperNode<MethodNodeAnnot,EdgeAnnotation>> lh = hg.GetNodes();
+			for(int i = 0; i < lh.size(); i++){
+				SootMethod sm = lh.get(i).data.theMethod;
+				SootClass sc = sm.getDeclaringClass();
+				String mName = sc.getName() + "." + sm.getName();
+				if(mName.startsWith("org.adblockplus")){
+					System.out.println(mName);
+				}
+			}
+		}
 		
 		String startMethod = GetArgument(args, "-startmethod");
 		
@@ -274,8 +286,6 @@ public class TestUI implements ActionListener{
 		if(currentHypergraph != null){
 			List<HyperNode<MethodNodeAnnot,EdgeAnnotation>> lh = currentHypergraph.GetNodes();
 			for(int i = 0; i < lh.size(); i++){
-				//lh.get(i).data.
-				//STARTHERE, still in progress.
 				SootMethod sm = lh.get(i).data.theMethod;
 				SootClass sc = sm.getDeclaringClass();
 				String mName = sc.getName() + "." + sm.getName();

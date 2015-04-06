@@ -127,11 +127,18 @@ public class Analyzer {
 		soot.PhaseOptions.v().setPhaseOptionIfUnset("jb", "use-original-names");
 		
 		for(int i= 0; i < listClassNames.size(); i++){
-			SootClass c = Scene.v().loadClassAndSupport(listClassNames.get(i));
-		
-			AddClassToHypergraph(
-					toReturn,
-					c);
+			//Brian added this try to attempt apk code.
+			try{
+				SootClass c = Scene.v().loadClassAndSupport(listClassNames.get(i));
+			
+				AddClassToHypergraph(
+						toReturn,
+						c);
+				}
+			catch(Exception ex){
+				System.out.println("Couldn't load class: " + listClassNames.get(i));
+				System.out.println(ex.getMessage());
+			}
 		}
 		
 		Analyzer.AddEdgesToHypergraph(toReturn);
@@ -202,7 +209,11 @@ public class Analyzer {
 			GroupableStmt aStmt, 
 			GroupableHyperNode<MethodNodeAnnot, EdgeAnnotation> sourceNode, 
 			GroupableHypergraph<MethodNodeAnnot, EdgeAnnotation> hg){
-		if(aStmt.theStmt.containsInvokeExpr()){
+		//Brian added the != null checks for aStmt and aStmt.theStmt
+		//as well as the try inside of the first big block.
+		if(aStmt != null){
+		if(aStmt.theStmt != null && aStmt.theStmt.containsInvokeExpr()){
+			try{
 			InvokeExpr ie = null;
 			if(aStmt.theStmt instanceof JAssignStmt){
 				JAssignStmt assignStmt = (JAssignStmt)aStmt.theStmt;
@@ -228,7 +239,11 @@ public class Analyzer {
 			List<MethodNodeAnnot> ante = new ArrayList<MethodNodeAnnot>();
 			ante.add(sourceNode.data);
 			EdgeAnnotation ea = new EdgeAnnotation();
-			hg.AddGroupableEdge(ante, tarNode.data, ea, sm);
+			hg.AddGroupableEdge(ante, tarNode.data, ea, sm);}
+			catch(Exception ex){
+				System.out.println("Failed to parse method");
+				System.out.println(ex.getMessage());
+			}
 		}
 		if(aStmt.theTrueBranch != null){
 			AddRecStmts(aStmt.theTrueBranch, sourceNode, hg);
@@ -238,7 +253,7 @@ public class Analyzer {
 		}
 		if(aStmt.theNext != null){
 			AddRecStmts(aStmt.theNext, sourceNode, hg);
-		}
+		}}
 	}
 	
 	//Builds the method annotation which we will traverse

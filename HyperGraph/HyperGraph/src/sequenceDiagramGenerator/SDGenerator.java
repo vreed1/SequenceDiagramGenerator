@@ -548,7 +548,14 @@ public class SDGenerator {
 				return prname;
 			}
 		}
-		return null;
+		//Brian added this, used to return null until recently.
+		if(mode == 0){
+			return new SDObject("TotalUnk", SDObject.GetUniqueName(),false, false );
+		}
+		else{
+			return SDObject.GetUniqueName();
+		}
+		//end of added code.
 	}
 	
 	//helper function to extract a local from a Value
