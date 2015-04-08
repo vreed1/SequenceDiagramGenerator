@@ -3,6 +3,7 @@ package sequenceDiagramGenerator;
 import java.util.List;
 
 import soot.SootMethod;
+import utilities.Utilities;
 
 //BP
 //Each node in our system is annotated with a specific method
@@ -37,6 +38,6 @@ public class MethodNodeAnnot {
 	
 	@Override
 	public String toString(){
-		return theMethod.getDeclaringClass().getName() + "." + theMethod.getName();
+		return Utilities.getMethodString(theMethod);
 	}
 }

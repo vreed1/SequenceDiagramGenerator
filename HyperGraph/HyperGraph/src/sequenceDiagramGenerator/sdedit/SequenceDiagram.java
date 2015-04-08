@@ -149,6 +149,9 @@ public class SequenceDiagram {
     
     public void CreatePDF(String outFile) {    
     	NameSafetyCheck();
+    	if(this.toString().trim().equals("")){
+    		return;
+    	}
     	if(Utilities.DEBUG){
     		System.out.println("---------SD---------");
     		System.out.println(this.toString());
@@ -168,13 +171,16 @@ public class SequenceDiagram {
                 Exporter paintDevice = Exporter.getExporter(diagType, diagOrientation, diagFormat, out);
                 new Diagram(conf.getDataObject(), th, paintDevice).generate();
                 paintDevice.export();
+                paintDevice.close();
             } catch (IOException | XMLException | SemanticError | SyntaxError e) {
                 // TODO Auto-generated catch block
                 e.printStackTrace();
             } finally {
-                
+
+                out.flush();
+                out.close();
             }
-        } catch (FileNotFoundException e) {
+        } catch (IOException e) {
             // TODO Auto-generated catch block
             e.printStackTrace();
         } finally {

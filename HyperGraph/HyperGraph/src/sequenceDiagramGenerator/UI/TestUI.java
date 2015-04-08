@@ -52,7 +52,10 @@ public class TestUI implements ActionListener{
 			RunTest(args);
 		}
 		else if(args[0].equals("-a")){
-			RunAll(args);
+			RunAllOneFunction(args);
+		}
+		else if(args[0].equals("-aa")){
+			RunAllAllFunctions(args);
 		}
 		else
 		{
@@ -142,7 +145,18 @@ public class TestUI implements ActionListener{
 			System.out.println("Could not generate hypergraph");
 			return;
 		}
-		
+
+		if(Utilities.DEBUG){
+			System.out.println("*********METHODS**********");
+			List<HyperNode<MethodNodeAnnot,EdgeAnnotation>> lh = hg.GetNodes();
+			for(int i = 0; i < lh.size(); i++){
+				SootMethod sm = lh.get(i).data.theMethod;
+				String mName = Utilities.getMethodString(sm);
+				if(mName.startsWith("org.adblockplus")){
+					System.out.println(mName);
+				}
+			}
+		}
 		String startMethod = GetArgument(args, "-startmethod");
 		
 		GroupableHyperNode<MethodNodeAnnot, EdgeAnnotation> aNode = hg.GetNodeByName(startMethod);
@@ -171,7 +185,7 @@ public class TestUI implements ActionListener{
 		}
 	}
 	
-	private static void RunAll(String[] args){
+	private static void RunAllOneFunction(String[] args){
 		GroupableHypergraph<MethodNodeAnnot, EdgeAnnotation> hg = null;
 		String ClassPath = GetArgument(args, "-classpath");
 		String Files = GetArgument(args, "-jars");
@@ -202,8 +216,7 @@ public class TestUI implements ActionListener{
 			List<HyperNode<MethodNodeAnnot,EdgeAnnotation>> lh = hg.GetNodes();
 			for(int i = 0; i < lh.size(); i++){
 				SootMethod sm = lh.get(i).data.theMethod;
-				SootClass sc = sm.getDeclaringClass();
-				String mName = sc.getName() + "." + sm.getName();
+				String mName = Utilities.getMethodString(sm);
 				if(mName.startsWith("org.adblockplus")){
 					System.out.println(mName);
 				}
@@ -238,6 +251,79 @@ public class TestUI implements ActionListener{
 		}
 	}
 	
+	private static void RunAllAllFunctions(String[] args){
+		GroupableHypergraph<MethodNodeAnnot, EdgeAnnotation> hg = null;
+		String ClassPath = GetArgument(args, "-classpath");
+		String Files = GetArgument(args, "-jars");
+		String[] SplitFiles = Files.split(";");
+		File[] jars = new File[SplitFiles.length];
+		for(int i = 0; i < jars.length; i++){
+			jars[i] = new File(SplitFiles[i]);
+		}
+		List<String> listClasses = new ArrayList<String>();
+		try {
+			for(int i = 0; i < jars.length; i++){
+				listClasses.addAll(Utilities.ListClassesInJar(jars[i]));
+				String parentDir;
+					parentDir = jars[i].getCanonicalPath();
+				ClassPath = ClassPath + Utilities.GetClassPathDelim() + parentDir;
+			}
+			hg = Analyzer.AnalyzeFromJAR(listClasses, ClassPath);
+		} catch (IOException e1) {
+			// TODO Auto-generated catch block
+			e1.printStackTrace();
+		}
+		if(hg == null){
+			System.out.println("Could not generate hypergraph");
+			return;
+		}
+
+		String startswith = GetArgument(args, "-startswith");
+		List<String> listFuncsToRun = new ArrayList<String>();
+		List<HyperNode<MethodNodeAnnot,EdgeAnnotation>> lh = hg.GetNodes();
+		for(int i = 0; i < lh.size(); i++){
+			SootMethod sm = lh.get(i).data.theMethod;
+			String mName = Utilities.getMethodString(sm);
+			if(mName.startsWith(startswith)){
+				listFuncsToRun.add(mName);
+			}
+		}
+		String saveDir = GetArgument(args, "-outdir");
+
+		if(saveDir == null || saveDir.length() == 0){
+			System.out.println("outdir not specified");
+			return;
+		}
+		File aFile = new File(saveDir);
+		if(!aFile.isDirectory()){
+			System.out.println("outdir not directory");
+		}
+		for(int i = 0; i < listFuncsToRun.size(); i++){
+			
+			String startMethod = listFuncsToRun.get(i);
+			GroupableHyperNode<MethodNodeAnnot, EdgeAnnotation> aNode = hg.GetNodeByName(startMethod);
+			if(aNode == null){
+				System.out.println("Could not find node by name: " + startMethod);
+				continue;
+			}
+			
+			File aSubDir = new File(Utilities.endWithSlash(saveDir) + 
+					Utilities.firstFiveLetters(listFuncsToRun.get(i)) + 
+					String.valueOf(i));
+			if(aSubDir.exists()){
+				Utilities.deleteDirectory(aSubDir);
+			}
+			aSubDir.mkdirs();
+			try {
+				//this is the interesting call.
+				SDGenerator.GenerateAll(hg, aNode, aSubDir.getAbsolutePath());
+			} catch (Exception e1) {
+				// TODO Auto-generated catch block				
+				e1.printStackTrace();
+			}
+			Utilities.cleanUpDir(aSubDir);
+		}
+	}
 	private static void RunUI(){
 		EventQueue.invokeLater(new Runnable() {
 			public void run() {

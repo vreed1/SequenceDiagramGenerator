@@ -25,6 +25,7 @@ import soot.jimple.AssignStmt;
 import soot.jimple.IdentityStmt;
 import soot.jimple.ParameterRef;
 import soot.jimple.StaticFieldRef;
+import soot.jimple.ThisRef;
 import soot.jimple.internal.IdentityRefBox;
 import soot.jimple.internal.JInstanceFieldRef;
 import soot.jimple.internal.JNewExpr;
@@ -245,6 +246,19 @@ public class SDGenerator {
 					//problem, can't get soot class the way I usually do.
 					soot.Type sc = paramRight.getType();
 					SDObject newObj = new SDObject(sc, "", true, false);
+					sd.AddObject(newObj);
+					sd.AttachNameToObject(leftName, newObj);
+				}
+			}
+			else if(jlLeft != null){
+				String leftName = jlLeft.getName();
+				SDObject sdRight = sd.GetObjectFromName("this");
+				if(sdRight != null){
+					sd.AttachNameToObject(leftName, sdRight);
+				}
+				else{
+					soot.Type st = jlLeft.getType();
+					SDObject newObj = new SDObject(st, "", true, false);
 					sd.AddObject(newObj);
 					sd.AttachNameToObject(leftName, newObj);
 				}
@@ -589,6 +603,10 @@ public class SDGenerator {
 		if(v instanceof IdentityRefBox){
 			IdentityRefBox jlb = (IdentityRefBox)v;
 			obj = jlb.getValue();
+		}
+		else if(v instanceof ThisRef){
+			ThisRef tr = (ThisRef)v;
+			return null;
 		}
 		else{
 			obj = v;

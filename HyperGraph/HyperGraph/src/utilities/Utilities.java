@@ -9,6 +9,8 @@ import java.util.List;
 import java.util.zip.ZipEntry;
 import java.util.zip.ZipInputStream;
 
+import soot.SootMethod;
+
 public final class Utilities {
     private Utilities() {}
     
@@ -107,5 +109,55 @@ public final class Utilities {
 			return saveDir;
 		}
 		return saveDir + "/";
+	}
+	
+	public static String getMethodString(SootMethod m){
+		StringBuilder sb = new StringBuilder();
+		sb.append(m.getDeclaringClass().getName());
+		sb.append(".");
+		sb.append(m.getName());
+		sb.append("(");
+		for(int i = 0; i < m.getParameterCount(); i++){
+			sb.append(m.getParameterType(i));
+			if(i < m.getParameterCount() - 1){
+				sb.append(",");
+			}
+		}
+		sb.append(")");
+		return sb.toString();
+	}
+
+	public static String firstFiveLetters(String string) {
+		String s = string;
+		StringBuilder sb = new StringBuilder();
+		int i = 0;
+		while(i < s.length() && sb.length() < 5){
+			if(Character.isLetter(s.charAt(i))){
+				sb.append(s.charAt(i));
+			}
+			i++;
+		}
+		return sb.toString();
+	}
+
+	public static void deleteDirectory(File aFile) {
+		if(aFile.isDirectory()){
+			for(File f : aFile.listFiles()){
+				deleteDirectory(f);
+			}
+		}
+		if(!aFile.delete()){
+			System.out.println("Couldn't Delete");
+		}
+	}
+
+	public static void cleanUpDir(File aSubDir) {
+		File[] lf = aSubDir.listFiles();
+		for(File f : lf){
+			if(f.length() > 0){
+				return;
+			}
+		}
+		deleteDirectory(aSubDir);
 	}
 }
