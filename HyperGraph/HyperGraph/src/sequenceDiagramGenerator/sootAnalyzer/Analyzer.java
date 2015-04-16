@@ -128,17 +128,26 @@ public class Analyzer {
 		
 		for(int i= 0; i < listClassNames.size(); i++){
 			//Brian added this try to attempt apk code.
+			SootClass c= null;
 			try{
-				SootClass c = Scene.v().loadClassAndSupport(listClassNames.get(i));
-			
-				AddClassToHypergraph(
-						toReturn,
-						c);
-				}
+				c = Scene.v().loadClassAndSupport(listClassNames.get(i));
+			}
 			catch(Exception ex){
 				System.out.println("Couldn't load class: " + listClassNames.get(i));
 				System.out.println(ex.getMessage());
+//				try{
+//					c = Scene.v().loadClass(listClassNames.get(i), 0);
+//				}
+//					catch(Exception ex2){
+//						System.out.println("Second load attempt failed: " + listClassNames.get(i));
+//						System.out.println(ex2.getMessage());
+//				}
 			}
+			if(c != null){
+			AddClassToHypergraph(
+					toReturn,
+					c);}
+			
 		}
 		
 		Analyzer.AddEdgesToHypergraph(toReturn);
