@@ -29,6 +29,7 @@ import soot.jimple.ThisRef;
 import soot.jimple.internal.IdentityRefBox;
 import soot.jimple.internal.JInstanceFieldRef;
 import soot.jimple.internal.JNewExpr;
+import soot.jimple.internal.JVirtualInvokeExpr;
 import soot.jimple.internal.JimpleLocal;
 import soot.jimple.internal.JimpleLocalBox;
 import utilities.ByRefInt;
@@ -483,6 +484,12 @@ public class SDGenerator {
 			sd.AttachNameToObject(leftName, newObj);
 			return;
 		}
+		JVirtualInvokeExpr jve = extractInvoke(assignStmt.getRightOp());
+		if(jve != null){
+			//TODO:Start here
+			return;
+		}
+		
 		SDObject rightObj = extractObject(assignStmt.getRightOp(), sd);
 		
 		if(rightObj != null){
@@ -621,6 +628,12 @@ public class SDGenerator {
 		if(v instanceof JNewExpr){
 			JNewExpr ret = (JNewExpr)v;
 			return ret;
+		}
+		return null;
+	}
+	private static JVirtualInvokeExpr extractInvoke(Object v){
+		if(v instanceof JVirtualInvokeExpr){
+			return (JVirtualInvokeExpr)v;
 		}
 		return null;
 	}

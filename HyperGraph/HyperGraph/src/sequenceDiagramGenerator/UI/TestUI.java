@@ -217,9 +217,7 @@ public class TestUI implements ActionListener{
 			for(int i = 0; i < lh.size(); i++){
 				SootMethod sm = lh.get(i).data.theMethod;
 				String mName = Utilities.getMethodString(sm);
-				if(mName.startsWith("org.adblockplus")){
-					System.out.println(mName);
-				}
+				System.out.println(mName);
 			}
 		}
 		
