@@ -32,4 +32,20 @@ public class SDListAndReturns {
 		}
 		listReturns.set(sdIndex, retObj);
 	}
+	
+	public SDListAndReturns clone(){
+		SDListAndReturns toReturn = new SDListAndReturns();
+		toReturn.listDiagrams = new ArrayList<SequenceDiagram>(listDiagrams);
+		toReturn.listReturns = new ArrayList<SDObject>(listReturns);
+		return toReturn;
+	}
+
+	public SDListAndReturns Copy(int sdIndex) {
+		SDListAndReturns toReturn = new SDListAndReturns();
+		toReturn.listDiagrams.add(listDiagrams.get(sdIndex));
+		if(listReturns.size() > sdIndex){
+			toReturn.listReturns.add(listReturns.get(sdIndex));
+		}
+		return toReturn;
+	}
 }
