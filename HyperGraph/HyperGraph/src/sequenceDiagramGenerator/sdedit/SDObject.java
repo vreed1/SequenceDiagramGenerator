@@ -258,6 +258,9 @@ public class SDObject
 			if(testName.startsWith("@")){
 				continue;
 			}
+			if(testName.equals("this")){
+				continue;
+			}
 			if(testName.length() > bestFound.length()){
 				bestFound = testName;
 			}

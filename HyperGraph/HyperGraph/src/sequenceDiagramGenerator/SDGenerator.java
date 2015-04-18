@@ -311,7 +311,7 @@ public class SDGenerator {
 		//that expression must be extracted, we must find
 		//the relevant hyperedge out of the current node
 		//and traverse it.
-		if(aStmt.theStmt.containsInvokeExpr()){
+		else if(aStmt.theStmt.containsInvokeExpr()){
 			
 			toReturn = HandleInvoke(
 					aStmt.theStmt.getInvokeExpr(), 
