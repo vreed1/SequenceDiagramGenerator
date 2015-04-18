@@ -161,16 +161,19 @@ public class SDGenerator {
 			SDObject outerObject,
 			List<String> listCallStack) throws Exception{
 	
-		SDListAndReturns toReturn = new SDListAndReturns();
-		SequenceDiagram sd = allSDs.listDiagrams.get(sdIndex);
+		SDListAndReturns toReturn = allSDs.Copy(sdIndex);
+		//SDListAndReturns toReturn = new SDListAndReturns();
+		//SequenceDiagram sd = allSDs.listDiagrams.get(sdIndex);
 		//List<SequenceDiagram> toReturn = new ArrayList<SequenceDiagram>();
-		toReturn.listDiagrams.add(sd);
+		//toReturn.listDiagrams.add(sd);
 		
 		if(aGNode == null){return toReturn;}
 		List<TraceStatement> tstmts = aGNode.data.theTraces;
 		if(tstmts == null || tstmts.size() == 0){return toReturn;}
+		
 
 		SDListAndReturns cloneSource = toReturn.clone();
+		toReturn.clear();
 		for(int i = 0; i < tstmts.size(); i++){
 			SDListAndReturns toSendDown = cloneSource.clone();
 			toReturn.addAll(RecFillTraceAllStmtDiagram(
@@ -268,7 +271,7 @@ public class SDGenerator {
 				else{
 					//problem, can't get soot class the way I usually do.
 					soot.Type sc = paramRight.getType();
-					SDObject newObj = new SDObject(sc, "", true, false);
+					SDObject newObj = new SDObject(sc, "", false, false);
 					sd.AddObject(newObj);
 					sd.AttachNameToObject(leftName, newObj);
 				}
@@ -571,7 +574,7 @@ public class SDGenerator {
 					isSuper = true;
 				}
 			}
-			else{
+			else if(!tarObjName.equals("")){
 				sdTarget = sd.GetObjectFromName(tarObjName);
 			}
 			
