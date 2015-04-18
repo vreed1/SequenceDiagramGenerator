@@ -182,7 +182,7 @@ public class SDGenerator {
 					aGNode,
 					tstmts.get(i),
 					toSendDown,
-					0,
+					sdIndex,
 					outerObject.ID,
 					listCallStack,
 					true,
@@ -203,8 +203,10 @@ public class SDGenerator {
 			List<Integer> options,
 			ByRefInt optionIndex) throws Exception{
 	
-		SDListAndReturns toReturn = new SDListAndReturns();
-		toReturn.listDiagrams.add(allSDs.listDiagrams.get(sdIndex));
+		SDListAndReturns toReturn = allSDs.Copy(sdIndex);
+		//toReturn.listDiagrams.add(allSDs.listDiagrams.get(sdIndex));
+		
+		
 		if(aGNode == null){return toReturn;}
 		List<TraceStatement> tstmts = aGNode.data.theTraces;
 		if(tstmts == null || tstmts.size() == 0){return toReturn;}
@@ -519,8 +521,9 @@ public class SDGenerator {
 			) throws Exception{
 		
 		SequenceDiagram sd = allSDs.listDiagrams.get(sdIndex);
-		SDListAndReturns toReturn = new SDListAndReturns();
-		toReturn.listDiagrams.add(sd);
+		SDListAndReturns toReturn = allSDs.Copy(sdIndex);
+		//toReturn.listDiagrams.add(sd);
+		
 		SootMethod calledMethod = ie.getMethod();
 		GroupableHyperEdge<EdgeAnnotation> gEdge = aGNode.GetGroupableEdge(calledMethod);
 		if(gEdge != null){
@@ -672,8 +675,8 @@ public class SDGenerator {
 			AssignStmt assignStmt) throws Exception{
 
 		SequenceDiagram sd = allSDs.listDiagrams.get(sdIndex);
-		SDListAndReturns toReturn = new SDListAndReturns();
-		toReturn.listDiagrams.add(sd);
+		SDListAndReturns toReturn = allSDs.Copy(sdIndex);
+		//toReturn.listDiagrams.add(sd);
 		
 		String leftName = extractName(assignStmt.getLeftOp(), sd);
 		if(leftName == null || leftName.equals("")){

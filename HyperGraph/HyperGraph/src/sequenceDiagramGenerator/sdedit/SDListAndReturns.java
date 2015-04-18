@@ -35,8 +35,18 @@ public class SDListAndReturns {
 	
 	public SDListAndReturns clone(){
 		SDListAndReturns toReturn = new SDListAndReturns();
-		toReturn.listDiagrams = new ArrayList<SequenceDiagram>(listDiagrams);
-		toReturn.listReturns = new ArrayList<SDObject>(listReturns);
+		for(int i = 0; i < listDiagrams.size(); i++){
+			int id = -1;
+			if(i < listReturns.size()){
+				if(listReturns.get(i)!= null){
+					id = listReturns.get(i).ID;
+				}
+			}
+			toReturn.listDiagrams.add(listDiagrams.get(i).clone());
+			if(id >= 0){
+				toReturn.listReturns.add(toReturn.listDiagrams.get(i).GetObjectFromID(id));
+			}
+		}
 		return toReturn;
 	}
 
