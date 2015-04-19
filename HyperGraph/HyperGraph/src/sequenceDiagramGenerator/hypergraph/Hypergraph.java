@@ -8,6 +8,7 @@ import java.util.List;
 
 import sequenceDiagramGenerator.MethodNodeAnnot;
 import sequenceDiagramGenerator.pebbler.*;
+import utilities.Utilities;
 
 
 public class Hypergraph<T, A>
@@ -274,14 +275,14 @@ public class Hypergraph<T, A>
     // Debug output
     //
     public void DebugDumpClauses() {
-        System.out.println("All Clauses:\n");
+    	Utilities.DebugPrintln("All Clauses:\n");
 
         StringBuilder edgeStr = new StringBuilder();
         for (int v = 0; v < vertices.size(); v++) {
-            System.out.println(edgeStr + " " + v + " " + vertices.get(v).data.toString());
+        	Utilities.DebugPrintln(edgeStr + " " + v + " " + vertices.get(v).data.toString());
         }
 
-        System.out.println("\nEdges: ");
+        Utilities.DebugPrintln("\nEdges: ");
         DumpEdges();
     }
     
@@ -316,7 +317,7 @@ public class Hypergraph<T, A>
                 edgeStr.append(" }\n");
             }
         }
-        System.out.println(edgeStr);    	
+        Utilities.DebugPrintln(edgeStr.toString());    	
     }
 	private boolean called;
 	public void breakpoint() {

@@ -11,6 +11,7 @@ import soot.Scene;
 import soot.SootClass;
 import soot.SootField;
 import soot.Type;
+import utilities.Utilities;
 
 public class SDObject
 {
@@ -52,7 +53,7 @@ public class SDObject
         try{
         	theSootClass = Scene.v().getSootClass(type);}
         catch(java.lang.RuntimeException ex){
-        	System.out.println("Unfound SootClass: " + type);
+        	Utilities.DebugPrintln("Unfound SootClass: " + type);
         }
 	}
     

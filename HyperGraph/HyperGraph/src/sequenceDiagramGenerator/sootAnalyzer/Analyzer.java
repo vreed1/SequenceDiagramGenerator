@@ -133,15 +133,8 @@ public class Analyzer {
 				c = Scene.v().loadClassAndSupport(listClassNames.get(i));
 			}
 			catch(Exception ex){
-				System.out.println("Couldn't load class: " + listClassNames.get(i));
-				System.out.println(ex.getMessage());
-//				try{
-//					c = Scene.v().loadClass(listClassNames.get(i), 0);
-//				}
-//					catch(Exception ex2){
-//						System.out.println("Second load attempt failed: " + listClassNames.get(i));
-//						System.out.println(ex2.getMessage());
-//				}
+				Utilities.DebugPrintln("Couldn't load class: " + listClassNames.get(i));
+				Utilities.DebugPrintln(ex.getMessage());
 			}
 			if(c != null){
 			AddClassToHypergraph(
@@ -250,8 +243,8 @@ public class Analyzer {
 			EdgeAnnotation ea = new EdgeAnnotation();
 			hg.AddGroupableEdge(ante, tarNode.data, ea, sm);}
 			catch(Exception ex){
-				System.out.println("Failed to parse method");
-				System.out.println(ex.getMessage());
+				Utilities.DebugPrintln("Failed to parse method");
+				Utilities.DebugPrintln(ex.getMessage());
 			}
 		}
 		if(aStmt.theTrueBranch != null){
@@ -279,11 +272,11 @@ public class Analyzer {
 			pcu = sb.getUnits();
 		}
 		catch(java.lang.RuntimeException ex){
-			System.out.println("Not possible to analyze method: " + sm.getName() + " Error: " + ex.getMessage());
+			Utilities.DebugPrintln("Not possible to analyze method: " + sm.getName() + " Error: " + ex.getMessage());
 		}
 		if(pcu != null){
 			if(Utilities.DEBUG){
-				System.out.println(" " + sm.getName());
+				Utilities.DebugPrintln(" " + sm.getName());
 			}
 			//First we create the branching representation
 			//which transforms the conceptual statement graph
@@ -311,19 +304,19 @@ public class Analyzer {
 			//statement on the same level. 
 			GroupableStmt gs = GroupStmts(bs, new ArrayList<BranchableStmt>());
 			if(Utilities.DEBUG){
-				System.out.println("--------GS--------");
-				System.out.println(gs.toString());
-				System.out.println("------------------");
+				Utilities.DebugPrintln("--------GS--------");
+				Utilities.DebugPrintln(gs.toString());
+				Utilities.DebugPrintln("------------------");
 			}
 			
 			List<TraceStatement> ts = GenerateAllPotentialTraces(gs, new ArrayList<TraceStatement>());
 			if(Utilities.DEBUG){
-				System.out.println("--------TS--------");
+				Utilities.DebugPrintln("--------TS--------");
 				for(int i = 0; i < ts.size(); i++){
-					System.out.println("****"+i+"****");
-					System.out.println(ts.get(i).toString());
+					Utilities.DebugPrintln("****"+i+"****");
+					Utilities.DebugPrintln(ts.get(i).toString());
 				}
-				System.out.println("------------------");
+				Utilities.DebugPrintln("------------------");
 			}
 			
 			MethodNodeAnnot theAnnot = new MethodNodeAnnot(sm, gs, ts);
@@ -362,7 +355,7 @@ public class Analyzer {
 				AbstractStmt aStmt = (soot.jimple.internal.AbstractStmt)u;
 				if(Utilities.DEBUG)
 				{
-					System.out.println("  " + aStmt.toString());
+					Utilities.DebugPrintln("  " + aStmt.toString());
 				}
 				listStmt.add(new BranchableStmt(aStmt));
 			}
@@ -642,7 +635,7 @@ public class Analyzer {
 			){
 
 		if(Utilities.DEBUG){
-			System.out.println(aClass.getName());
+			Utilities.DebugPrintln(aClass.getName());
 		}
 		List<SootMethod> listMethods = aClass.getMethods();
 		for(int i = 0; i < listMethods.size(); i++){

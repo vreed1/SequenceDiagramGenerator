@@ -42,10 +42,27 @@ public class TestUI implements ActionListener{
 	 * Launch the application.
 	 */
 	public static void main(String[] args) {
-		if(args == null || args.length == 0){
-			RunUI();
+		try{
+			if(args == null || args.length == 0){
+				RunUI();
+			}
+			else
+			{
+				RunAnyCommandLine(args);
+			}
 		}
-		else if(args[0].equals("-c")){
+		catch(Exception ex){
+			Utilities.DebugPrintln("Top level crash:");
+			Utilities.DebugPrintln(ex.getMessage());
+		}
+		Utilities.cleanup();
+	}
+	private static void RunAnyCommandLine(String[] args){
+		String debugFile = GetArgument(args, "-debugfile");
+		if(debugFile != null && !debugFile.equals("")){
+			Utilities.SetDebugFile(debugFile);
+		}
+		if(args[0].equals("-c")){
 			RunCommandLine(args);
 		}
 		else if(args[0].equals("-t")){
@@ -58,9 +75,10 @@ public class TestUI implements ActionListener{
 			RunAllAllFunctions(args);
 		}
 		else
-		{
+		{ 
 			System.out.println("Bad Input Arg 0 =" + args[0]);
 		}
+			
 	}
 	
 	private static void RunTest(String[] args){
@@ -147,13 +165,13 @@ public class TestUI implements ActionListener{
 		}
 
 		if(Utilities.DEBUG){
-			System.out.println("*********METHODS**********");
+			Utilities.DebugPrintln("*********METHODS**********");
 			List<HyperNode<MethodNodeAnnot,EdgeAnnotation>> lh = hg.GetNodes();
 			for(int i = 0; i < lh.size(); i++){
 				SootMethod sm = lh.get(i).data.theMethod;
 				String mName = Utilities.getMethodString(sm);
 				if(mName.startsWith("org.adblockplus")){
-					System.out.println(mName);
+					Utilities.DebugPrintln(mName);
 				}
 			}
 		}
@@ -212,12 +230,12 @@ public class TestUI implements ActionListener{
 			return;
 		}
 		if(Utilities.DEBUG){
-			System.out.println("*********METHODS**********");
+			Utilities.DebugPrintln("*********METHODS**********");
 			List<HyperNode<MethodNodeAnnot,EdgeAnnotation>> lh = hg.GetNodes();
 			for(int i = 0; i < lh.size(); i++){
 				SootMethod sm = lh.get(i).data.theMethod;
 				String mName = Utilities.getMethodString(sm);
-				System.out.println(mName);
+				Utilities.DebugPrintln(mName);
 			}
 		}
 		

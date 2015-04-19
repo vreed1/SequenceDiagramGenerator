@@ -153,9 +153,9 @@ public class SequenceDiagram {
     		return;
     	}
     	if(Utilities.DEBUG){
-    		System.out.println("---------SD---------");
-    		System.out.println(this.toString());
-    		System.out.println("--------------------");
+    		Utilities.DebugPrintln("---------SD---------");
+    		Utilities.DebugPrintln(this.toString());
+    		Utilities.DebugPrintln("--------------------");
     	}
         InputStream in = new ByteArrayInputStream(this.toString().getBytes());
         OutputStream out = null;

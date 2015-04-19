@@ -4,6 +4,7 @@ import java.io.File;
 import java.io.FileInputStream;
 import java.io.FileNotFoundException;
 import java.io.IOException;
+import java.io.PrintStream;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.zip.ZipEntry;
@@ -147,7 +148,7 @@ public final class Utilities {
 			}
 		}
 		if(!aFile.delete()){
-			System.out.println("Couldn't Delete");
+			Utilities.DebugPrintln("Couldn't Delete");
 		}
 	}
 
@@ -159,5 +160,35 @@ public final class Utilities {
 			}
 		}
 		deleteDirectory(aSubDir);
+	}
+	
+	private static PrintStream debug_ps;
+	public static void SetDebugFile(String fileName){
+		File debugFile = new File(fileName);
+		try {
+			debug_ps = new PrintStream(debugFile);
+		} catch (FileNotFoundException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+			DebugPrintln("Debug File Not Found");
+		}
+	}
+	
+	public static void DebugPrintln(String s){
+		if(debug_ps == null){
+			System.out.println(s);
+		}
+		else{
+			debug_ps.println(s);
+		}
+	}
+
+	public static void cleanup() {
+		if(debug_ps != null){
+			debug_ps.flush();
+			debug_ps.close();
+			debug_ps = null;
+		}
+		
 	}
 }
