@@ -1,5 +1,4 @@
 package sequenceDiagramGenerator.sdedit;
-import java.util.Dictionary;
 import java.util.Map;
 
 import soot.SootMethod;

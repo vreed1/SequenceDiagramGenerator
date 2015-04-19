@@ -2,7 +2,6 @@ package sequenceDiagramGenerator.hypergraph;
 
 import java.util.List;
 
-import sequenceDiagramGenerator.GroupableStmt;
 import soot.SootMethod;
 
 public class GroupableHyperEdge<A> extends HyperEdge<A> {

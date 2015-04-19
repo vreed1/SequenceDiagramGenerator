@@ -1,7 +1,5 @@
 package sequenceDiagramGenerator;
 
-import java.io.FileWriter;
-import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -9,21 +7,16 @@ import sequenceDiagramGenerator.hypergraph.EdgeAnnotation;
 import sequenceDiagramGenerator.hypergraph.GroupableHyperEdge;
 import sequenceDiagramGenerator.hypergraph.GroupableHyperNode;
 import sequenceDiagramGenerator.hypergraph.GroupableHypergraph;
-import sequenceDiagramGenerator.hypergraph.HyperEdge;
-import sequenceDiagramGenerator.hypergraph.HyperNode;
 import sequenceDiagramGenerator.hypergraph.Hypergraph;
 import sequenceDiagramGenerator.sdedit.SDListAndReturns;
 import sequenceDiagramGenerator.sdedit.SDMessage;
 import sequenceDiagramGenerator.sdedit.SDObject;
 import sequenceDiagramGenerator.sdedit.SequenceDiagram;
-import sequenceDiagramGenerator.sootAnalyzer.Analyzer;
 import soot.AbstractValueBox;
 import soot.SootClass;
 import soot.SootField;
 import soot.SootMethod;
-import soot.Type;
 import soot.Value;
-import soot.JastAddJ.ReturnStmt;
 import soot.jimple.AssignStmt;
 import soot.jimple.IdentityStmt;
 import soot.jimple.InvokeExpr;
@@ -36,7 +29,6 @@ import soot.jimple.internal.JNewExpr;
 import soot.jimple.internal.JReturnStmt;
 import soot.jimple.internal.JVirtualInvokeExpr;
 import soot.jimple.internal.JimpleLocal;
-import soot.jimple.internal.JimpleLocalBox;
 import utilities.ByRefInt;
 import utilities.Utilities;
 
@@ -60,7 +52,6 @@ public class SDGenerator {
 			listSDs.get(i).CreatePDF(outFile);
 		}
 	}
-	
 
 	//Given a pre-constructed hypergraph
 	//and a hypernode at which to begin traversal
@@ -113,13 +104,12 @@ public class SDGenerator {
 		return listToReturn;
 	}
 	
-	//STARTHERE.
-	private static List<List<Integer>> GetAllChoicesFromNode(
-			GroupableHypergraph<MethodNodeAnnot, EdgeAnnotation> hg, 
-			GroupableHyperNode<MethodNodeAnnot, EdgeAnnotation> aNode) {
-		//TODO: Write this or figure something else out here.
-		return new ArrayList<List<Integer>>();
-	}
+//	private static List<List<Integer>> GetAllChoicesFromNode(
+//			GroupableHypergraph<MethodNodeAnnot, EdgeAnnotation> hg, 
+//			GroupableHyperNode<MethodNodeAnnot, EdgeAnnotation> aNode) {
+//		//TODO: Write this or figure something else out here.
+//		return new ArrayList<List<Integer>>();
+//	}
 
 
 	private static SequenceDiagram GenerateDiagramObj(

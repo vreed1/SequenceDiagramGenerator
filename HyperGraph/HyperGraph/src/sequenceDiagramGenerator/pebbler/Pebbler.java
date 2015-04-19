@@ -8,18 +8,18 @@ import sequenceDiagramGenerator.*;
 import sequenceDiagramGenerator.hypergraph.*;
 import utilities.*;
 
-import net.sf.sdedit.config.Configuration;
-import net.sf.sdedit.config.ConfigurationManager;
-import net.sf.sdedit.diagram.Diagram;
-import net.sf.sdedit.editor.DiagramFileHandler;
-import net.sf.sdedit.error.SemanticError;
-import net.sf.sdedit.error.SyntaxError;
-import net.sf.sdedit.server.Exporter;
-import net.sf.sdedit.text.TextHandler;
-import net.sf.sdedit.ui.ImagePaintDevice;
-import net.sf.sdedit.ui.components.configuration.Bean;
-import net.sf.sdedit.util.DocUtil.XMLException;
-import net.sf.sdedit.util.Pair;
+//import net.sf.sdedit.config.Configuration;
+//import net.sf.sdedit.config.ConfigurationManager;
+//import net.sf.sdedit.diagram.Diagram;
+//import net.sf.sdedit.editor.DiagramFileHandler;
+//import net.sf.sdedit.error.SemanticError;
+//import net.sf.sdedit.error.SyntaxError;
+//import net.sf.sdedit.server.Exporter;
+//import net.sf.sdedit.text.TextHandler;
+//import net.sf.sdedit.ui.ImagePaintDevice;
+//import net.sf.sdedit.ui.components.configuration.Bean;
+//import net.sf.sdedit.util.DocUtil.XMLException;
+//import net.sf.sdedit.util.Pair;
 
 //
 // A reduced version of the original hypergraph that provides simple pebbling and exploration

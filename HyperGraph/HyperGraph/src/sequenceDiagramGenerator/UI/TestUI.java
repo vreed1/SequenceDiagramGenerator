@@ -5,20 +5,15 @@ import java.awt.EventQueue;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.io.File;
-import java.io.FileInputStream;
-import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
-import java.util.zip.ZipEntry;
-import java.util.zip.ZipInputStream;
 
 import javax.swing.JFileChooser;
 import javax.swing.JFrame;
 
 import sequenceDiagramGenerator.MethodNodeAnnot;
 import sequenceDiagramGenerator.SDGenerator;
-import sequenceDiagramGenerator.SourceCodeType;
 import sequenceDiagramGenerator.hypergraph.EdgeAnnotation;
 import sequenceDiagramGenerator.hypergraph.GroupableHyperNode;
 import sequenceDiagramGenerator.hypergraph.GroupableHypergraph;

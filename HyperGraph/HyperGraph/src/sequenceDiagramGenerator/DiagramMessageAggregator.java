@@ -6,8 +6,6 @@ import java.util.Hashtable;
 import java.util.List;
 
 import sequenceDiagramGenerator.sdedit.MessageOpt;
-import sequenceDiagramGenerator.sdedit.SDMessage;
-import sequenceDiagramGenerator.sdedit.SDObject;
 
 public class DiagramMessageAggregator
 {

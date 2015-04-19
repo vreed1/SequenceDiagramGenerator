@@ -3,8 +3,6 @@ package sequenceDiagramGenerator.hypergraph;
 import java.util.List;
 import java.util.AbstractMap.SimpleEntry;
 
-import sequenceDiagramGenerator.GroupableStmt;
-import sequenceDiagramGenerator.MethodNodeAnnot;
 import soot.SootMethod;
 
 public class GroupableHypergraph<T,A> extends Hypergraph<T,A> {

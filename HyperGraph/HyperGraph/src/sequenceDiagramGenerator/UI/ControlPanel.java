@@ -12,8 +12,6 @@ import javax.swing.JButton;
 
 import java.awt.event.ActionListener;
 import java.awt.Insets;
-import java.awt.event.ActionEvent;
-import javax.swing.JSeparator;
 import java.awt.Component;
 import javax.swing.Box;
 import javax.swing.JTextArea;

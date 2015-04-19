@@ -1,6 +1,5 @@
 package returninstance;
 
-import java.util.Random;
 
 public class FuncHaver {
 	public Returnable BuildRet(){

@@ -6,7 +6,6 @@ import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
 
-import sequenceDiagramGenerator.MethodNodeAnnot;
 import sequenceDiagramGenerator.pebbler.*;
 import utilities.Utilities;
 
