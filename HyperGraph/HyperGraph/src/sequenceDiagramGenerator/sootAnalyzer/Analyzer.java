@@ -193,65 +193,115 @@ public class Analyzer {
 			GroupableHypergraph<MethodNodeAnnot, EdgeAnnotation> hg){
 		List<HyperNode<MethodNodeAnnot, EdgeAnnotation>> lNodes = hg.GetNodes();
 		for(int i = 0; i < lNodes.size(); i++){
-			GroupableStmt aStmt = lNodes.get(i).data.theStmts;
+			BranchableStmt aBStmt = lNodes.get(i).data.theBStmt;
 			GroupableHyperNode<MethodNodeAnnot, EdgeAnnotation> gNode = (GroupableHyperNode<MethodNodeAnnot, EdgeAnnotation>) lNodes.get(i);
-			AddRecStmts(aStmt, gNode, hg);
+			AddRecStmts(aBStmt, gNode, hg, new ArrayList<BranchableStmt>());
 		}
+	}
+	
+	private static void AddRecStmts(
+			BranchableStmt aStmt, 
+			GroupableHyperNode<MethodNodeAnnot, EdgeAnnotation> sourceNode, 
+			GroupableHypergraph<MethodNodeAnnot, EdgeAnnotation> hg,
+			List<BranchableStmt> seen){
+		if(seen.contains(aStmt)){return;}
+		if(aStmt != null){
+			if(aStmt.theStmt != null && aStmt.theStmt.containsInvokeExpr()){
+				try{
+				InvokeExpr ie = null;
+				if(aStmt.theStmt instanceof JAssignStmt){
+					JAssignStmt assignStmt = (JAssignStmt)aStmt.theStmt;
+					ie = assignStmt.getInvokeExpr();
+					
+				}
+				else{
+					InvokeStmt anInvoke = (InvokeStmt)aStmt.theStmt;
+
+					ie = anInvoke.getInvokeExpr();
+				}
+				
+				SootMethod sm = ie.getMethod();
+				
+				MethodNodeAnnot finder = new MethodNodeAnnot(sm, null, null);
+				
+				HyperNode<MethodNodeAnnot, EdgeAnnotation> tarNode = hg.GetCompleteNode(finder);
+				
+				if(tarNode == null){
+					hg.AddNode(finder);
+					tarNode = hg.GetCompleteNode(finder);
+				}
+				List<MethodNodeAnnot> ante = new ArrayList<MethodNodeAnnot>();
+				ante.add(sourceNode.data);
+				EdgeAnnotation ea = new EdgeAnnotation();
+				hg.AddGroupableEdge(ante, tarNode.data, ea, sm);}
+				catch(Exception ex){
+					Utilities.DebugPrintln("Failed to parse method");
+					Utilities.DebugPrintln(ex.getMessage());
+				}
+			}
+			List<BranchableStmt> newSeen = new ArrayList<BranchableStmt>(seen);
+			newSeen.add(aStmt);
+			if(aStmt.theElse != null){
+				AddRecStmts(aStmt.theElse, sourceNode, hg, newSeen);
+			}
+			if(aStmt.theNext != null){
+				AddRecStmts(aStmt.theNext, sourceNode, hg, newSeen);
+			}}
 	}
 	
 	//checks aStmt.theStmt to see if it contains an invoke expression.
 	//if it does, then build an edge and add that edge to the hypergraph.
 	//then traverse any possible child statements and do the same thing.
-	private static void AddRecStmts(
-			GroupableStmt aStmt, 
-			GroupableHyperNode<MethodNodeAnnot, EdgeAnnotation> sourceNode, 
-			GroupableHypergraph<MethodNodeAnnot, EdgeAnnotation> hg){
-		//Brian added the != null checks for aStmt and aStmt.theStmt
-		//as well as the try inside of the first big block.
-		if(aStmt != null){
-		if(aStmt.theStmt != null && aStmt.theStmt.containsInvokeExpr()){
-			try{
-			InvokeExpr ie = null;
-			if(aStmt.theStmt instanceof JAssignStmt){
-				JAssignStmt assignStmt = (JAssignStmt)aStmt.theStmt;
-				ie = assignStmt.getInvokeExpr();
-				
-			}
-			else{
-				InvokeStmt anInvoke = (InvokeStmt)aStmt.theStmt;
-
-				ie = anInvoke.getInvokeExpr();
-			}
-			
-			SootMethod sm = ie.getMethod();
-			
-			MethodNodeAnnot finder = new MethodNodeAnnot(sm, null, null);
-			
-			HyperNode<MethodNodeAnnot, EdgeAnnotation> tarNode = hg.GetCompleteNode(finder);
-			
-			if(tarNode == null){
-				hg.AddNode(finder);
-				tarNode = hg.GetCompleteNode(finder);
-			}
-			List<MethodNodeAnnot> ante = new ArrayList<MethodNodeAnnot>();
-			ante.add(sourceNode.data);
-			EdgeAnnotation ea = new EdgeAnnotation();
-			hg.AddGroupableEdge(ante, tarNode.data, ea, sm);}
-			catch(Exception ex){
-				Utilities.DebugPrintln("Failed to parse method");
-				Utilities.DebugPrintln(ex.getMessage());
-			}
-		}
-		if(aStmt.theTrueBranch != null){
-			AddRecStmts(aStmt.theTrueBranch, sourceNode, hg);
-		}
-		if(aStmt.theFalseBranch != null){
-			AddRecStmts(aStmt.theFalseBranch, sourceNode, hg);
-		}
-		if(aStmt.theNext != null){
-			AddRecStmts(aStmt.theNext, sourceNode, hg);
-		}}
-	}
+//	private static void AddRecStmts(
+//			GroupableStmt aStmt, 
+//			GroupableHyperNode<MethodNodeAnnot, EdgeAnnotation> sourceNode, 
+//			GroupableHypergraph<MethodNodeAnnot, EdgeAnnotation> hg){
+//		//Brian added the != null checks for aStmt and aStmt.theStmt
+//		//as well as the try inside of the first big block.
+//		if(aStmt != null){
+//		if(aStmt.theStmt != null && aStmt.theStmt.containsInvokeExpr()){
+//			try{
+//			InvokeExpr ie = null;
+//			if(aStmt.theStmt instanceof JAssignStmt){
+//				JAssignStmt assignStmt = (JAssignStmt)aStmt.theStmt;
+//				ie = assignStmt.getInvokeExpr();
+//				
+//			}
+//			else{
+//				InvokeStmt anInvoke = (InvokeStmt)aStmt.theStmt;
+//
+//				ie = anInvoke.getInvokeExpr();
+//			}
+//			
+//			SootMethod sm = ie.getMethod();
+//			
+//			MethodNodeAnnot finder = new MethodNodeAnnot(sm, null, null);
+//			
+//			HyperNode<MethodNodeAnnot, EdgeAnnotation> tarNode = hg.GetCompleteNode(finder);
+//			
+//			if(tarNode == null){
+//				hg.AddNode(finder);
+//				tarNode = hg.GetCompleteNode(finder);
+//			}
+//			List<MethodNodeAnnot> ante = new ArrayList<MethodNodeAnnot>();
+//			ante.add(sourceNode.data);
+//			EdgeAnnotation ea = new EdgeAnnotation();
+//			hg.AddGroupableEdge(ante, tarNode.data, ea, sm);}
+//			catch(Exception ex){
+//				Utilities.DebugPrintln("Failed to parse method");
+//				Utilities.DebugPrintln(ex.getMessage());
+//			}
+//		}
+//		if(aStmt.theTrueBranch != null){
+//			AddRecStmts(aStmt.theTrueBranch, sourceNode, hg);
+//		}
+//		if(aStmt.theFalseBranch != null){
+//			AddRecStmts(aStmt.theFalseBranch, sourceNode, hg);
+//		}
+//		if(aStmt.theNext != null){
+//			AddRecStmts(aStmt.theNext, sourceNode, hg);
+//		}}
+//	}
 	
 	//Builds the method annotation which we will traverse
 	//internal to each node in the graph.
@@ -297,14 +347,16 @@ public class Analyzer {
 			//Groupable has three.  A True GroupableStmt and a False GroupableStmt
 			//which are both groups, and a Next GroupableStmt which is the next 
 			//statement on the same level. 
-			GroupableStmt gs = GroupStmts(bs, new ArrayList<BranchableStmt>());
-			if(Utilities.DEBUG){
-				Utilities.DebugPrintln("--------GS--------");
-				Utilities.DebugPrintln(gs.toString());
-				Utilities.DebugPrintln("------------------");
-			}
 			
-			List<TraceStatement> ts = GenerateAllPotentialTraces(gs, new ArrayList<TraceStatement>());
+//			GroupableStmt gs = GroupStmts(bs, new ArrayList<BranchableStmt>());
+//			if(Utilities.DEBUG){
+//				Utilities.DebugPrintln("--------GS--------");
+//				Utilities.DebugPrintln(gs.toString());
+//				Utilities.DebugPrintln("------------------");
+//			}
+			
+			List<TraceStatement> ts = GenerateAllTracesFromBranches(bs, new ArrayList<BranchableStmt>());
+			//List<TraceStatement> ts = GenerateAllPotentialTraces(gs, new ArrayList<TraceStatement>());
 			if(Utilities.DEBUG){
 				Utilities.DebugPrintln("--------TS--------");
 				for(int i = 0; i < ts.size(); i++){
@@ -314,7 +366,7 @@ public class Analyzer {
 				Utilities.DebugPrintln("------------------");
 			}
 			
-			MethodNodeAnnot theAnnot = new MethodNodeAnnot(sm, gs, ts);
+			MethodNodeAnnot theAnnot = new MethodNodeAnnot(sm, bs, ts);
 			
 			return theAnnot;
 		}
@@ -322,6 +374,42 @@ public class Analyzer {
 		//we still return a node for it.  Traversal will simply
 		//return from such a node.
 		return new MethodNodeAnnot(sm, null, new ArrayList<TraceStatement>());
+	}
+
+	private static List<TraceStatement> GenerateAllTracesFromBranches(
+			BranchableStmt bs,
+			List<BranchableStmt> listSeen) {
+		
+		List<TraceStatement> toReturn = new ArrayList<TraceStatement>();
+		if(listSeen.contains(bs)){return toReturn;}
+		
+		List<BranchableStmt> newSeen = new ArrayList<BranchableStmt>(listSeen);
+		newSeen.add(bs);
+		BranchStatus bStat = BranchStatus.NotBranch;
+		if(bs.theElse != null){
+			bStat = BranchStatus.TrueChosen;
+			List<TraceStatement> listE = GenerateAllTracesFromBranches(bs.theElse, newSeen);
+			for(int i = 0; i < listE.size(); i++){
+				TraceStatement its = listE.get(i);
+				TraceStatement tthis = new TraceStatement(bs.theStmt, its);
+				tthis.theBranchStatus = BranchStatus.FalseChosen;
+				toReturn.add(tthis);
+			}
+		}
+		if(bs.theNext != null){
+			List<TraceStatement> listN = GenerateAllTracesFromBranches(bs.theNext, newSeen);
+			for(int i = 0; i < listN.size(); i++){
+				TraceStatement its = listN.get(i);
+				TraceStatement tthis = new TraceStatement(bs.theStmt, its);
+				tthis.theBranchStatus = bStat;
+				toReturn.add(tthis);
+			}
+		}
+		if(toReturn.size() == 0){
+			TraceStatement ts = new TraceStatement(bs.theStmt, null);
+			toReturn.add(ts);
+		}
+		return toReturn;
 	}
 
 	//creates the branching representation from soot's patchingchain

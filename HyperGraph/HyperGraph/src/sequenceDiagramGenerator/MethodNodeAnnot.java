@@ -14,16 +14,17 @@ import utilities.Utilities;
 //statement of the method, (which will then point to the next, 
 //and so on).
 public class MethodNodeAnnot {
-	public GroupableStmt theStmts;
+	//public GroupableStmt theStmts;
 	public SootMethod theMethod;
 	public List<TraceStatement> theTraces;
+	public BranchableStmt theBStmt;
 	
 	public MethodNodeAnnot(
 			SootMethod aMethod, 
-			GroupableStmt aStmt,
+			BranchableStmt aStmt,
 			List<TraceStatement> aTraces){
 		theMethod = aMethod;
-		theStmts = aStmt;
+		theBStmt= aStmt;
 		theTraces = aTraces;
 	}
 	
