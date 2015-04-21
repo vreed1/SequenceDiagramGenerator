@@ -158,7 +158,7 @@ public class SDGenerator {
 		//toReturn.listDiagrams.add(sd);
 		
 		if(aGNode == null){return toReturn;}
-		List<TraceStatement> tstmts = aGNode.data.theTraces;
+		List<TraceStatement> tstmts = aGNode.data.getTraces();
 		if(tstmts == null || tstmts.size() == 0){return toReturn;}
 		
 
@@ -198,7 +198,7 @@ public class SDGenerator {
 		
 		
 		if(aGNode == null){return toReturn;}
-		List<TraceStatement> tstmts = aGNode.data.theTraces;
+		List<TraceStatement> tstmts = aGNode.data.getTraces();
 		if(tstmts == null || tstmts.size() == 0){return toReturn;}
 
 		int choice = 0;

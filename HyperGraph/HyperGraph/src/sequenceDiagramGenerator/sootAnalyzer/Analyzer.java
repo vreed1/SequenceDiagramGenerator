@@ -355,18 +355,18 @@ public class Analyzer {
 //				Utilities.DebugPrintln("------------------");
 //			}
 			
-			List<TraceStatement> ts = GenerateAllTracesFromBranches(bs, new ArrayList<BranchableStmt>());
+			//List<TraceStatement> ts = GenerateAllTracesFromBranches(bs, new ArrayList<BranchableStmt>());
 			//List<TraceStatement> ts = GenerateAllPotentialTraces(gs, new ArrayList<TraceStatement>());
-			if(Utilities.DEBUG){
-				Utilities.DebugPrintln("--------TS--------");
-				for(int i = 0; i < ts.size(); i++){
-					Utilities.DebugPrintln("****"+i+"****");
-					Utilities.DebugPrintln(ts.get(i).toString());
-				}
-				Utilities.DebugPrintln("------------------");
-			}
+//			if(Utilities.DEBUG){
+//				Utilities.DebugPrintln("--------TS--------");
+//				for(int i = 0; i < ts.size(); i++){
+//					Utilities.DebugPrintln("****"+i+"****");
+//					Utilities.DebugPrintln(ts.get(i).toString());
+//				}
+//				Utilities.DebugPrintln("------------------");
+//			}
 			
-			MethodNodeAnnot theAnnot = new MethodNodeAnnot(sm, bs, ts);
+			MethodNodeAnnot theAnnot = new MethodNodeAnnot(sm, bs);
 			
 			return theAnnot;
 		}
@@ -376,7 +376,7 @@ public class Analyzer {
 		return new MethodNodeAnnot(sm, null, new ArrayList<TraceStatement>());
 	}
 
-	private static List<TraceStatement> GenerateAllTracesFromBranches(
+	public static List<TraceStatement> GenerateAllTracesFromBranches(
 			BranchableStmt bs,
 			List<BranchableStmt> listSeen) {
 		
@@ -483,228 +483,228 @@ public class Analyzer {
 		return listStmt.get(0);
 	}
 	
-	private static List<TraceStatement> GenerateAllPotentialTraces(
-			GroupableStmt aGStmt,
-			List<TraceStatement> tieUp
-			){
-		
-		if(aGStmt == null){return tieUp;}
-		
-		List<TraceStatement> toReturn = GenerateAllPotentialTraces(
-				aGStmt.theNext, new ArrayList<TraceStatement>());
-		
-		if(aGStmt.theTrueBranch != null || aGStmt.theFalseBranch != null){
-			List<TraceStatement> trueTrace, falseTrace;
-			if(aGStmt.theTrueBranch != null){
-				trueTrace = GenerateAllPotentialTraces(
-						aGStmt.theTrueBranch,
-						toReturn);
-			}
-			else{
-				trueTrace = toReturn;
-			}
-			if(aGStmt.theFalseBranch != null){
-				falseTrace = GenerateAllPotentialTraces(
-						aGStmt.theFalseBranch,
-						toReturn);
-			}
-			else{
-				falseTrace = toReturn;
-			}
-			if(trueTrace.size() > 0){
-				for(int i = 0; i < trueTrace.size(); i++){
-					TraceStatement aTStmt = new TraceStatement(aGStmt.theStmt, trueTrace.get(i));
-					aTStmt.theBranchStatus = BranchStatus.TrueChosen;
-					trueTrace.set(i, aTStmt);
-				}
-			}
-			else{
-				trueTrace.add(new TraceStatement(aGStmt.theStmt, null));
-			}
-			if(falseTrace.size() > 0){
-				for(int i = 0; i < falseTrace.size(); i++){
-					TraceStatement aTStmt = new TraceStatement(aGStmt.theStmt, falseTrace.get(i));
-					aTStmt.theBranchStatus = BranchStatus.FalseChosen;
-					falseTrace.set(i, aTStmt);
-				}
-			}
-			else{
-				falseTrace.add(new TraceStatement(aGStmt.theStmt, null));
-			}
-			toReturn = new ArrayList<TraceStatement>();
-			toReturn.addAll(trueTrace);
-			toReturn.addAll(falseTrace);
-		}
-		else{
-			if(toReturn.size() > 0){
-				for(int i = 0; i < toReturn.size(); i++){
-					TraceStatement aTStmt = new TraceStatement(aGStmt.theStmt, toReturn.get(i));
-					toReturn.set(i, aTStmt);
-				}
-			}
-			else{
-				toReturn.add(new TraceStatement(aGStmt.theStmt, null));
-			}
-		}
-		return toReturn;
-		
-	}
+//	private static List<TraceStatement> GenerateAllPotentialTraces(
+//			GroupableStmt aGStmt,
+//			List<TraceStatement> tieUp
+//			){
+//		
+//		if(aGStmt == null){return tieUp;}
+//		
+//		List<TraceStatement> toReturn = GenerateAllPotentialTraces(
+//				aGStmt.theNext, new ArrayList<TraceStatement>());
+//		
+//		if(aGStmt.theTrueBranch != null || aGStmt.theFalseBranch != null){
+//			List<TraceStatement> trueTrace, falseTrace;
+//			if(aGStmt.theTrueBranch != null){
+//				trueTrace = GenerateAllPotentialTraces(
+//						aGStmt.theTrueBranch,
+//						toReturn);
+//			}
+//			else{
+//				trueTrace = toReturn;
+//			}
+//			if(aGStmt.theFalseBranch != null){
+//				falseTrace = GenerateAllPotentialTraces(
+//						aGStmt.theFalseBranch,
+//						toReturn);
+//			}
+//			else{
+//				falseTrace = toReturn;
+//			}
+//			if(trueTrace.size() > 0){
+//				for(int i = 0; i < trueTrace.size(); i++){
+//					TraceStatement aTStmt = new TraceStatement(aGStmt.theStmt, trueTrace.get(i));
+//					aTStmt.theBranchStatus = BranchStatus.TrueChosen;
+//					trueTrace.set(i, aTStmt);
+//				}
+//			}
+//			else{
+//				trueTrace.add(new TraceStatement(aGStmt.theStmt, null));
+//			}
+//			if(falseTrace.size() > 0){
+//				for(int i = 0; i < falseTrace.size(); i++){
+//					TraceStatement aTStmt = new TraceStatement(aGStmt.theStmt, falseTrace.get(i));
+//					aTStmt.theBranchStatus = BranchStatus.FalseChosen;
+//					falseTrace.set(i, aTStmt);
+//				}
+//			}
+//			else{
+//				falseTrace.add(new TraceStatement(aGStmt.theStmt, null));
+//			}
+//			toReturn = new ArrayList<TraceStatement>();
+//			toReturn.addAll(trueTrace);
+//			toReturn.addAll(falseTrace);
+//		}
+//		else{
+//			if(toReturn.size() > 0){
+//				for(int i = 0; i < toReturn.size(); i++){
+//					TraceStatement aTStmt = new TraceStatement(aGStmt.theStmt, toReturn.get(i));
+//					toReturn.set(i, aTStmt);
+//				}
+//			}
+//			else{
+//				toReturn.add(new TraceStatement(aGStmt.theStmt, null));
+//			}
+//		}
+//		return toReturn;
+//		
+//	}
 	
 	//GroupStmts Takes the tree representation of the function
 	//and groups things into blocks.
 	//this function could probably be more efficient.
 	//it essentially traverses branches, and finds common suffixes 
 	//for those branches, and assumes that that is the end of the branch.
-	private static GroupableStmt GroupStmts(BranchableStmt aBStmt, List<BranchableStmt> loopDetect){
-		if(aBStmt == null){
-			//if we terminate in a normal leaf
-			return null;
-		}
-		else if(loopDetect.contains(aBStmt)){
-			//if we've already seen this branchable statement
-			//we can terminate and return.
-			//this is because we've correctly identified every preceding statement
-			//and this statement's branch will be resolved when
-			//we revisit it where it was seen earlier in the recursion
-			return new GroupableStmt(true, aBStmt.theStmt);
-		}
-		else if(aBStmt.theStmt instanceof JIfStmt){
-			//if statements are the fundamental object we're concerned with
-			//because if statements are the only things with two unique
-			//destinations.
-			BranchableStmt tempTrue = aBStmt.theNext;
-			BranchableStmt tempFalse = aBStmt.theElse;
-			
-			//first we recursively solve each branch independently.
-			//they may have their own sub-branches.
-			List<BranchableStmt> newDetect = new ArrayList<BranchableStmt>();
-			newDetect.addAll(loopDetect);
-			newDetect.add(aBStmt);
-			
-			GroupableStmt trueBranch = GroupStmts(tempTrue, newDetect);
-			
-			newDetect = new ArrayList<BranchableStmt>();
-			newDetect.addAll(loopDetect);
-			newDetect.add(aBStmt);
-			
-			GroupableStmt falseBranch = GroupStmts(tempFalse, newDetect);
-			
-			//now we have each branch in groupablestmt form.
-			
-			//if the branches are equivalent we can simply 
-			//return the true branch as the only thing.
-			//i don't think this is actually something that
-			//will occur, but it essentially annihilates the if statement
-			if(trueBranch.equals(falseBranch)){
-				return trueBranch;
-			}
-			
-			//now we're checking if the false branch is a complete
-			//suffix of the true branch, i.e. there is no else 
-			//this would mean that there is an if block or loop block only.
-			while(trueBranch != null){
-				
-				//if we get to a point in the true branch that ends the loop.
-				if(trueBranch.EndsLoop && trueBranch.theStmt.equals(aBStmt.theStmt)){
-					GroupableStmt toReturn = new GroupableStmt(false, aBStmt.theStmt);
-					toReturn.theTrueBranch = tempTrue.theEquiv;
-					toReturn.theNext = falseBranch;
-					toReturn.StartsLoop = true;
-					aBStmt.theEquiv = toReturn;
-					return toReturn;
-				}
-				
-				//if we get to a point after which the false branch is equal
-				//to the "rest" of the true branch, if with no else.
-				//then we have a true branch and a next branch
-				//but no real false branch.
-				if(trueBranch.theNext != null && trueBranch.theNext.equals(falseBranch)){
-					trueBranch.theNext = null;
-					GroupableStmt toReturn = new GroupableStmt(false, aBStmt.theStmt);
-					toReturn.theTrueBranch = tempTrue.theEquiv;
-					toReturn.theNext = falseBranch;
-					aBStmt.theEquiv = toReturn;
-					return toReturn;
-				}
-				trueBranch = trueBranch.theNext;
-			}
-			
-			trueBranch = tempTrue.theEquiv;
-			
-			//now we're checking the opposite case, 
-			//the true branch is a suffix of the false branch.
-			//this means we have an else case but an empty if
-			//this may not be very pretty coding but it is
-			//at least possible especially w/ bytecode.
-			while(falseBranch != null){
-
-				if(falseBranch.EndsLoop && falseBranch.theStmt.equals(aBStmt.theStmt)){
-
-					GroupableStmt toReturn = new GroupableStmt(false, aBStmt.theStmt);
-					toReturn.theFalseBranch = tempFalse.theEquiv;
-					toReturn.theNext = trueBranch;
-					toReturn.StartsLoop = true;
-					aBStmt.theEquiv = toReturn;
-					return toReturn;
-				}
-				
-				if(falseBranch.theNext != null && falseBranch.theNext.equals(trueBranch)){
-					falseBranch.theNext = null;
-					GroupableStmt toReturn = new GroupableStmt(false, aBStmt.theStmt);
-					toReturn.theFalseBranch = tempFalse.theEquiv;
-					toReturn.theNext = trueBranch;
-					aBStmt.theEquiv = toReturn;
-					return toReturn;
-				}
-				falseBranch = falseBranch.theNext;
-			}
-			
-			//if we get here, it means that both the false
-			//and true branches have unique and meaningful code
-			//and we have to look through both to find a common suffix.
-			GroupableStmt common = null;
-			
-			while(trueBranch != null){
-				falseBranch = tempFalse.theEquiv;
-				while(falseBranch != null){
-					if(trueBranch.theNext != null && trueBranch.theNext.equals(falseBranch.theNext)){
-						//if we find a common suffix, 
-						//we set it equal to common,
-						//and we kill the rest of the 
-						//true and false branches.
-						//now they are grouped as sub groups
-						//under the branch, and we can
-						//also detect the point at which
-						//execution "exits" the branch.
-						//starting at common
-						common = trueBranch.theNext;
-						trueBranch.theNext = null;
-						falseBranch.theNext = null;
-					}
-					
-					falseBranch = falseBranch.theNext;
-				}
-				trueBranch = trueBranch.theNext;
-			}
-			
-			GroupableStmt toReturn = new GroupableStmt(false, aBStmt.theStmt);
-			toReturn.theFalseBranch = tempFalse.theEquiv;
-			toReturn.theTrueBranch = tempTrue.theEquiv;
-			toReturn.theNext = common;
-			aBStmt.theEquiv = toReturn;
-			return toReturn;
-			
-		}
-		else{
-			//this is simply what we do if we're not looking at an if statement
-			//just wrap it using the new class and proceed to the 
-			//next statement.
-			GroupableStmt toReturn = new GroupableStmt(false, aBStmt.theStmt);
-			toReturn.theNext = GroupStmts(aBStmt.theNext, loopDetect);
-			aBStmt.theEquiv = toReturn;
-			return toReturn;
-		}
-	}
+//	private static GroupableStmt GroupStmts(BranchableStmt aBStmt, List<BranchableStmt> loopDetect){
+//		if(aBStmt == null){
+//			//if we terminate in a normal leaf
+//			return null;
+//		}
+//		else if(loopDetect.contains(aBStmt)){
+//			//if we've already seen this branchable statement
+//			//we can terminate and return.
+//			//this is because we've correctly identified every preceding statement
+//			//and this statement's branch will be resolved when
+//			//we revisit it where it was seen earlier in the recursion
+//			return new GroupableStmt(true, aBStmt.theStmt);
+//		}
+//		else if(aBStmt.theStmt instanceof JIfStmt){
+//			//if statements are the fundamental object we're concerned with
+//			//because if statements are the only things with two unique
+//			//destinations.
+//			BranchableStmt tempTrue = aBStmt.theNext;
+//			BranchableStmt tempFalse = aBStmt.theElse;
+//			
+//			//first we recursively solve each branch independently.
+//			//they may have their own sub-branches.
+//			List<BranchableStmt> newDetect = new ArrayList<BranchableStmt>();
+//			newDetect.addAll(loopDetect);
+//			newDetect.add(aBStmt);
+//			
+//			GroupableStmt trueBranch = GroupStmts(tempTrue, newDetect);
+//			
+//			newDetect = new ArrayList<BranchableStmt>();
+//			newDetect.addAll(loopDetect);
+//			newDetect.add(aBStmt);
+//			
+//			GroupableStmt falseBranch = GroupStmts(tempFalse, newDetect);
+//			
+//			//now we have each branch in groupablestmt form.
+//			
+//			//if the branches are equivalent we can simply 
+//			//return the true branch as the only thing.
+//			//i don't think this is actually something that
+//			//will occur, but it essentially annihilates the if statement
+//			if(trueBranch.equals(falseBranch)){
+//				return trueBranch;
+//			}
+//			
+//			//now we're checking if the false branch is a complete
+//			//suffix of the true branch, i.e. there is no else 
+//			//this would mean that there is an if block or loop block only.
+//			while(trueBranch != null){
+//				
+//				//if we get to a point in the true branch that ends the loop.
+//				if(trueBranch.EndsLoop && trueBranch.theStmt.equals(aBStmt.theStmt)){
+//					GroupableStmt toReturn = new GroupableStmt(false, aBStmt.theStmt);
+//					toReturn.theTrueBranch = tempTrue.theEquiv;
+//					toReturn.theNext = falseBranch;
+//					toReturn.StartsLoop = true;
+//					aBStmt.theEquiv = toReturn;
+//					return toReturn;
+//				}
+//				
+//				//if we get to a point after which the false branch is equal
+//				//to the "rest" of the true branch, if with no else.
+//				//then we have a true branch and a next branch
+//				//but no real false branch.
+//				if(trueBranch.theNext != null && trueBranch.theNext.equals(falseBranch)){
+//					trueBranch.theNext = null;
+//					GroupableStmt toReturn = new GroupableStmt(false, aBStmt.theStmt);
+//					toReturn.theTrueBranch = tempTrue.theEquiv;
+//					toReturn.theNext = falseBranch;
+//					aBStmt.theEquiv = toReturn;
+//					return toReturn;
+//				}
+//				trueBranch = trueBranch.theNext;
+//			}
+//			
+//			trueBranch = tempTrue.theEquiv;
+//			
+//			//now we're checking the opposite case, 
+//			//the true branch is a suffix of the false branch.
+//			//this means we have an else case but an empty if
+//			//this may not be very pretty coding but it is
+//			//at least possible especially w/ bytecode.
+//			while(falseBranch != null){
+//
+//				if(falseBranch.EndsLoop && falseBranch.theStmt.equals(aBStmt.theStmt)){
+//
+//					GroupableStmt toReturn = new GroupableStmt(false, aBStmt.theStmt);
+//					toReturn.theFalseBranch = tempFalse.theEquiv;
+//					toReturn.theNext = trueBranch;
+//					toReturn.StartsLoop = true;
+//					aBStmt.theEquiv = toReturn;
+//					return toReturn;
+//				}
+//				
+//				if(falseBranch.theNext != null && falseBranch.theNext.equals(trueBranch)){
+//					falseBranch.theNext = null;
+//					GroupableStmt toReturn = new GroupableStmt(false, aBStmt.theStmt);
+//					toReturn.theFalseBranch = tempFalse.theEquiv;
+//					toReturn.theNext = trueBranch;
+//					aBStmt.theEquiv = toReturn;
+//					return toReturn;
+//				}
+//				falseBranch = falseBranch.theNext;
+//			}
+//			
+//			//if we get here, it means that both the false
+//			//and true branches have unique and meaningful code
+//			//and we have to look through both to find a common suffix.
+//			GroupableStmt common = null;
+//			
+//			while(trueBranch != null){
+//				falseBranch = tempFalse.theEquiv;
+//				while(falseBranch != null){
+//					if(trueBranch.theNext != null && trueBranch.theNext.equals(falseBranch.theNext)){
+//						//if we find a common suffix, 
+//						//we set it equal to common,
+//						//and we kill the rest of the 
+//						//true and false branches.
+//						//now they are grouped as sub groups
+//						//under the branch, and we can
+//						//also detect the point at which
+//						//execution "exits" the branch.
+//						//starting at common
+//						common = trueBranch.theNext;
+//						trueBranch.theNext = null;
+//						falseBranch.theNext = null;
+//					}
+//					
+//					falseBranch = falseBranch.theNext;
+//				}
+//				trueBranch = trueBranch.theNext;
+//			}
+//			
+//			GroupableStmt toReturn = new GroupableStmt(false, aBStmt.theStmt);
+//			toReturn.theFalseBranch = tempFalse.theEquiv;
+//			toReturn.theTrueBranch = tempTrue.theEquiv;
+//			toReturn.theNext = common;
+//			aBStmt.theEquiv = toReturn;
+//			return toReturn;
+//			
+//		}
+//		else{
+//			//this is simply what we do if we're not looking at an if statement
+//			//just wrap it using the new class and proceed to the 
+//			//next statement.
+//			GroupableStmt toReturn = new GroupableStmt(false, aBStmt.theStmt);
+//			toReturn.theNext = GroupStmts(aBStmt.theNext, loopDetect);
+//			aBStmt.theEquiv = toReturn;
+//			return toReturn;
+//		}
+//	}
 
 
 

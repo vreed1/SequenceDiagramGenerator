@@ -1,7 +1,9 @@
 package sequenceDiagramGenerator;
 
+import java.util.ArrayList;
 import java.util.List;
 
+import sequenceDiagramGenerator.sootAnalyzer.Analyzer;
 import soot.SootMethod;
 import utilities.Utilities;
 
@@ -16,8 +18,15 @@ import utilities.Utilities;
 public class MethodNodeAnnot {
 	//public GroupableStmt theStmts;
 	public SootMethod theMethod;
-	public List<TraceStatement> theTraces;
+	private List<TraceStatement> theTraces;
 	public BranchableStmt theBStmt;
+	
+	public MethodNodeAnnot(
+			SootMethod aMethod,
+			BranchableStmt aStmt){
+		theBStmt = aStmt;
+		theMethod = aMethod;
+	}
 	
 	public MethodNodeAnnot(
 			SootMethod aMethod, 
@@ -26,6 +35,17 @@ public class MethodNodeAnnot {
 		theMethod = aMethod;
 		theBStmt= aStmt;
 		theTraces = aTraces;
+	}
+	
+	public List<TraceStatement> getTraces(){
+		if(theTraces == null){
+			if(theBStmt == null){
+				theTraces = new ArrayList<TraceStatement>();
+			}
+			else{
+			theTraces = Analyzer.GenerateAllTracesFromBranches(theBStmt, new ArrayList<BranchableStmt>());}
+		}
+		return theTraces;
 	}
 	
 	@Override 
