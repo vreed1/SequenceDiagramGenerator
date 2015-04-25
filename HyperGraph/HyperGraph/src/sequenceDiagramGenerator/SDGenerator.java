@@ -89,6 +89,7 @@ public class SDGenerator {
 		else{
 			outerObject = new SDObject(aNode.data.theMethod.getDeclaringClass(), SDObject.GetUniqueName(), false, false);
 			sd.AddObject(outerObject);
+			sd.AttachNameToObject("this", outerObject);
 		}
 		SDListAndReturns allSDs = new SDListAndReturns();
 		allSDs.listDiagrams.add(sd);
@@ -166,6 +167,7 @@ public class SDGenerator {
 		toReturn.clear();
 		for(int i = 0; i < tstmts.size(); i++){
 			SDListAndReturns toSendDown = cloneSource.clone();
+			ByRefInt clvl = new ByRefInt(0);
 			toReturn.addAll(RecFillTraceAllStmtDiagram(
 					outerMethodName,
 					hg,
@@ -177,7 +179,8 @@ public class SDGenerator {
 					listCallStack,
 					true,
 					null,
-					null));
+					null,
+					clvl));
 		}
 		return toReturn;
 	}
@@ -206,6 +209,7 @@ public class SDGenerator {
 			choice = options.get(optionIndex.theInt);
 		}
 		optionIndex.theInt = optionIndex.theInt + 1;
+		ByRefInt clvl = new ByRefInt(0);
 		return RecFillTraceAllStmtDiagram(
 				outerMethodName,
 				hg,
@@ -217,7 +221,8 @@ public class SDGenerator {
 				listCallStack,
 				false,
 				options,
-				optionIndex);
+				optionIndex,
+				clvl);
 	}
 	
 	private static SDListAndReturns RecFillTraceAllStmtDiagram(
@@ -231,7 +236,8 @@ public class SDGenerator {
 			List<String> listCallStack,
 			boolean FindAll,
 			List<Integer> options,
-			ByRefInt optionIndex) throws Exception
+			ByRefInt optionIndex,
+			ByRefInt callerLevel) throws Exception
 	{
 		//List<SequenceDiagram> toReturn = new ArrayList<SequenceDiagram>();
 		SDListAndReturns toReturn = allSDs.Copy(sdIndex);
@@ -296,7 +302,8 @@ public class SDGenerator {
 					FindAll, 
 					options, 
 					optionIndex, 
-					assignStmt);
+					assignStmt,
+					callerLevel);
 			
 		}
 		//If a statement contains an invoke expression
@@ -316,143 +323,9 @@ public class SDGenerator {
 					listCallStack, 
 					FindAll, 
 					options, 
-					optionIndex);
+					optionIndex,
+					callerLevel);
 					
-			
-//			SootMethod calledMethod = aStmt.theStmt.getInvokeExpr().getMethod();
-//			GroupableHyperEdge<EdgeAnnotation> gEdge = aGNode.GetGroupableEdge(calledMethod);
-//			if(gEdge != null){
-//				GroupableHyperNode<MethodNodeAnnot, EdgeAnnotation> subGNode = 
-//						(GroupableHyperNode<MethodNodeAnnot, EdgeAnnotation>) hg.GetCompleteNode(gEdge.targetNode);
-//				
-//				//If an object doesn't have an instance name
-//				//(might be static)
-//				//this might not work, in which case
-//				//the initial assignment to getuniquename
-//				//must suffice for the name
-//				List<Value> lv = aStmt.theStmt.getInvokeExpr().getUseBoxes();
-//			
-//				List<SDObject> params = new ArrayList<SDObject>();
-//				String tarObjName = "";
-//				if(lv.size() > 0){
-//					Object v = lv.get(0);
-//					JimpleLocal jl = extractValue(v);
-//					if(jl != null){
-//						tarObjName = jl.getName();
-//					}
-//					for(int i =1; i < lv.size(); i++){
-//						JimpleLocal jlparam = extractValue(lv.get(i));
-//						if(jlparam != null){
-//							SDObject anObj = sd.GetObjectFromName(jlparam.getName());
-//							params.add(anObj);
-//						}
-//						else{
-//							params.add(null);
-//						}
-//					}
-//				}
-//				
-//				//grab the three things we need to write a 
-//				//message into sd, source, target, message
-//				
-//				SootMethod sm = subGNode.data.theMethod;
-//				SootClass scTarget = sm.getDeclaringClass();
-//				SootClass scSource = aGNode.data.theMethod.getDeclaringClass();
-//				
-//				//SDObjects for source and target are created with
-//				//two piece of information, class and instance name
-//				//note source's instance name is passed in from above.
-//				//target's is locally available to us.
-//				//SDObject sdSource = sd.GetObjectFromName(sourceName);
-//				boolean isSuper = false;
-//				SDObject sdTarget = null;
-//				if(tarObjName.equals("this")){
-//					sdTarget = sourceObj;
-//					if(outerMethodName.equals(sm.getName())){
-//						isSuper = true;
-//					}
-//				}
-//				else{
-//					sdTarget = sd.GetObjectFromName(tarObjName);
-//				}
-//				
-//				//If there is already a matching SDObject in sd
-//				//this will silently fail and we will simply link
-//				//to the existing object.  This may need to change
-//				//per the assignment statement problem.
-//				if(sdTarget == null){
-//					if(sm.isStatic()){
-//						sdTarget= sd.GetStaticObject(scTarget);
-//					}
-//					else{
-//						if(tarObjName == null || tarObjName.length() == 0){
-//							tarObjName = SDObject.GetUniqueName();
-//						}
-//						sdTarget = new SDObject(scTarget, tarObjName, false, false);
-//						sd.AddObject(sdTarget);
-//					}
-//				}
-//				
-//				//now that the sd has a source and target, we can
-//				//add the message.
-//				SDMessage msg = new SDMessage(sourceObj, sdTarget, sm, isSuper);
-//				sd.AddMessage(msg);
-//				
-//				String CallName = 
-//						aGNode.data.theMethod.getDeclaringClass().getName() + 
-//						"." +
-//						aGNode.data.theMethod.getName();
-//				
-//				if(!listCallStack.contains(CallName)){
-//					listCallStack.add(CallName);
-//					//now that we are "at" the destination point
-//					//of the message, we traverse into
-//					//the relevant hypernode for that new method.
-//					sd.PushNames();
-//					for(int i = 0; i < params.size(); i++){
-//						if(params.get(i) != null){
-//							sd.AttachNameToObject("@parameter" + String.valueOf(i), params.get(i));
-//						}
-//					}
-//					if(sdTarget != null && !sdTarget.isStatic){
-//						sd.AttachNameToObject("this", sdTarget);
-//					}
-//					if(FindAll){
-//						toReturn = MakeAllDiagrams(
-//								aGNode.data.theMethod.getName(), 
-//								hg, 
-//								subGNode, 
-//								allSDs,
-//								sdIndex,
-//								sdTarget,
-//								listCallStack);
-//						for(int i = 0; i < toReturn.listDiagrams.size(); i++){
-//							toReturn.listDiagrams.get(i).PopNames();
-//						}
-//					}
-//					else{
-//						MakeDiagram(
-//								aGNode.data.theMethod.getName(), 
-//								hg, 
-//								subGNode, 
-//								allSDs,
-//								sdIndex,
-//								sdTarget,
-//								listCallStack,
-//								options,
-//								optionIndex);
-//						sd.PopNames();
-//					}
-//					listCallStack.remove(listCallStack.size() -1);
-//				}
-//			}
-//			else
-//			{
-//				//need to revisit this once assignment problem is cleared up
-//				//it may either be impossible or may represent calls like
-//				//int x = (new Random()).nextInt()
-//				//where we don't have soot data on calls to "external" libraries
-//			}
 		}
 		if(aStmt.theStmt instanceof JReturnStmt){
 			JReturnStmt rs = (JReturnStmt)aStmt.theStmt;
@@ -476,7 +349,8 @@ public class SDGenerator {
 						listCallStack,
 						FindAll,
 						null,
-						null));
+						null,
+						callerLevel));
 			}
 			return toReturnNew;
 		}
@@ -492,7 +366,8 @@ public class SDGenerator {
 					listCallStack,
 					FindAll,
 					options,
-					optionIndex);
+					optionIndex,
+					callerLevel);
 			return null;
 		}
 	}
@@ -507,7 +382,8 @@ public class SDGenerator {
 			List<String> listCallStack,
 			boolean FindAll,
 			List<Integer> options,
-			ByRefInt optionIndex
+			ByRefInt optionIndex,
+			ByRefInt callLevel
 			) throws Exception{
 		
 		SequenceDiagram sd = allSDs.listDiagrams.get(sdIndex);
@@ -590,8 +466,11 @@ public class SDGenerator {
 			
 			//now that the sd has a source and target, we can
 			//add the message.
-			SDMessage msg = new SDMessage(sourceObj, sdTarget, sm, isSuper);
+			SDMessage msg = new SDMessage(sourceObj, sdTarget, sm, isSuper, callLevel.theInt);
 			sd.AddMessage(msg);
+			if(sourceObj.equals(sdTarget)){
+				callLevel.theInt++;
+			}
 			
 			String CallName = 
 					aGNode.data.theMethod.getDeclaringClass().getName() + 
@@ -662,7 +541,8 @@ public class SDGenerator {
 			boolean FindAll,
 			List<Integer> options,
 			ByRefInt optionIndex,
-			AssignStmt assignStmt) throws Exception{
+			AssignStmt assignStmt,
+			ByRefInt callerLevel) throws Exception{
 
 		SequenceDiagram sd = allSDs.listDiagrams.get(sdIndex);
 		SDListAndReturns toReturn = allSDs.Copy(sdIndex);
@@ -692,7 +572,8 @@ public class SDGenerator {
 					listCallStack, 
 					FindAll, 
 					options, 
-					optionIndex);
+					optionIndex,
+					callerLevel);
 			
 			InvokeExpr ie = assignStmt.getInvokeExpr();
 			soot.Type rType = ie.getMethod().getReturnType();

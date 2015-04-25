@@ -61,7 +61,11 @@ public class SDMessage
     }
     
     
-    public SDMessage(SDObject sdCaller, SDObject sdCallee, SootMethod message, boolean aIsSuper){
+    public SDMessage(SDObject sdCaller, 
+    		SDObject sdCallee, 
+    		SootMethod message, 
+    		boolean aIsSuper,
+    		int level){
     	//this.caller = sdCaller;
     	//this.callee = sdCallee;
     	this.calleeID = sdCallee.ID;
@@ -69,6 +73,7 @@ public class SDMessage
     	this.message = message.getName();
     	isConstruction = false;
     	isSuper = aIsSuper;
+    	this.specifier = Integer.toString(level);
     	if(isSuper){
     		this.message = "super";
     	}
