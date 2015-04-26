@@ -249,60 +249,6 @@ public class Analyzer {
 			}}
 	}
 	
-	//checks aStmt.theStmt to see if it contains an invoke expression.
-	//if it does, then build an edge and add that edge to the hypergraph.
-	//then traverse any possible child statements and do the same thing.
-//	private static void AddRecStmts(
-//			GroupableStmt aStmt, 
-//			GroupableHyperNode<MethodNodeAnnot, EdgeAnnotation> sourceNode, 
-//			GroupableHypergraph<MethodNodeAnnot, EdgeAnnotation> hg){
-//		//Brian added the != null checks for aStmt and aStmt.theStmt
-//		//as well as the try inside of the first big block.
-//		if(aStmt != null){
-//		if(aStmt.theStmt != null && aStmt.theStmt.containsInvokeExpr()){
-//			try{
-//			InvokeExpr ie = null;
-//			if(aStmt.theStmt instanceof JAssignStmt){
-//				JAssignStmt assignStmt = (JAssignStmt)aStmt.theStmt;
-//				ie = assignStmt.getInvokeExpr();
-//				
-//			}
-//			else{
-//				InvokeStmt anInvoke = (InvokeStmt)aStmt.theStmt;
-//
-//				ie = anInvoke.getInvokeExpr();
-//			}
-//			
-//			SootMethod sm = ie.getMethod();
-//			
-//			MethodNodeAnnot finder = new MethodNodeAnnot(sm, null, null);
-//			
-//			HyperNode<MethodNodeAnnot, EdgeAnnotation> tarNode = hg.GetCompleteNode(finder);
-//			
-//			if(tarNode == null){
-//				hg.AddNode(finder);
-//				tarNode = hg.GetCompleteNode(finder);
-//			}
-//			List<MethodNodeAnnot> ante = new ArrayList<MethodNodeAnnot>();
-//			ante.add(sourceNode.data);
-//			EdgeAnnotation ea = new EdgeAnnotation();
-//			hg.AddGroupableEdge(ante, tarNode.data, ea, sm);}
-//			catch(Exception ex){
-//				Utilities.DebugPrintln("Failed to parse method");
-//				Utilities.DebugPrintln(ex.getMessage());
-//			}
-//		}
-//		if(aStmt.theTrueBranch != null){
-//			AddRecStmts(aStmt.theTrueBranch, sourceNode, hg);
-//		}
-//		if(aStmt.theFalseBranch != null){
-//			AddRecStmts(aStmt.theFalseBranch, sourceNode, hg);
-//		}
-//		if(aStmt.theNext != null){
-//			AddRecStmts(aStmt.theNext, sourceNode, hg);
-//		}}
-//	}
-	
 	//Builds the method annotation which we will traverse
 	//internal to each node in the graph.
 	//This method annotation must be constructed from
@@ -332,40 +278,7 @@ public class Analyzer {
 			//contain identical objects after a certain point
 			//(if the function continues after the if else)
 			BranchableStmt bs = MakeBranchableStmts(pcu);
-			//I have removed the reduction step
-			//it was buggy.  We may reinclude a reduction step
-			//but it would probably be easier to rewrite it
-			//and do it after creating the GrouapbleStmt representation.
-			//bs = ReduceToInvokesAndBranches(bs);
-			
-			//The GroupableStmt representation takes the tree representation
-			//and finds groups in it.
-			//It essentially reconnects branches with identical suffixes,
-			//and then places the distinct parts of that branch into groups.
-			//This is difficult to describe without illustration.
-			//While BranchableStmt simply has two possible child BranchableStmts
-			//Groupable has three.  A True GroupableStmt and a False GroupableStmt
-			//which are both groups, and a Next GroupableStmt which is the next 
-			//statement on the same level. 
-			
-//			GroupableStmt gs = GroupStmts(bs, new ArrayList<BranchableStmt>());
-//			if(Utilities.DEBUG){
-//				Utilities.DebugPrintln("--------GS--------");
-//				Utilities.DebugPrintln(gs.toString());
-//				Utilities.DebugPrintln("------------------");
-//			}
-			
-			//List<TraceStatement> ts = GenerateAllTracesFromBranches(bs, new ArrayList<BranchableStmt>());
-			//List<TraceStatement> ts = GenerateAllPotentialTraces(gs, new ArrayList<TraceStatement>());
-//			if(Utilities.DEBUG){
-//				Utilities.DebugPrintln("--------TS--------");
-//				for(int i = 0; i < ts.size(); i++){
-//					Utilities.DebugPrintln("****"+i+"****");
-//					Utilities.DebugPrintln(ts.get(i).toString());
-//				}
-//				Utilities.DebugPrintln("------------------");
-//			}
-			
+
 			MethodNodeAnnot theAnnot = new MethodNodeAnnot(sm, bs);
 			
 			return theAnnot;
