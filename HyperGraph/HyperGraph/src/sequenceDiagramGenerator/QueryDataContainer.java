@@ -5,39 +5,60 @@ import java.util.Iterator;
 import java.util.List;
 
 import soot.PatchingChain;
+import soot.SootMethod;
+import soot.Type;
 import soot.Unit;
 import soot.jimple.ArrayRef;
 import soot.jimple.FieldRef;
 import soot.jimple.InvokeExpr;
 import soot.jimple.internal.AbstractStmt;
+import utilities.Utilities;
+
+
 
 public class QueryDataContainer {
-	public QueryDataContainer(PatchingChain<Unit> pcu){
-		Iterator<Unit> i = pcu.iterator();
+
+	public List<Type> theListRefTypes;
+	public List<SootMethod> theListCalledMethods;
+	
+	public QueryDataContainer(TraceStatement tc){
+		theListRefTypes = new ArrayList<Type>();
+		theListCalledMethods = new ArrayList<SootMethod>();
 		//bit lazy, but i prefer a list representation to
 		//a iterator representation because i want to be able to look
 		//at objects by index.
-		while(i.hasNext()){
-			Unit u = i.next();
-			if(!(u instanceof soot.jimple.internal.AbstractStmt))
+		TraceStatement tStmt = tc;
+		while(tStmt != null){
+			try
 			{
-				//I don't believe this is possible, which reduces the amount of 
-				//the subtree we have to deal with in practice.
-				throw new java.lang.RuntimeException("Unit is not a subclass of soot.jimple.internal.AbstractStmt");
-			}
-			else{
-				AbstractStmt aStmt = (soot.jimple.internal.AbstractStmt)u;
+				AbstractStmt aStmt = tStmt.theStmt;
 				if(aStmt.containsArrayRef()){
 					ArrayRef ar = aStmt.getArrayRef();
+					Type t = ar.getType();
+					if(!theListRefTypes.contains(t)){
+						theListRefTypes.add(t);
+					}
 				}
 				if(aStmt.containsFieldRef()){
 					FieldRef fr = aStmt.getFieldRef();
+					Type t= fr.getType();
+					if(!theListRefTypes.contains(t)){
+						theListRefTypes.add(t);
+					}
 				}
 				if(aStmt.containsInvokeExpr()){
 					InvokeExpr ie = aStmt.getInvokeExpr();
+					SootMethod sm = ie.getMethod();
+					if(!theListCalledMethods.contains(sm)){
+						theListCalledMethods.add(sm);
+					}
 				}
 			}
-			
+			catch(Exception ex){
+				Utilities.DebugPrintln("Error in query data construction:");
+				Utilities.DebugPrintln(ex.getMessage());
+			}
+			tStmt = tStmt.theNext;
 		}
 	} 
 }

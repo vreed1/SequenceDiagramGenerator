@@ -13,6 +13,7 @@ import javax.swing.JFileChooser;
 import javax.swing.JFrame;
 
 import sequenceDiagramGenerator.MethodNodeAnnot;
+import sequenceDiagramGenerator.Query;
 import sequenceDiagramGenerator.SDGenerator;
 import sequenceDiagramGenerator.hypergraph.EdgeAnnotation;
 import sequenceDiagramGenerator.hypergraph.GroupableHyperNode;
@@ -54,20 +55,22 @@ public class TestUI implements ActionListener{
 	}
 	private static void RunAnyCommandLine(String[] args){
 		String debugFile = GetArgument(args, "-debugfile");
+		String queryFile = GetArgument(args, "-queryfile");
+		Query q = Query.FromFile(queryFile);
 		if(debugFile != null && !debugFile.equals("")){
 			Utilities.SetDebugFile(debugFile);
 		}
 		if(args[0].equals("-c")){
-			RunCommandLine(args);
+			RunCommandLine(args, q);
 		}
 		else if(args[0].equals("-t")){
-			RunTest(args);
+			RunTest(args, q);
 		}
 		else if(args[0].equals("-a")){
-			RunAllOneFunction(args);
+			RunAllOneFunction(args, q);
 		}
 		else if(args[0].equals("-aa")){
-			RunAllAllFunctions(args);
+			RunAllAllFunctions(args, q);
 		}
 		else
 		{ 
@@ -76,7 +79,7 @@ public class TestUI implements ActionListener{
 			
 	}
 	
-	private static void RunTest(String[] args){
+	private static void RunTest(String[] args, Query byQuery){
 		GroupableHypergraph<MethodNodeAnnot, EdgeAnnotation> hg = null;
 		String ClassPath = GetArgument(args, "-classpath");
 		String Files = GetArgument(args, "-jars");
@@ -125,14 +128,14 @@ public class TestUI implements ActionListener{
 		try {
 			//this is the interesting call.
 			//SDGenerator.Generate(hg, aNode, saveFile);
-			SDGenerator.GenTest(hg, aNode, saveFile);
+			SDGenerator.GenTest(hg, aNode, saveFile, byQuery);
 		} catch (Exception e1) {
 			// TODO Auto-generated catch block				
 			e1.printStackTrace();
 		}
 	}
 	
-	private static void RunCommandLine(String[] args){
+	private static void RunCommandLine(String[] args, Query q){
 		GroupableHypergraph<MethodNodeAnnot, EdgeAnnotation> hg = null;
 		String ClassPath = GetArgument(args, "-classpath");
 		String Files = GetArgument(args, "-jars");
@@ -191,14 +194,14 @@ public class TestUI implements ActionListener{
 		
 		try {
 			//this is the interesting call.
-			SDGenerator.Generate(hg, aNode, saveFile);
+			SDGenerator.Generate(hg, aNode, saveFile, q);
 		} catch (Exception e1) {
 			// TODO Auto-generated catch block				
 			e1.printStackTrace();
 		}
 	}
 	
-	private static void RunAllOneFunction(String[] args){
+	private static void RunAllOneFunction(String[] args, Query q){
 		GroupableHypergraph<MethodNodeAnnot, EdgeAnnotation> hg = null;
 		String ClassPath = GetArgument(args, "-classpath");
 		String Files = GetArgument(args, "-jars");
@@ -255,14 +258,14 @@ public class TestUI implements ActionListener{
 		
 		try {
 			//this is the interesting call.
-			SDGenerator.GenerateAll(hg, aNode, saveDir);
+			SDGenerator.GenerateAll(hg, aNode, saveDir, q);
 		} catch (Exception e1) {
 			// TODO Auto-generated catch block				
 			e1.printStackTrace();
 		}
 	}
 	
-	private static void RunAllAllFunctions(String[] args){
+	private static void RunAllAllFunctions(String[] args, Query q){
 		GroupableHypergraph<MethodNodeAnnot, EdgeAnnotation> hg = null;
 		String ClassPath = GetArgument(args, "-classpath");
 		String Files = GetArgument(args, "-jars");
@@ -327,7 +330,7 @@ public class TestUI implements ActionListener{
 			aSubDir.mkdirs();
 			try {
 				//this is the interesting call.
-				SDGenerator.GenerateAll(hg, aNode, aSubDir.getAbsolutePath());
+				SDGenerator.GenerateAll(hg, aNode, aSubDir.getAbsolutePath(), q);
 			} catch (Exception e1) {
 				// TODO Auto-generated catch block				
 				e1.printStackTrace();
@@ -466,7 +469,7 @@ public class TestUI implements ActionListener{
 			
 			try {
 				//this is the interesting call.
-				SDGenerator.Generate(currentHypergraph, aNode, saveFile);
+				SDGenerator.Generate(currentHypergraph, aNode, saveFile, new Query(""));
 			} catch (Exception e1) {
 				// TODO Auto-generated catch block				
 				e1.printStackTrace();

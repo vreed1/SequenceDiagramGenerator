@@ -8,6 +8,7 @@ import java.util.List;
 import sequenceDiagramGenerator.BranchableStmt;
 import sequenceDiagramGenerator.GroupableStmt;
 import sequenceDiagramGenerator.MethodNodeAnnot;
+import sequenceDiagramGenerator.QueryDataContainer;
 import sequenceDiagramGenerator.TraceStatement;
 import sequenceDiagramGenerator.TraceStatement.BranchStatus;
 import sequenceDiagramGenerator.hypergraph.EdgeAnnotation;
@@ -222,7 +223,8 @@ public class Analyzer {
 				
 				SootMethod sm = ie.getMethod();
 				
-				MethodNodeAnnot finder = new MethodNodeAnnot(sm, null, null);
+				//MethodNodeAnnot finder = new MethodNodeAnnot(sm, null, null);
+				MethodNodeAnnot finder = new MethodNodeAnnot(sm);
 				
 				HyperNode<MethodNodeAnnot, EdgeAnnotation> tarNode = hg.GetCompleteNode(finder);
 				
@@ -286,7 +288,8 @@ public class Analyzer {
 		//note that even if we cannot analyze the method
 		//we still return a node for it.  Traversal will simply
 		//return from such a node.
-		return new MethodNodeAnnot(sm, null, new ArrayList<TraceStatement>());
+		//return new MethodNodeAnnot(sm, null, new ArrayList<TraceStatement>());
+		return new MethodNodeAnnot(sm);
 	}
 
 	public static List<TraceStatement> GenerateAllTracesFromBranches(

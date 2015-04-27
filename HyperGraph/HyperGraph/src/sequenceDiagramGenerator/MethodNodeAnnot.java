@@ -29,12 +29,10 @@ public class MethodNodeAnnot {
 	}
 	
 	public MethodNodeAnnot(
-			SootMethod aMethod, 
-			BranchableStmt aStmt,
-			List<TraceStatement> aTraces){
+			SootMethod aMethod){
 		theMethod = aMethod;
-		theBStmt= aStmt;
-		theTraces = aTraces;
+		theBStmt= null;
+		theTraces = null;
 	}
 	
 	public List<TraceStatement> getTraces(){

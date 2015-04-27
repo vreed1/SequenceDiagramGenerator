@@ -3,6 +3,7 @@ package sequenceDiagramGenerator;
 import java.util.ArrayList;
 import java.util.List;
 
+import sequenceDiagramGenerator.Query.QueryResponse;
 import sequenceDiagramGenerator.hypergraph.EdgeAnnotation;
 import sequenceDiagramGenerator.hypergraph.GroupableHyperEdge;
 import sequenceDiagramGenerator.hypergraph.GroupableHyperNode;
@@ -43,9 +44,10 @@ public class SDGenerator {
 	public static void GenerateAll(
 			GroupableHypergraph<MethodNodeAnnot, EdgeAnnotation> hg,
 			GroupableHyperNode<MethodNodeAnnot, EdgeAnnotation> aNode,
-			String saveDir) throws Exception {
+			String saveDir,
+			Query byQuery) throws Exception {
 		// TODO Auto-generated method stub
-		List<SequenceDiagram> listSDs = GenerateAllDiagrams(hg, aNode);
+		List<SequenceDiagram> listSDs = GenerateAllDiagrams(hg, aNode, byQuery);
 //		SequenceDiagram sd = GenerateDiagramObj(hg, aNode, SaveFile);
 		for(int i = 0; i < listSDs.size(); i++){
 			String outFile = Utilities.endWithSlash(saveDir) + "out" + String.valueOf(i) + ".pdf";
@@ -59,24 +61,27 @@ public class SDGenerator {
 	public static void Generate(
 			Hypergraph<MethodNodeAnnot, EdgeAnnotation> hg,
 			GroupableHyperNode<MethodNodeAnnot, EdgeAnnotation> aGNode,
-			String SaveFile) throws Exception{
+			String SaveFile,
+			Query byQuery) throws Exception{
 
-		SequenceDiagram sd = GenerateDiagramObj(hg, aGNode, SaveFile);
+		SequenceDiagram sd = GenerateDiagramObj(hg, aGNode, SaveFile, byQuery);
 		sd.CreatePDF(SaveFile);
 	}
 
 	public static void GenTest(
 			GroupableHypergraph<MethodNodeAnnot, EdgeAnnotation> hg,
 			GroupableHyperNode<MethodNodeAnnot, EdgeAnnotation> aNode,
-			String saveFile) throws Exception {
-		SequenceDiagram sd = GenerateDiagramObj(hg, aNode, saveFile);
+			String saveFile,
+			Query byQuery) throws Exception {
+		SequenceDiagram sd = GenerateDiagramObj(hg, aNode, saveFile, byQuery);
 		sd.TestOutput(saveFile);
 	}
 	
 
 	private static List<SequenceDiagram> GenerateAllDiagrams(
 			GroupableHypergraph<MethodNodeAnnot, EdgeAnnotation> hg,
-			GroupableHyperNode<MethodNodeAnnot, EdgeAnnotation> aNode) throws Exception {
+			GroupableHyperNode<MethodNodeAnnot, EdgeAnnotation> aNode,
+			Query byQuery) throws Exception {
 		
 		List<SequenceDiagram> listToReturn;
 		
@@ -100,7 +105,8 @@ public class SDGenerator {
 				allSDs,
 				0,
 				outerObject,
-				new ArrayList<String>()).listDiagrams;
+				new ArrayList<String>(),
+				byQuery).listDiagrams;
 
 		return listToReturn;
 	}
@@ -116,7 +122,8 @@ public class SDGenerator {
 	private static SequenceDiagram GenerateDiagramObj(
 			Hypergraph<MethodNodeAnnot, EdgeAnnotation> hg,
 			GroupableHyperNode<MethodNodeAnnot, EdgeAnnotation> aGNode,
-			String SaveFile) throws Exception{
+			String SaveFile,
+			Query byQuery) throws Exception{
 
 		SDListAndReturns allSDs = new SDListAndReturns();
 		SequenceDiagram sd = new SequenceDiagram();
@@ -138,7 +145,8 @@ public class SDGenerator {
 				outerObject,
 				new ArrayList<String>(),
 				null,
-				new ByRefInt(0));
+				new ByRefInt(0),
+				byQuery);
 		//RecFillNodeDiagram(hg,aGNode, sd, SDObject.GetUniqueName());
 		return sd;
 	}
@@ -150,7 +158,8 @@ public class SDGenerator {
 			SDListAndReturns allSDs,
 			int sdIndex,
 			SDObject outerObject,
-			List<String> listCallStack) throws Exception{
+			List<String> listCallStack,
+			Query byQuery) throws Exception{
 	
 		SDListAndReturns toReturn = allSDs.Copy(sdIndex);
 		//SDListAndReturns toReturn = new SDListAndReturns();
@@ -159,6 +168,12 @@ public class SDGenerator {
 		//toReturn.listDiagrams.add(sd);
 		
 		if(aGNode == null){return toReturn;}
+
+		QueryResponse result = byQuery.RunOnMethodName(outerMethodName);
+		if(result == QueryResponse.False || result == QueryResponse.Filter){
+			return toReturn;
+		}
+		
 		List<TraceStatement> tstmts = aGNode.data.getTraces();
 		if(tstmts == null || tstmts.size() == 0){return toReturn;}
 		
@@ -166,13 +181,20 @@ public class SDGenerator {
 		SDListAndReturns cloneSource = toReturn.clone();
 		toReturn.clear();
 		for(int i = 0; i < tstmts.size(); i++){
+
+			TraceStatement tc = tstmts.get(i);
+			QueryDataContainer qd = new QueryDataContainer(tc);
+			result = byQuery.RunOnData(new QueryDataContainer(tc));
+			if(result == QueryResponse.False || result == QueryResponse.Filter){
+				continue;
+			}
 			SDListAndReturns toSendDown = cloneSource.clone();
 			ByRefInt clvl = new ByRefInt(0);
 			toReturn.addAll(RecFillTraceAllStmtDiagram(
 					outerMethodName,
 					hg,
 					aGNode,
-					tstmts.get(i),
+					tc,
 					toSendDown,
 					sdIndex,
 					outerObject.ID,
@@ -180,7 +202,8 @@ public class SDGenerator {
 					true,
 					null,
 					null,
-					clvl));
+					clvl,
+					byQuery));
 		}
 		return toReturn;
 	}
@@ -194,11 +217,16 @@ public class SDGenerator {
 			SDObject outerObject,
 			List<String> listCallStack,
 			List<Integer> options,
-			ByRefInt optionIndex) throws Exception{
+			ByRefInt optionIndex,
+			Query byQuery) throws Exception{
 	
 		SDListAndReturns toReturn = allSDs.Copy(sdIndex);
 		//toReturn.listDiagrams.add(allSDs.listDiagrams.get(sdIndex));
-		
+
+		QueryResponse result = byQuery.RunOnMethodName(outerMethodName);
+		if(result == QueryResponse.False || result == QueryResponse.Filter){
+			return toReturn;
+		}
 		
 		if(aGNode == null){return toReturn;}
 		List<TraceStatement> tstmts = aGNode.data.getTraces();
@@ -210,11 +238,19 @@ public class SDGenerator {
 		}
 		optionIndex.theInt = optionIndex.theInt + 1;
 		ByRefInt clvl = new ByRefInt(0);
+		
+		TraceStatement tc = tstmts.get(choice);
+		QueryDataContainer qd = new QueryDataContainer(tc);
+		QueryResponse qr = byQuery.RunOnData(qd);
+		if(qr == QueryResponse.False || qr == QueryResponse.Filter){
+			return toReturn;
+		}
+		
 		return RecFillTraceAllStmtDiagram(
 				outerMethodName,
 				hg,
 				aGNode,
-				tstmts.get(choice),
+				tc,
 				allSDs,
 				sdIndex,
 				outerObject.ID,
@@ -222,7 +258,8 @@ public class SDGenerator {
 				false,
 				options,
 				optionIndex,
-				clvl);
+				clvl,
+				byQuery);
 	}
 	
 	private static SDListAndReturns RecFillTraceAllStmtDiagram(
@@ -237,7 +274,8 @@ public class SDGenerator {
 			boolean FindAll,
 			List<Integer> options,
 			ByRefInt optionIndex,
-			ByRefInt callerLevel) throws Exception
+			ByRefInt callerLevel,
+			Query byQuery) throws Exception
 	{
 		//List<SequenceDiagram> toReturn = new ArrayList<SequenceDiagram>();
 		SDListAndReturns toReturn = allSDs.Copy(sdIndex);
@@ -303,7 +341,8 @@ public class SDGenerator {
 					options, 
 					optionIndex, 
 					assignStmt,
-					callerLevel);
+					callerLevel,
+					byQuery);
 			
 		}
 		//If a statement contains an invoke expression
@@ -324,7 +363,8 @@ public class SDGenerator {
 					FindAll, 
 					options, 
 					optionIndex,
-					callerLevel);
+					callerLevel,
+					byQuery);
 					
 		}
 		if(aStmt.theStmt instanceof JReturnStmt){
@@ -350,7 +390,8 @@ public class SDGenerator {
 						FindAll,
 						null,
 						null,
-						callerLevel));
+						callerLevel,
+						byQuery));
 			}
 			return toReturnNew;
 		}
@@ -367,7 +408,8 @@ public class SDGenerator {
 					FindAll,
 					options,
 					optionIndex,
-					callerLevel);
+					callerLevel,
+					byQuery);
 			return null;
 		}
 	}
@@ -383,7 +425,8 @@ public class SDGenerator {
 			boolean FindAll,
 			List<Integer> options,
 			ByRefInt optionIndex,
-			ByRefInt callLevel
+			ByRefInt callLevel,
+			Query byQuery
 			) throws Exception{
 		
 		SequenceDiagram sd = allSDs.listDiagrams.get(sdIndex);
@@ -391,6 +434,10 @@ public class SDGenerator {
 		//toReturn.listDiagrams.add(sd);
 		
 		SootMethod calledMethod = ie.getMethod();
+		QueryResponse qr = byQuery.RunOnMethodName(Utilities.getMethodString(calledMethod));
+		if(qr == QueryResponse.False || qr == QueryResponse.Filter){
+			return toReturn;
+		}
 		GroupableHyperEdge<EdgeAnnotation> gEdge = aGNode.GetGroupableEdge(calledMethod);
 		if(gEdge != null){
 			GroupableHyperNode<MethodNodeAnnot, EdgeAnnotation> subGNode = 
@@ -439,7 +486,7 @@ public class SDGenerator {
 			SDObject sdTarget = null;
 			if(tarObjName.equals("this")){
 				sdTarget = sourceObj;
-				if(outerMethodName.equals(sm.getName())){
+				if(outerMethodName.equals(Utilities.getMethodString(sm))){
 					isSuper = true;
 				}
 			}
@@ -493,20 +540,21 @@ public class SDGenerator {
 				}
 				if(FindAll){
 					toReturn = MakeAllDiagrams(
-							aGNode.data.theMethod.getName(), 
+							Utilities.getMethodString(aGNode.data.theMethod), 
 							hg, 
 							subGNode, 
 							allSDs,
 							sdIndex,
 							sdTarget,
-							listCallStack);
+							listCallStack,
+							byQuery);
 					for(int i = 0; i < toReturn.listDiagrams.size(); i++){
 						toReturn.listDiagrams.get(i).PopNames();
 					}
 				}
 				else{
 					toReturn = MakeDiagram(
-							aGNode.data.theMethod.getName(), 
+							Utilities.getMethodString(aGNode.data.theMethod), 
 							hg, 
 							subGNode, 
 							allSDs,
@@ -514,7 +562,8 @@ public class SDGenerator {
 							sdTarget,
 							listCallStack,
 							options,
-							optionIndex);
+							optionIndex,
+							byQuery);
 					sd.PopNames();
 				}
 				listCallStack.remove(listCallStack.size() -1);
@@ -542,7 +591,8 @@ public class SDGenerator {
 			List<Integer> options,
 			ByRefInt optionIndex,
 			AssignStmt assignStmt,
-			ByRefInt callerLevel) throws Exception{
+			ByRefInt callerLevel,
+			Query byQuery) throws Exception{
 
 		SequenceDiagram sd = allSDs.listDiagrams.get(sdIndex);
 		SDListAndReturns toReturn = allSDs.Copy(sdIndex);
@@ -573,7 +623,8 @@ public class SDGenerator {
 					FindAll, 
 					options, 
 					optionIndex,
-					callerLevel);
+					callerLevel,
+					byQuery);
 			
 			InvokeExpr ie = assignStmt.getInvokeExpr();
 			soot.Type rType = ie.getMethod().getReturnType();
