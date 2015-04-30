@@ -20,6 +20,7 @@ import sequenceDiagramGenerator.hypergraph.GroupableHyperNode;
 import sequenceDiagramGenerator.hypergraph.GroupableHypergraph;
 import sequenceDiagramGenerator.hypergraph.HyperNode;
 import sequenceDiagramGenerator.hypergraph.Hypergraph;
+import sequenceDiagramGenerator.sdedit.SequenceDiagram;
 import sequenceDiagramGenerator.sootAnalyzer.Analyzer;
 import soot.SootClass;
 import soot.SootMethod;
@@ -55,28 +56,44 @@ public class TestUI implements ActionListener{
 	}
 	private static void RunAnyCommandLine(String[] args){
 		String debugFile = GetArgument(args, "-debugfile");
-		String queryFile = GetArgument(args, "-queryfile");
-		Query q = Query.FromFile(queryFile);
 		if(debugFile != null && !debugFile.equals("")){
 			Utilities.SetDebugFile(debugFile);
 		}
 		if(args[0].equals("-c")){
+			String queryFile = GetArgument(args, "-queryfile");
+			Query q = Query.FromFile(queryFile);
 			RunCommandLine(args, q);
 		}
 		else if(args[0].equals("-t")){
+			String queryFile = GetArgument(args, "-queryfile");
+			Query q = Query.FromFile(queryFile);
 			RunTest(args, q);
 		}
 		else if(args[0].equals("-a")){
+			String queryFile = GetArgument(args, "-queryfile");
+			Query q = Query.FromFile(queryFile);
 			RunAllOneFunction(args, q);
 		}
 		else if(args[0].equals("-aa")){
+			String queryFile = GetArgument(args, "-queryfile");
+			Query q = Query.FromFile(queryFile);
 			RunAllAllFunctions(args, q);
+		}
+		else if(args[0].equals("-td")){
+			RunADiagram(args);
 		}
 		else
 		{ 
 			System.out.println("Bad Input Arg 0 =" + args[0]);
 		}
 			
+	}
+	
+	private static void RunADiagram(String[] args){
+		String fileName = GetArgument(args, "-filename");
+		String fileContents = Utilities.ReadEntireFile(fileName);
+		String outFile = GetArgument(args, "-outfile");
+		SequenceDiagram.MakePDFFromSDEdit(fileContents, outFile);
 	}
 	
 	private static void RunTest(String[] args, Query byQuery){

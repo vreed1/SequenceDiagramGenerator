@@ -34,9 +34,9 @@ public class SequenceDiagram {
     private List<SDMessage> messages;
     private Map<SootClass, SDObject> theStaticObjects;
     
-    private String diagType = "pdf";
-    private String diagFormat = "A4";
-    private String diagOrientation = "portrait";
+    private static String diagType = "pdf";
+    private static String diagFormat = "A4";
+    private static String diagOrientation = "portrait";
     
     public SequenceDiagram clone(){
     	SequenceDiagram aClone = new SequenceDiagram();
@@ -157,7 +157,40 @@ public class SequenceDiagram {
     		Utilities.DebugPrintln(this.toString());
     		Utilities.DebugPrintln("--------------------");
     	}
-        InputStream in = new ByteArrayInputStream(this.toString().getBytes());
+    	MakePDFFromSDEdit(this.toString(), outFile);
+//        InputStream in = new ByteArrayInputStream(this.toString().getBytes());
+//        OutputStream out = null;
+//        try {
+//            out = new FileOutputStream(outFile);
+//            try {
+//                Pair<String, Bean<Configuration>> pair = DiagramFileHandler
+//                        .load(in, ConfigurationManager.getGlobalConfiguration()
+//                                .getFileEncoding());
+//                TextHandler th = new TextHandler(pair.getFirst());
+//                Bean<Configuration> conf = pair.getSecond();
+//                
+//                Exporter paintDevice = Exporter.getExporter(diagType, diagOrientation, diagFormat, out);
+//                new Diagram(conf.getDataObject(), th, paintDevice).generate();
+//                paintDevice.export();
+//                paintDevice.close();
+//            } catch (IOException | XMLException | SemanticError | SyntaxError e) {
+//                // TODO Auto-generated catch block
+//                e.printStackTrace();
+//            } finally {
+//
+//                out.flush();
+//                out.close();
+//            }
+//        } catch (IOException e) {
+//            // TODO Auto-generated catch block
+//            e.printStackTrace();
+//        } finally {
+//            
+//        }
+    }
+    
+    public static void MakePDFFromSDEdit(String sdeditString, String outFile){
+    	InputStream in = new ByteArrayInputStream(sdeditString.getBytes());
         OutputStream out = null;
         try {
             out = new FileOutputStream(outFile);

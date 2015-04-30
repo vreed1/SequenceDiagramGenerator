@@ -7,9 +7,11 @@ import java.io.IOException;
 import java.io.PrintStream;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Scanner;
 import java.util.zip.ZipEntry;
 import java.util.zip.ZipInputStream;
 
+import sequenceDiagramGenerator.Query;
 import soot.SootMethod;
 
 public final class Utilities {
@@ -30,6 +32,20 @@ public final class Utilities {
 
         list.add(obj);
         return true;
+    }
+    
+    public static String ReadEntireFile(String fileName){
+    	File f = new File(fileName);
+		if(!f.exists() || f.isDirectory()){return "";}
+		try {
+			Scanner s = new Scanner(f).useDelimiter("\\Z");
+			String filecontents = s.next();
+			s.close();
+			return filecontents;
+		} catch (FileNotFoundException e) {
+			e.printStackTrace();
+		}
+		return "";
     }
     
     private static int NameCount = 1;
