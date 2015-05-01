@@ -14,6 +14,7 @@ import java.util.Map;
 import java.util.regex.Pattern;
 
 import soot.SootClass;
+import utilities.SetableList;
 import utilities.Utilities;
 import net.sf.sdedit.config.Configuration;
 import net.sf.sdedit.config.ConfigurationManager;
@@ -147,8 +148,28 @@ public class SequenceDiagram {
     	}
     }
     
+    private void MessageLevelCheck(){
+    	if(messages.size() == 0){return;}
+    	SetableList<Boolean> slist = new SetableList<Boolean>();
+    	slist.SetR(messages.get(0).isSelfMessage(), messages.get(0).GetCallLevel());
+
+    	for(int i = 1; i < messages.size(); i++){
+    		SDMessage now = messages.get(i);
+    		int flvl = 0;
+    		for(int j = now.GetCallLevel(); j < slist.size(); j++){
+    			if(slist.get(j)){
+    				flvl++;
+    			}
+    		}
+    		slist.SetSize(now.GetCallLevel());
+    		slist.SetR(now.isSelfMessage(), now.GetCallLevel());
+    		now.SetFinalLevel(flvl);
+    	}
+    }
+    
     public void CreatePDF(String outFile) {    
     	NameSafetyCheck();
+    	MessageLevelCheck();
     	if(this.toString().trim().equals("")){
     		return;
     	}

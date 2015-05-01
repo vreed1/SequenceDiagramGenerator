@@ -2,6 +2,7 @@ package sequenceDiagramGenerator.sdedit;
 import java.util.Map;
 
 import soot.SootMethod;
+import utilities.Utilities;
 
 
 public class SDMessage
@@ -38,7 +39,7 @@ public class SDMessage
     
     public SDMessage clone(){
     	return new SDMessage(callerID, calleeID, answer,
-    			message,specifier,mnemonic,isConstruction,isSuper);
+    			message,specifier,mnemonic,isConstruction,isSuper, callLevel);
     }
     
     private SDMessage(
@@ -49,7 +50,8 @@ public class SDMessage
     		String aSpecifier,
     		String aMnemonic,
     		boolean aIsCons,
-    		boolean aIsSuper){
+    		boolean aIsSuper,
+    		int lvl){
     	callerID = aCallerID;
     	calleeID = aCalleeID;
     	answer = aAnswer;
@@ -58,6 +60,7 @@ public class SDMessage
     	mnemonic = aMnemonic;
     	isConstruction = aIsCons;
     	isSuper = aIsSuper;
+    	callLevel = lvl;
     }
     
     
@@ -65,7 +68,7 @@ public class SDMessage
     		SDObject sdCallee, 
     		SootMethod message, 
     		boolean aIsSuper,
-    		int level){
+    		int lvl){
     	//this.caller = sdCaller;
     	//this.callee = sdCallee;
     	this.calleeID = sdCallee.ID;
@@ -73,7 +76,8 @@ public class SDMessage
     	this.message = message.getName();
     	isConstruction = false;
     	isSuper = aIsSuper;
-    	this.specifier = Integer.toString(level);
+    	callLevel = lvl;
+    	//this.specifier = Integer.toString(level);
     	if(isSuper){
     		this.message = "super";
     	}
@@ -88,6 +92,26 @@ public class SDMessage
     	}
     }
     
+    private int callLevel;
+    
+    private int finalLevel = 0;
+    
+    public void SetFinalLevel(int lvl){
+    	finalLevel = lvl;
+    	this.specifier = Integer.toString(lvl);
+    }
+    
+    public int GetFinalLevel(){
+    	return finalLevel;
+    }
+    
+    public int GetCallLevel(){
+    	return callLevel;
+    }
+    
+    public boolean isSelfMessage(){
+    	return this.callerID == this.calleeID;
+    }
   
     public String toString(Map<Integer, SDObject> aMap) {
     	

@@ -106,7 +106,8 @@ public class SDGenerator {
 				0,
 				outerObject,
 				new ArrayList<String>(),
-				byQuery).listDiagrams;
+				byQuery,
+				0).listDiagrams;
 
 		return listToReturn;
 	}
@@ -146,7 +147,8 @@ public class SDGenerator {
 				new ArrayList<String>(),
 				null,
 				new ByRefInt(0),
-				byQuery);
+				byQuery,
+				0);
 		//RecFillNodeDiagram(hg,aGNode, sd, SDObject.GetUniqueName());
 		return sd;
 	}
@@ -159,7 +161,8 @@ public class SDGenerator {
 			int sdIndex,
 			SDObject outerObject,
 			List<String> listCallStack,
-			Query byQuery) throws Exception{
+			Query byQuery,
+			int lvl) throws Exception{
 	
 		SDListAndReturns toReturn = allSDs.Copy(sdIndex);
 		//SDListAndReturns toReturn = new SDListAndReturns();
@@ -189,7 +192,6 @@ public class SDGenerator {
 				continue;
 			}
 			SDListAndReturns toSendDown = cloneSource.clone();
-			ByRefInt clvl = new ByRefInt(0);
 			toReturn.addAll(RecFillTraceAllStmtDiagram(
 					outerMethodName,
 					hg,
@@ -202,8 +204,8 @@ public class SDGenerator {
 					true,
 					null,
 					null,
-					clvl,
-					byQuery));
+					byQuery,
+					lvl));
 		}
 		return toReturn;
 	}
@@ -218,7 +220,8 @@ public class SDGenerator {
 			List<String> listCallStack,
 			List<Integer> options,
 			ByRefInt optionIndex,
-			Query byQuery) throws Exception{
+			Query byQuery,
+			int lvl) throws Exception{
 	
 		SDListAndReturns toReturn = allSDs.Copy(sdIndex);
 		//toReturn.listDiagrams.add(allSDs.listDiagrams.get(sdIndex));
@@ -237,7 +240,6 @@ public class SDGenerator {
 			choice = options.get(optionIndex.theInt);
 		}
 		optionIndex.theInt = optionIndex.theInt + 1;
-		ByRefInt clvl = new ByRefInt(0);
 		
 		TraceStatement tc = tstmts.get(choice);
 		QueryDataContainer qd = new QueryDataContainer(tc);
@@ -258,8 +260,8 @@ public class SDGenerator {
 				false,
 				options,
 				optionIndex,
-				clvl,
-				byQuery);
+				byQuery,
+				lvl);
 	}
 	
 	private static SDListAndReturns RecFillTraceAllStmtDiagram(
@@ -274,8 +276,8 @@ public class SDGenerator {
 			boolean FindAll,
 			List<Integer> options,
 			ByRefInt optionIndex,
-			ByRefInt callerLevel,
-			Query byQuery) throws Exception
+			Query byQuery,
+			int lvl) throws Exception
 	{
 		//List<SequenceDiagram> toReturn = new ArrayList<SequenceDiagram>();
 		SDListAndReturns toReturn = allSDs.Copy(sdIndex);
@@ -341,8 +343,8 @@ public class SDGenerator {
 					options, 
 					optionIndex, 
 					assignStmt,
-					callerLevel,
-					byQuery);
+					byQuery,
+					lvl);
 			
 		}
 		//If a statement contains an invoke expression
@@ -363,8 +365,8 @@ public class SDGenerator {
 					FindAll, 
 					options, 
 					optionIndex,
-					callerLevel,
-					byQuery);
+					byQuery,
+					lvl);
 					
 		}
 		if(aStmt.theStmt instanceof JReturnStmt){
@@ -390,8 +392,8 @@ public class SDGenerator {
 						FindAll,
 						null,
 						null,
-						callerLevel,
-						byQuery));
+						byQuery,
+						lvl));
 			}
 			return toReturnNew;
 		}
@@ -408,8 +410,8 @@ public class SDGenerator {
 					FindAll,
 					options,
 					optionIndex,
-					callerLevel,
-					byQuery);
+					byQuery,
+					lvl);
 			return null;
 		}
 	}
@@ -425,8 +427,8 @@ public class SDGenerator {
 			boolean FindAll,
 			List<Integer> options,
 			ByRefInt optionIndex,
-			ByRefInt callLevel,
-			Query byQuery
+			Query byQuery,
+			int lvl
 			) throws Exception{
 		
 		SequenceDiagram sd = allSDs.listDiagrams.get(sdIndex);
@@ -513,11 +515,8 @@ public class SDGenerator {
 			
 			//now that the sd has a source and target, we can
 			//add the message.
-			SDMessage msg = new SDMessage(sourceObj, sdTarget, sm, isSuper, callLevel.theInt);
+			SDMessage msg = new SDMessage(sourceObj, sdTarget, sm, isSuper, lvl);
 			sd.AddMessage(msg);
-			if(sourceObj.equals(sdTarget)){
-				callLevel.theInt++;
-			}
 			
 			String CallName = 
 					aGNode.data.theMethod.getDeclaringClass().getName() + 
@@ -547,7 +546,8 @@ public class SDGenerator {
 							sdIndex,
 							sdTarget,
 							listCallStack,
-							byQuery);
+							byQuery,
+							lvl +1);
 					for(int i = 0; i < toReturn.listDiagrams.size(); i++){
 						toReturn.listDiagrams.get(i).PopNames();
 					}
@@ -563,7 +563,8 @@ public class SDGenerator {
 							listCallStack,
 							options,
 							optionIndex,
-							byQuery);
+							byQuery,
+							lvl +1);
 					sd.PopNames();
 				}
 				listCallStack.remove(listCallStack.size() -1);
@@ -591,8 +592,8 @@ public class SDGenerator {
 			List<Integer> options,
 			ByRefInt optionIndex,
 			AssignStmt assignStmt,
-			ByRefInt callerLevel,
-			Query byQuery) throws Exception{
+			Query byQuery,
+			int lvl) throws Exception{
 
 		SequenceDiagram sd = allSDs.listDiagrams.get(sdIndex);
 		SDListAndReturns toReturn = allSDs.Copy(sdIndex);
@@ -623,8 +624,8 @@ public class SDGenerator {
 					FindAll, 
 					options, 
 					optionIndex,
-					callerLevel,
-					byQuery);
+					byQuery,
+					lvl);
 			
 			InvokeExpr ie = assignStmt.getInvokeExpr();
 			soot.Type rType = ie.getMethod().getReturnType();
