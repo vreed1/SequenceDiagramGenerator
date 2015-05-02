@@ -116,12 +116,11 @@ public class Query {
 					return QueryResponse.False;
 				}
 			}
-			return QueryResponse.True;
 		}
 		if(theMode.contains(QueryMode.Filter)){
 			for(int i = 0; i < toQuery.theListRefTypes.size(); i++){
 				String s = toQuery.theListRefTypes.get(i).toString();
-				if(listRejectTypes.contains(s)){
+				if(listFilterTypes.contains(s)){
 					return QueryResponse.Filter;
 				}
 			}
@@ -159,6 +158,23 @@ public class Query {
 				}
 			}
 			return QueryResponse.False;
+		}
+		if(theMode.contains(QueryMode.Reject)){
+			List<SDObject> lObjs = sd.GetObjects();
+			for(int i = 0; i < lObjs.size(); i++){
+				String s = lObjs.get(i).GetTypeName();
+				if(listRejectTypes.contains(s)){
+					return QueryResponse.False;
+				}
+			}
+			List<SDMessage> listMsg = sd.GetMessages();
+			for(int i = 0; i < listMsg.size(); i++){
+				String s = listMsg.get(i).GetFullMethodName();
+				if(listRejectMethods.contains(s)){
+					return QueryResponse.False;
+				}
+			}
+			return QueryResponse.True;
 		}
 		return QueryResponse.True;
 	}

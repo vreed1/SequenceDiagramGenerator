@@ -191,10 +191,14 @@ public class SDGenerator {
 			TraceStatement tc = tstmts.get(i);
 			QueryDataContainer qd = new QueryDataContainer(tc);
 			result = byQuery.RunOnData(new QueryDataContainer(tc));
-			if(result == QueryResponse.False || result == QueryResponse.Filter){
+			if(result == QueryResponse.False){
 				continue;
 			}
 			SDListAndReturns toSendDown = cloneSource.clone();
+			if(result == QueryResponse.Filter){
+				toReturn.addAll(toSendDown);
+				continue;
+			}
 			toReturn.addAll(RecFillTraceAllStmtDiagram(
 					outerMethodName,
 					hg,
