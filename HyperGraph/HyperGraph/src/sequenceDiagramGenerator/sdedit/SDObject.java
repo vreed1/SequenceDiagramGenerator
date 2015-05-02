@@ -209,6 +209,10 @@ public class SDObject
     	return (theCurrentNames.contains(testName));
     }
     
+    public String GetTypeName(){
+    	return type;
+    }
+    
     @Override
     public String toString() {
         // Object in sdedit format

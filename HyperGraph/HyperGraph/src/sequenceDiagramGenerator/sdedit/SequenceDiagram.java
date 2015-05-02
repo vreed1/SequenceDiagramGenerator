@@ -8,6 +8,7 @@ import java.io.InputStream;
 import java.io.OutputStream;
 import java.io.OutputStreamWriter;
 import java.util.ArrayList;
+import java.util.Collection;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -38,6 +39,17 @@ public class SequenceDiagram {
     private static String diagType = "pdf";
     private static String diagFormat = "A4";
     private static String diagOrientation = "portrait";
+    
+    public List<SDObject> GetObjects(){
+    	List<SDObject> allObjs = new ArrayList<SDObject>();
+    	allObjs.addAll(objects.values());
+    	allObjs.addAll(theStaticObjects.values());
+    	return allObjs;
+    }
+    
+    public List<SDMessage> GetMessages(){
+    	return new ArrayList<SDMessage>(messages);
+    }
     
     public SequenceDiagram clone(){
     	SequenceDiagram aClone = new SequenceDiagram();

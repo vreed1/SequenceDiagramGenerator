@@ -24,6 +24,7 @@ public class SDMessage
     private boolean isConstruction;
     private boolean isSuper;
     
+    private String fullMethodName;
     
     // Simplest possible message <caller>:.<message>
 //    public SDMessage (String caller, String message, Dictionary<MessageOpt, String> opts)
@@ -39,7 +40,8 @@ public class SDMessage
     
     public SDMessage clone(){
     	return new SDMessage(callerID, calleeID, answer,
-    			message,specifier,mnemonic,isConstruction,isSuper, callLevel);
+    			message,specifier,mnemonic,isConstruction,
+    			isSuper, callLevel, fullMethodName);
     }
     
     private SDMessage(
@@ -51,7 +53,8 @@ public class SDMessage
     		String aMnemonic,
     		boolean aIsCons,
     		boolean aIsSuper,
-    		int lvl){
+    		int lvl,
+    		String fMethodName){
     	callerID = aCallerID;
     	calleeID = aCalleeID;
     	answer = aAnswer;
@@ -61,6 +64,7 @@ public class SDMessage
     	isConstruction = aIsCons;
     	isSuper = aIsSuper;
     	callLevel = lvl;
+    	fullMethodName = fMethodName;
     }
     
     
@@ -77,6 +81,7 @@ public class SDMessage
     	isConstruction = false;
     	isSuper = aIsSuper;
     	callLevel = lvl;
+    	fullMethodName = Utilities.getMethodString(message);
     	//this.specifier = Integer.toString(level);
     	if(isSuper){
     		this.message = "super";
@@ -90,6 +95,10 @@ public class SDMessage
     			isConstruction = true;
     		}
     	}
+    }
+    
+    public String GetFullMethodName(){
+    	return fullMethodName;
     }
     
     private int callLevel;

@@ -9,6 +9,9 @@ import java.util.List;
 import java.util.Scanner;
 
 import sequenceDiagramGenerator.Query.QueryResponse;
+import sequenceDiagramGenerator.sdedit.SDMessage;
+import sequenceDiagramGenerator.sdedit.SDObject;
+import sequenceDiagramGenerator.sdedit.SequenceDiagram;
 import utilities.Utilities;
 
 public class Query {
@@ -99,21 +102,7 @@ public class Query {
 	}
 	
 	public QueryResponse RunOnData(QueryDataContainer toQuery){
-		if(theMode.contains(QueryMode.Accept)){
-			for(int i = 0; i < toQuery.theListRefTypes.size(); i++){
-				String s = toQuery.theListRefTypes.get(i).toString();
-				if(listAcceptTypes.contains(s)){
-					return QueryResponse.True;
-				}
-			}
-			for(int i = 0; i < toQuery.theListCalledMethods.size(); i++){
-				String s = Utilities.getMethodString(toQuery.theListCalledMethods.get(i));
-				if(listAcceptMethods.contains(s)){
-					return QueryResponse.True;
-				}
-			}
-			return QueryResponse.False;
-		}
+
 		if(theMode.contains(QueryMode.Reject)){
 			for(int i = 0; i < toQuery.theListRefTypes.size(); i++){
 				String s = toQuery.theListRefTypes.get(i).toString();
@@ -150,9 +139,24 @@ public class Query {
 			}
 			return QueryResponse.True;
 		}
+		return QueryResponse.True;
+	}
+	
+	public QueryResponse CheckFinishedDiagram(SequenceDiagram sd){
 		if(theMode.contains(QueryMode.Accept)){
-			if(listAcceptMethods.contains(outerMethodName)){
-				return QueryResponse.True;
+			List<SDObject> lObjs = sd.GetObjects();
+			for(int i = 0; i < lObjs.size(); i++){
+				String s = lObjs.get(i).GetTypeName();
+				if(listAcceptTypes.contains(s)){
+					return QueryResponse.True;
+				}
+			}
+			List<SDMessage> listMsg = sd.GetMessages();
+			for(int i = 0; i < listMsg.size(); i++){
+				String s = listMsg.get(i).GetFullMethodName();
+				if(listAcceptMethods.contains(s)){
+					return QueryResponse.True;
+				}
 			}
 			return QueryResponse.False;
 		}

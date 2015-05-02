@@ -50,8 +50,11 @@ public class SDGenerator {
 		List<SequenceDiagram> listSDs = GenerateAllDiagrams(hg, aNode, byQuery);
 //		SequenceDiagram sd = GenerateDiagramObj(hg, aNode, SaveFile);
 		for(int i = 0; i < listSDs.size(); i++){
-			String outFile = Utilities.endWithSlash(saveDir) + "out" + String.valueOf(i) + ".pdf";
-			listSDs.get(i).CreatePDF(outFile);
+			QueryResponse qr = byQuery.CheckFinishedDiagram(listSDs.get(i));
+			if(qr == QueryResponse.True){
+				String outFile = Utilities.endWithSlash(saveDir) + "out" + String.valueOf(i) + ".pdf";
+				listSDs.get(i).CreatePDF(outFile);
+			}
 		}
 	}
 
