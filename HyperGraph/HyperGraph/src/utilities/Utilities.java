@@ -191,12 +191,13 @@ public final class Utilities {
 	}
 	
 	public static void DebugPrintln(String s){
+		if(DEBUG){
 		if(debug_ps == null){
 			System.out.println(s);
 		}
 		else{
 			debug_ps.println(s);
-		}
+		}}
 	}
 
 	public static void cleanup() {
@@ -206,5 +207,13 @@ public final class Utilities {
 			debug_ps = null;
 		}
 		
+	}
+
+	private static final int TRUNCLEN = 15;
+	public static String Truncate(String name) {
+		if(name.length() > TRUNCLEN){
+			return name.substring(0,TRUNCLEN);
+		}
+		return name;
 	}
 }

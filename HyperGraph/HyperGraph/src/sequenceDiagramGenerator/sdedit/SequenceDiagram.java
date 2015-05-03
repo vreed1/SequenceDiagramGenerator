@@ -240,7 +240,9 @@ public class SequenceDiagram {
                 paintDevice.close();
             } catch (IOException | XMLException | SemanticError | SyntaxError e) {
                 // TODO Auto-generated catch block
-                e.printStackTrace();
+                Utilities.DebugPrintln("Error Generating PDF");
+                Utilities.DebugPrintln(e.getMessage());
+                Utilities.DebugPrintln(e.getStackTrace().toString());
             } finally {
 
                 out.flush();

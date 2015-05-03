@@ -17,31 +17,46 @@ import utilities.Utilities;
 //and so on).
 public class MethodNodeAnnot {
 	//public GroupableStmt theStmts;
-	public SootMethod theMethod;
-	private List<TraceStatement> theTraces;
+	private SootMethod theMethod;
+	//private List<TraceStatement> theTraces;
 	public BranchableStmt theBStmt;
+	private String theMethodName;
+	
+	private static TraceCache singleTraceCache = new TraceCache();
 	
 	public MethodNodeAnnot(
 			SootMethod aMethod,
 			BranchableStmt aStmt){
 		theBStmt = aStmt;
-		theMethod = aMethod;
+		SetMethod(aMethod);
 	}
 	
 	public MethodNodeAnnot(
 			SootMethod aMethod){
-		theMethod = aMethod;
+		SetMethod(aMethod);
 		theBStmt= null;
-		theTraces = null;
+		
+	}
+
+	public void SetMethod(SootMethod aMethod){
+		theMethod = aMethod;
+		theMethodName = Utilities.getMethodString(theMethod);
+	}
+	
+	public SootMethod GetMethod(){
+		return theMethod;
 	}
 	
 	public List<TraceStatement> getTraces(){
+		List<TraceStatement> theTraces = singleTraceCache.Get(theMethodName);
 		if(theTraces == null){
 			if(theBStmt == null){
 				theTraces = new ArrayList<TraceStatement>();
 			}
 			else{
-			theTraces = Analyzer.GenerateAllTracesFromBranches(theBStmt, new ArrayList<BranchableStmt>());}
+				theTraces = Analyzer.GenerateAllTracesFromBranches(theBStmt, new ArrayList<BranchableStmt>());
+				singleTraceCache.Set(theMethodName, theTraces);
+			}
 		}
 		return theTraces;
 	}

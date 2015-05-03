@@ -183,7 +183,7 @@ public class TestUI implements ActionListener{
 			Utilities.DebugPrintln("*********METHODS**********");
 			List<HyperNode<MethodNodeAnnot,EdgeAnnotation>> lh = hg.GetNodes();
 			for(int i = 0; i < lh.size(); i++){
-				SootMethod sm = lh.get(i).data.theMethod;
+				SootMethod sm = lh.get(i).data.GetMethod();
 				String mName = Utilities.getMethodString(sm);
 				if(mName.startsWith("org.adblockplus")){
 					Utilities.DebugPrintln(mName);
@@ -248,7 +248,7 @@ public class TestUI implements ActionListener{
 			Utilities.DebugPrintln("*********METHODS**********");
 			List<HyperNode<MethodNodeAnnot,EdgeAnnotation>> lh = hg.GetNodes();
 			for(int i = 0; i < lh.size(); i++){
-				SootMethod sm = lh.get(i).data.theMethod;
+				SootMethod sm = lh.get(i).data.GetMethod();
 				String mName = Utilities.getMethodString(sm);
 				Utilities.DebugPrintln(mName);
 			}
@@ -313,7 +313,7 @@ public class TestUI implements ActionListener{
 		List<String> listFuncsToRun = new ArrayList<String>();
 		List<HyperNode<MethodNodeAnnot,EdgeAnnotation>> lh = hg.GetNodes();
 		for(int i = 0; i < lh.size(); i++){
-			SootMethod sm = lh.get(i).data.theMethod;
+			SootMethod sm = lh.get(i).data.GetMethod();
 			String mName = Utilities.getMethodString(sm);
 			if(mName.startsWith(startswith)){
 				listFuncsToRun.add(mName);
@@ -331,7 +331,10 @@ public class TestUI implements ActionListener{
 		}
 		for(int i = 0; i < listFuncsToRun.size(); i++){
 			
+			Utilities.DebugPrintln("Starting Method #" + Integer.toString(i));
 			String startMethod = listFuncsToRun.get(i);
+			Utilities.DebugPrintln("    Name: "+ startMethod);
+					
 			GroupableHyperNode<MethodNodeAnnot, EdgeAnnotation> aNode = hg.GetNodeByName(startMethod);
 			if(aNode == null){
 				System.out.println("Could not find node by name: " + startMethod);
@@ -339,7 +342,7 @@ public class TestUI implements ActionListener{
 			}
 			
 			File aSubDir = new File(Utilities.endWithSlash(saveDir) + 
-					Utilities.firstFiveLetters(listFuncsToRun.get(i)) + 
+					Utilities.Truncate(aNode.data.GetMethod().getName()) + 
 					String.valueOf(i));
 			if(aSubDir.exists()){
 				Utilities.deleteDirectory(aSubDir);
@@ -350,7 +353,10 @@ public class TestUI implements ActionListener{
 				SDGenerator.GenerateAll(hg, aNode, aSubDir.getAbsolutePath(), q);
 			} catch (Exception e1) {
 				// TODO Auto-generated catch block				
-				e1.printStackTrace();
+				//e1.printStackTrace();
+				Utilities.DebugPrintln("Crash Generating #" + Integer.toString(i));
+				Utilities.DebugPrintln(e1.getMessage());
+				Utilities.DebugPrintln(e1.getStackTrace().toString());
 			}
 			Utilities.cleanUpDir(aSubDir);
 		}
@@ -403,7 +409,7 @@ public class TestUI implements ActionListener{
 		if(currentHypergraph != null){
 			List<HyperNode<MethodNodeAnnot,EdgeAnnotation>> lh = currentHypergraph.GetNodes();
 			for(int i = 0; i < lh.size(); i++){
-				SootMethod sm = lh.get(i).data.theMethod;
+				SootMethod sm = lh.get(i).data.GetMethod();
 				SootClass sc = sm.getDeclaringClass();
 				String mName = sc.getName() + "." + sm.getName();
 				CmbBoxItem cbi = new CmbBoxItem(lh.get(i), mName);

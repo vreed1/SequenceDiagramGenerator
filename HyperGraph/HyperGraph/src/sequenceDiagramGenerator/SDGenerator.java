@@ -61,7 +61,8 @@ public class SDGenerator {
 					}
 				}
 				if(makeDiagram){
-					String outFile = Utilities.endWithSlash(saveDir) + "out" + String.valueOf(i) + ".pdf";
+					String MethodTrunc = Utilities.Truncate(aNode.data.GetMethod().getName());
+					String outFile = Utilities.endWithSlash(saveDir) + MethodTrunc + String.valueOf(i) + ".pdf";
 					listSDs.get(i).CreatePDF(outFile);
 					alreadyGenerated.add(listSDs.get(i));
 				}
@@ -102,11 +103,11 @@ public class SDGenerator {
 		SDObject.finalUnnamed = 0;
 		SequenceDiagram sd = new SequenceDiagram();
 		SDObject outerObject = null;
-		if(aNode.data.theMethod.isStatic()){
-			outerObject = sd.GetStaticObject(aNode.data.theMethod.getDeclaringClass());
+		if(aNode.data.GetMethod().isStatic()){
+			outerObject = sd.GetStaticObject(aNode.data.GetMethod().getDeclaringClass());
 		}
 		else{
-			outerObject = new SDObject(aNode.data.theMethod.getDeclaringClass(), SDObject.GetUniqueName(), false, false);
+			outerObject = new SDObject(aNode.data.GetMethod().getDeclaringClass(), SDObject.GetUniqueName(), false, false);
 			sd.AddObject(outerObject);
 			sd.AttachNameToObject("this", outerObject);
 		}
@@ -144,11 +145,11 @@ public class SDGenerator {
 		SequenceDiagram sd = new SequenceDiagram();
 		allSDs.listDiagrams.add(sd);
 		SDObject outerObject = null;
-		if(aGNode.data.theMethod.isStatic()){
-			outerObject = sd.GetStaticObject(aGNode.data.theMethod.getDeclaringClass());
+		if(aGNode.data.GetMethod().isStatic()){
+			outerObject = sd.GetStaticObject(aGNode.data.GetMethod().getDeclaringClass());
 		}
 		else{
-			outerObject = new SDObject(aGNode.data.theMethod.getDeclaringClass(), SDObject.GetUniqueName(), false, false);
+			outerObject = new SDObject(aGNode.data.GetMethod().getDeclaringClass(), SDObject.GetUniqueName(), false, false);
 			sd.AddObject(outerObject);
 		}
 		MakeDiagram(
@@ -493,9 +494,9 @@ public class SDGenerator {
 			//grab the three things we need to write a 
 			//message into sd, source, target, message
 			
-			SootMethod sm = subGNode.data.theMethod;
+			SootMethod sm = subGNode.data.GetMethod();
 			SootClass scTarget = sm.getDeclaringClass();
-			SootClass scSource = aGNode.data.theMethod.getDeclaringClass();
+			SootClass scSource = aGNode.data.GetMethod().getDeclaringClass();
 			
 			//SDObjects for source and target are created with
 			//two piece of information, class and instance name
@@ -537,9 +538,9 @@ public class SDGenerator {
 			sd.AddMessage(msg);
 			
 			String CallName = 
-					aGNode.data.theMethod.getDeclaringClass().getName() + 
+					aGNode.data.GetMethod().getDeclaringClass().getName() + 
 					"." +
-					aGNode.data.theMethod.getName();
+					aGNode.data.GetMethod().getName();
 			
 			if(!listCallStack.contains(CallName)){
 				listCallStack.add(CallName);
@@ -557,7 +558,7 @@ public class SDGenerator {
 				}
 				if(FindAll){
 					toReturn = MakeAllDiagrams(
-							Utilities.getMethodString(aGNode.data.theMethod), 
+							Utilities.getMethodString(aGNode.data.GetMethod()), 
 							hg, 
 							subGNode, 
 							allSDs,
@@ -572,7 +573,7 @@ public class SDGenerator {
 				}
 				else{
 					toReturn = MakeDiagram(
-							Utilities.getMethodString(aGNode.data.theMethod), 
+							Utilities.getMethodString(aGNode.data.GetMethod()), 
 							hg, 
 							subGNode, 
 							allSDs,
