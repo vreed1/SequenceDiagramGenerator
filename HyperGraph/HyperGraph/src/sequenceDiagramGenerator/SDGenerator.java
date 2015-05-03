@@ -49,11 +49,22 @@ public class SDGenerator {
 		// TODO Auto-generated method stub
 		List<SequenceDiagram> listSDs = GenerateAllDiagrams(hg, aNode, byQuery);
 //		SequenceDiagram sd = GenerateDiagramObj(hg, aNode, SaveFile);
+		List<SequenceDiagram> alreadyGenerated = new ArrayList<SequenceDiagram>();
 		for(int i = 0; i < listSDs.size(); i++){
 			QueryResponse qr = byQuery.CheckFinishedDiagram(listSDs.get(i));
 			if(qr == QueryResponse.True){
-				String outFile = Utilities.endWithSlash(saveDir) + "out" + String.valueOf(i) + ".pdf";
-				listSDs.get(i).CreatePDF(outFile);
+				boolean makeDiagram = true;
+				for(int j = alreadyGenerated.size() -1; j>= 0; j--){
+					if(listSDs.get(i).isEquivalent(alreadyGenerated.get(j))){
+						makeDiagram = false;
+						break;
+					}
+				}
+				if(makeDiagram){
+					String outFile = Utilities.endWithSlash(saveDir) + "out" + String.valueOf(i) + ".pdf";
+					listSDs.get(i).CreatePDF(outFile);
+					alreadyGenerated.add(listSDs.get(i));
+				}
 			}
 		}
 	}

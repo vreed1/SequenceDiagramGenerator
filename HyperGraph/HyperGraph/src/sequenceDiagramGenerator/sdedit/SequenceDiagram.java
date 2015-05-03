@@ -323,4 +323,42 @@ public class SequenceDiagram {
 		}
 		return null;
 	}
+	
+	public boolean isEquivalent(SequenceDiagram other){
+		List<SDMessage> otherMsg = other.GetMessages();
+		List<SDMessage> thisMsg = this.GetMessages();
+		
+		if(otherMsg.size() != thisMsg.size()){
+			return false;
+		}
+		for(int i = 0; i < otherMsg.size(); i++){
+			if(!MessageMatches(this, thisMsg.get(i), other, otherMsg.get(i))){
+				return false;
+			}
+		}
+		return true;
+	}
+	
+	private static boolean MessageMatches(
+			SequenceDiagram oneSD,
+			SDMessage oneMsg,
+			SequenceDiagram twoSD,
+			SDMessage twoMsg){
+		SDObject aOne = oneSD.GetObjectFromID(oneMsg.calleeID);
+		SDObject bOne = oneSD.GetObjectFromID(oneMsg.callerID);
+		SDObject aTwo = twoSD.GetObjectFromID(twoMsg.calleeID);
+		SDObject bTwo = twoSD.GetObjectFromID(twoMsg.callerID);
+		
+		if(!aOne.GetTypeName().equals(aTwo.GetTypeName())){
+			return false;
+		}
+		if(!bOne.GetTypeName().equals(bTwo.GetTypeName())){
+			return false;
+		}
+		if(!oneMsg.GetFullMethodName().equals(twoMsg.GetFullMethodName())){
+			return false;
+		}
+		
+		return true;
+	}
 }
