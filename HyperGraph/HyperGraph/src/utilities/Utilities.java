@@ -199,14 +199,41 @@ public final class Utilities {
 			debug_ps.println(s);
 		}}
 	}
-
+	
+	public static final boolean PERFLOG = true;
+	private static PrintStream perf_ps;
+	public static void SetPerfFile(String fileName){
+		File aFile = new File(fileName);
+		try {
+			perf_ps = new PrintStream(aFile);
+		} catch (FileNotFoundException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+			DebugPrintln("PerfLog File Not Found");
+		}
+	}
+	
+	public static void PerfLogPrintln(String s){
+		if(PERFLOG){
+		if(debug_ps == null){
+			return;
+		}
+		else{
+			perf_ps.println(s);
+		}}
+	}
+	
 	public static void cleanup() {
 		if(debug_ps != null){
 			debug_ps.flush();
 			debug_ps.close();
 			debug_ps = null;
 		}
-		
+		if(perf_ps != null){
+			perf_ps.flush();
+			perf_ps.close();
+			perf_ps = null;
+		}
 	}
 
 	private static final int TRUNCLEN = 15;

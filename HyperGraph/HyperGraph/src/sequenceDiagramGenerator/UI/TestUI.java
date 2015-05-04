@@ -59,6 +59,10 @@ public class TestUI implements ActionListener{
 		if(debugFile != null && !debugFile.equals("")){
 			Utilities.SetDebugFile(debugFile);
 		}
+		String perfFile = GetArgument(args, "-perffile");
+		if(perfFile != null && !perfFile.equals("")){
+			Utilities.SetPerfFile(perfFile);
+		}
 		if(args[0].equals("-c")){
 			String queryFile = GetArgument(args, "-queryfile");
 			Query q = Query.FromFile(queryFile);
@@ -283,6 +287,9 @@ public class TestUI implements ActionListener{
 	}
 	
 	private static void RunAllAllFunctions(String[] args, Query q){
+		
+		Utilities.PerfLogPrintln("Start_RunAllAllFunctions," + Long.toString(System.nanoTime()));
+		
 		GroupableHypergraph<MethodNodeAnnot, EdgeAnnotation> hg = null;
 		String ClassPath = GetArgument(args, "-classpath");
 		String Files = GetArgument(args, "-jars");
@@ -292,6 +299,8 @@ public class TestUI implements ActionListener{
 			jars[i] = new File(SplitFiles[i]);
 		}
 		List<String> listClasses = new ArrayList<String>();
+		Utilities.PerfLogPrintln("BeforeHyperGraph_RunAllAllFunctions," + Long.toString(System.nanoTime()));
+		
 		try {
 			for(int i = 0; i < jars.length; i++){
 				listClasses.addAll(Utilities.ListClassesInJar(jars[i]));
@@ -308,7 +317,11 @@ public class TestUI implements ActionListener{
 			System.out.println("Could not generate hypergraph");
 			return;
 		}
-
+		Utilities.PerfLogPrintln("AfterHyperGraph_RunAllAllFunctions," + Long.toString(System.nanoTime()));
+		
+		Utilities.DebugPrintln("HG-NODECOUNT:"+Integer.toString(hg.size()));
+		Utilities.DebugPrintln("HG-EDGECOUNT:"+Integer.toString(hg.EdgeCount()));
+		
 		String startswith = GetArgument(args, "-startswith");
 		List<String> listFuncsToRun = new ArrayList<String>();
 		List<HyperNode<MethodNodeAnnot,EdgeAnnotation>> lh = hg.GetNodes();
@@ -329,6 +342,9 @@ public class TestUI implements ActionListener{
 		if(!aFile.isDirectory()){
 			System.out.println("outdir not directory");
 		}
+		
+		Utilities.PerfLogPrintln("BeforeTraversalJarAnalysis_RunAllAllFunctions," + Long.toString(System.nanoTime()));
+		
 		for(int i = 0; i < listFuncsToRun.size(); i++){
 			
 			Utilities.DebugPrintln("Starting Method #" + Integer.toString(i));
@@ -360,6 +376,8 @@ public class TestUI implements ActionListener{
 			}
 			Utilities.cleanUpDir(aSubDir);
 		}
+		Utilities.PerfLogPrintln("AfterTraversalJarAnalysis_RunAllAllFunctions," + Long.toString(System.nanoTime()));
+		
 	}
 	private static void RunUI(){
 		EventQueue.invokeLater(new Runnable() {
