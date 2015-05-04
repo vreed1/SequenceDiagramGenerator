@@ -1,0 +1,12 @@
+,average time in ns,confidence interval,,,column b in seconds,column c in seconds
+Generating Hypergraph,80138960829.8667,6250649.87164219,,0.000000001,80.1389608299,0.0062506499
+Running Traversals / making diagrams,9054982050.3,2507149.12924683,,0.000000001,9.0549820503,0.0025071491
+,,,,,,
+,,,,,,
+other info - ,HG-NODECOUNT,7745,,,,
+,HG-EDGECOUNT,1525658,,,,
+,diagrams generated,405,,,,
+,,,,,,
+,number of repeated runs,30,,,,
+,,,,,,
+"values more than 3 stddevs away would be removed, but none qualified.",,,,,,
