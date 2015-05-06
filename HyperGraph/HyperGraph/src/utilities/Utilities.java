@@ -243,4 +243,13 @@ public final class Utilities {
 		}
 		return name;
 	}
+	
+	public static String GetArgument(String[] args, String tag){
+		for(int i = 0; i < args.length-1; i++){
+			if(args[i].equals(tag)){
+				return args[i+1];
+			}
+		}
+		return "";
+	}
 }

@@ -41,10 +41,9 @@ public class SDGenerator {
 //		//SDGenerator.GenerateNaiveSequenceDiagram(hg, SaveFile);
 //	}
 	
-	public static void GenerateAll(
+	public static List<SequenceDiagram> GenerateAll(
 			GroupableHypergraph<MethodNodeAnnot, EdgeAnnotation> hg,
 			GroupableHyperNode<MethodNodeAnnot, EdgeAnnotation> aNode,
-			String saveDir,
 			Query byQuery) throws Exception {
 		// TODO Auto-generated method stub
 		List<SequenceDiagram> listSDs = GenerateAllDiagrams(hg, aNode, byQuery);
@@ -62,25 +61,26 @@ public class SDGenerator {
 				}
 				if(makeDiagram){
 					String MethodTrunc = Utilities.Truncate(aNode.data.GetMethod().getName());
-					String outFile = Utilities.endWithSlash(saveDir) + MethodTrunc + String.valueOf(i) + ".pdf";
-					listSDs.get(i).CreatePDF(outFile);
+					listSDs.get(i).SetName(MethodTrunc + String.valueOf(i) + ".pdf");
+					//String outFile = Utilities.endWithSlash(saveDir) + MethodTrunc + String.valueOf(i) + ".pdf";
+					//listSDs.get(i).CreatePDF(outFile);
 					alreadyGenerated.add(listSDs.get(i));
 				}
 			}
 		}
+		return alreadyGenerated;
 	}
 
 	//Given a pre-constructed hypergraph
 	//and a hypernode at which to begin traversal
 	//generate a sequence diagram at SaveFile
-	public static void Generate(
+	public static SequenceDiagram Generate(
 			Hypergraph<MethodNodeAnnot, EdgeAnnotation> hg,
 			GroupableHyperNode<MethodNodeAnnot, EdgeAnnotation> aGNode,
-			String SaveFile,
 			Query byQuery) throws Exception{
 
-		SequenceDiagram sd = GenerateDiagramObj(hg, aGNode, SaveFile, byQuery);
-		sd.CreatePDF(SaveFile);
+		SequenceDiagram sd = GenerateDiagramObj(hg, aGNode, byQuery);
+		return sd;
 	}
 
 	public static void GenTest(
@@ -88,7 +88,7 @@ public class SDGenerator {
 			GroupableHyperNode<MethodNodeAnnot, EdgeAnnotation> aNode,
 			String saveFile,
 			Query byQuery) throws Exception {
-		SequenceDiagram sd = GenerateDiagramObj(hg, aNode, saveFile, byQuery);
+		SequenceDiagram sd = GenerateDiagramObj(hg, aNode, byQuery);
 		sd.TestOutput(saveFile);
 	}
 	
@@ -138,7 +138,6 @@ public class SDGenerator {
 	private static SequenceDiagram GenerateDiagramObj(
 			Hypergraph<MethodNodeAnnot, EdgeAnnotation> hg,
 			GroupableHyperNode<MethodNodeAnnot, EdgeAnnotation> aGNode,
-			String SaveFile,
 			Query byQuery) throws Exception{
 
 		SDListAndReturns allSDs = new SDListAndReturns();

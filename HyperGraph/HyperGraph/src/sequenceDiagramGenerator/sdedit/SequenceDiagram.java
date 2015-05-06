@@ -35,6 +35,7 @@ public class SequenceDiagram {
     private Map<Integer, SDObject> objects;
     private List<SDMessage> messages;
     private Map<SootClass, SDObject> theStaticObjects;
+    private String theName;
     
     private static String diagType = "pdf";
     private static String diagFormat = "A4";
@@ -45,6 +46,14 @@ public class SequenceDiagram {
     	allObjs.addAll(objects.values());
     	allObjs.addAll(theStaticObjects.values());
     	return allObjs;
+    }
+    
+    public void SetName(String aName){
+    	theName = aName;
+    }
+    
+    public String GetName(){
+    	return theName;
     }
     
     public List<SDMessage> GetMessages(){
@@ -177,6 +186,11 @@ public class SequenceDiagram {
     		slist.SetR(now.isSelfMessage(), now.GetCallLevel());
     		now.SetFinalLevel(flvl);
     	}
+    }
+    
+    public void CreatePDFInDir(String dirName){
+    	String fileName = Utilities.endWithSlash(dirName) + GetName();
+    	CreatePDF(fileName);
     }
     
     public void CreatePDF(String outFile) {    

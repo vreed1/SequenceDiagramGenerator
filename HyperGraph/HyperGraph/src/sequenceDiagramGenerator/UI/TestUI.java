@@ -20,6 +20,9 @@ import sequenceDiagramGenerator.hypergraph.GroupableHyperNode;
 import sequenceDiagramGenerator.hypergraph.GroupableHypergraph;
 import sequenceDiagramGenerator.hypergraph.HyperNode;
 import sequenceDiagramGenerator.hypergraph.Hypergraph;
+import sequenceDiagramGenerator.sdedit.DiagramPDFGen;
+import sequenceDiagramGenerator.sdedit.GenReducer;
+import sequenceDiagramGenerator.sdedit.GenReducerFactory;
 import sequenceDiagramGenerator.sdedit.SequenceDiagram;
 import sequenceDiagramGenerator.sootAnalyzer.Analyzer;
 import soot.SootClass;
@@ -55,31 +58,31 @@ public class TestUI implements ActionListener{
 		Utilities.cleanup();
 	}
 	private static void RunAnyCommandLine(String[] args){
-		String debugFile = GetArgument(args, "-debugfile");
+		String debugFile = Utilities.GetArgument(args, "-debugfile");
 		if(debugFile != null && !debugFile.equals("")){
 			Utilities.SetDebugFile(debugFile);
 		}
-		String perfFile = GetArgument(args, "-perffile");
+		String perfFile = Utilities.GetArgument(args, "-perffile");
 		if(perfFile != null && !perfFile.equals("")){
 			Utilities.SetPerfFile(perfFile);
 		}
 		if(args[0].equals("-c")){
-			String queryFile = GetArgument(args, "-queryfile");
+			String queryFile = Utilities.GetArgument(args, "-queryfile");
 			Query q = Query.FromFile(queryFile);
 			RunCommandLine(args, q);
 		}
 		else if(args[0].equals("-t")){
-			String queryFile = GetArgument(args, "-queryfile");
+			String queryFile = Utilities.GetArgument(args, "-queryfile");
 			Query q = Query.FromFile(queryFile);
 			RunTest(args, q);
 		}
 		else if(args[0].equals("-a")){
-			String queryFile = GetArgument(args, "-queryfile");
+			String queryFile = Utilities.GetArgument(args, "-queryfile");
 			Query q = Query.FromFile(queryFile);
 			RunAllOneFunction(args, q);
 		}
 		else if(args[0].equals("-aa")){
-			String queryFile = GetArgument(args, "-queryfile");
+			String queryFile = Utilities.GetArgument(args, "-queryfile");
 			Query q = Query.FromFile(queryFile);
 			RunAllAllFunctions(args, q);
 		}
@@ -94,16 +97,16 @@ public class TestUI implements ActionListener{
 	}
 	
 	private static void RunADiagram(String[] args){
-		String fileName = GetArgument(args, "-filename");
+		String fileName = Utilities.GetArgument(args, "-filename");
 		String fileContents = Utilities.ReadEntireFile(fileName);
-		String outFile = GetArgument(args, "-outfile");
+		String outFile = Utilities.GetArgument(args, "-outfile");
 		SequenceDiagram.MakePDFFromSDEdit(fileContents, outFile);
 	}
 	
 	private static void RunTest(String[] args, Query byQuery){
 		GroupableHypergraph<MethodNodeAnnot, EdgeAnnotation> hg = null;
-		String ClassPath = GetArgument(args, "-classpath");
-		String Files = GetArgument(args, "-jars");
+		String ClassPath = Utilities.GetArgument(args, "-classpath");
+		String Files = Utilities.GetArgument(args, "-jars");
 		String[] SplitFiles = Files.split(";");
 		File[] jars = new File[SplitFiles.length];
 		for(int i = 0; i < jars.length; i++){
@@ -127,14 +130,14 @@ public class TestUI implements ActionListener{
 			return;
 		}
 		
-		String startMethod = GetArgument(args, "-startmethod");
+		String startMethod = Utilities.GetArgument(args, "-startmethod");
 		
 		GroupableHyperNode<MethodNodeAnnot, EdgeAnnotation> aNode = hg.GetNodeByName(startMethod);
 		if(aNode == null){
 			System.out.println("Could not find node by name: " + startMethod);
 			return;
 		}
-		String saveFile = GetArgument(args, "-outfile");
+		String saveFile = Utilities.GetArgument(args, "-outfile");
 		
 		if(saveFile == null || saveFile.length() == 0){
 			System.out.println("outfile not specified");
@@ -158,8 +161,8 @@ public class TestUI implements ActionListener{
 	
 	private static void RunCommandLine(String[] args, Query q){
 		GroupableHypergraph<MethodNodeAnnot, EdgeAnnotation> hg = null;
-		String ClassPath = GetArgument(args, "-classpath");
-		String Files = GetArgument(args, "-jars");
+		String ClassPath = Utilities.GetArgument(args, "-classpath");
+		String Files = Utilities.GetArgument(args, "-jars");
 		String[] SplitFiles = Files.split(";");
 		File[] jars = new File[SplitFiles.length];
 		for(int i = 0; i < jars.length; i++){
@@ -194,14 +197,14 @@ public class TestUI implements ActionListener{
 				}
 			}
 		}
-		String startMethod = GetArgument(args, "-startmethod");
+		String startMethod = Utilities.GetArgument(args, "-startmethod");
 		
 		GroupableHyperNode<MethodNodeAnnot, EdgeAnnotation> aNode = hg.GetNodeByName(startMethod);
 		if(aNode == null){
 			System.out.println("Could not find node by name: " + startMethod);
 			return;
 		}
-		String saveFile = GetArgument(args, "-outfile");
+		String saveFile = Utilities.GetArgument(args, "-outfile");
 		
 		if(saveFile == null || saveFile.length() == 0){
 			System.out.println("outfile not specified");
@@ -215,7 +218,8 @@ public class TestUI implements ActionListener{
 		
 		try {
 			//this is the interesting call.
-			SDGenerator.Generate(hg, aNode, saveFile, q);
+			SequenceDiagram sd = SDGenerator.Generate(hg, aNode, q);
+			sd.CreatePDF(saveFile);
 		} catch (Exception e1) {
 			// TODO Auto-generated catch block				
 			e1.printStackTrace();
@@ -224,8 +228,8 @@ public class TestUI implements ActionListener{
 	
 	private static void RunAllOneFunction(String[] args, Query q){
 		GroupableHypergraph<MethodNodeAnnot, EdgeAnnotation> hg = null;
-		String ClassPath = GetArgument(args, "-classpath");
-		String Files = GetArgument(args, "-jars");
+		String ClassPath = Utilities.GetArgument(args, "-classpath");
+		String Files = Utilities.GetArgument(args, "-jars");
 		String[] SplitFiles = Files.split(";");
 		File[] jars = new File[SplitFiles.length];
 		for(int i = 0; i < jars.length; i++){
@@ -258,14 +262,14 @@ public class TestUI implements ActionListener{
 			}
 		}
 		
-		String startMethod = GetArgument(args, "-startmethod");
+		String startMethod = Utilities.GetArgument(args, "-startmethod");
 		
 		GroupableHyperNode<MethodNodeAnnot, EdgeAnnotation> aNode = hg.GetNodeByName(startMethod);
 		if(aNode == null){
 			System.out.println("Could not find node by name: " + startMethod);
 			return;
 		}
-		String saveDir = GetArgument(args, "-outdir");
+		String saveDir = Utilities.GetArgument(args, "-outdir");
 		
 		if(saveDir == null || saveDir.length() == 0){
 			System.out.println("outdir not specified");
@@ -277,13 +281,18 @@ public class TestUI implements ActionListener{
 			System.out.println("outdir not directory");
 		}
 		
+		List<SequenceDiagram> listD = null;
 		try {
 			//this is the interesting call.
-			SDGenerator.GenerateAll(hg, aNode, saveDir, q);
+			listD = SDGenerator.GenerateAll(hg, aNode, q);
 		} catch (Exception e1) {
 			// TODO Auto-generated catch block				
 			e1.printStackTrace();
 		}
+		
+		GenReducer gr = GenReducerFactory.Build(args);
+		DiagramPDFGen dpg = new DiagramPDFGen(listD, gr);
+		dpg.CreatePDFs(saveDir);
 	}
 	
 	private static void RunAllAllFunctions(String[] args, Query q){
@@ -291,8 +300,8 @@ public class TestUI implements ActionListener{
 		Utilities.PerfLogPrintln("Start_RunAllAllFunctions," + Long.toString(System.nanoTime()));
 		
 		GroupableHypergraph<MethodNodeAnnot, EdgeAnnotation> hg = null;
-		String ClassPath = GetArgument(args, "-classpath");
-		String Files = GetArgument(args, "-jars");
+		String ClassPath = Utilities.GetArgument(args, "-classpath");
+		String Files = Utilities.GetArgument(args, "-jars");
 		String[] SplitFiles = Files.split(";");
 		File[] jars = new File[SplitFiles.length];
 		for(int i = 0; i < jars.length; i++){
@@ -322,7 +331,7 @@ public class TestUI implements ActionListener{
 		Utilities.DebugPrintln("HG-NODECOUNT:"+Integer.toString(hg.size()));
 		Utilities.DebugPrintln("HG-EDGECOUNT:"+Integer.toString(hg.EdgeCount()));
 		
-		String startswith = GetArgument(args, "-startswith");
+		String startswith = Utilities.GetArgument(args, "-startswith");
 		List<String> listFuncsToRun = new ArrayList<String>();
 		List<HyperNode<MethodNodeAnnot,EdgeAnnotation>> lh = hg.GetNodes();
 		for(int i = 0; i < lh.size(); i++){
@@ -332,7 +341,7 @@ public class TestUI implements ActionListener{
 				listFuncsToRun.add(mName);
 			}
 		}
-		String saveDir = GetArgument(args, "-outdir");
+		String saveDir = Utilities.GetArgument(args, "-outdir");
 
 		if(saveDir == null || saveDir.length() == 0){
 			System.out.println("outdir not specified");
@@ -345,6 +354,7 @@ public class TestUI implements ActionListener{
 		
 		Utilities.PerfLogPrintln("BeforeTraversalJarAnalysis_RunAllAllFunctions," + Long.toString(System.nanoTime()));
 		
+		List<SequenceDiagram> listD = new ArrayList<SequenceDiagram>();
 		for(int i = 0; i < listFuncsToRun.size(); i++){
 			
 			Utilities.DebugPrintln("Starting Method #" + Integer.toString(i));
@@ -357,16 +367,16 @@ public class TestUI implements ActionListener{
 				continue;
 			}
 			
-			File aSubDir = new File(Utilities.endWithSlash(saveDir) + 
-					Utilities.Truncate(aNode.data.GetMethod().getName()) + 
-					String.valueOf(i));
-			if(aSubDir.exists()){
-				Utilities.deleteDirectory(aSubDir);
-			}
-			aSubDir.mkdirs();
+//			File aSubDir = new File(Utilities.endWithSlash(saveDir) + 
+//					Utilities.Truncate(aNode.data.GetMethod().getName()) + 
+//					String.valueOf(i));
+//			if(aSubDir.exists()){
+//				Utilities.deleteDirectory(aSubDir);
+//			}
+//			aSubDir.mkdirs();
 			try {
 				//this is the interesting call.
-				SDGenerator.GenerateAll(hg, aNode, aSubDir.getAbsolutePath(), q);
+				listD.addAll(SDGenerator.GenerateAll(hg, aNode, q));
 			} catch (Exception e1) {
 				// TODO Auto-generated catch block				
 				//e1.printStackTrace();
@@ -374,8 +384,13 @@ public class TestUI implements ActionListener{
 				Utilities.DebugPrintln(e1.getMessage());
 				Utilities.DebugPrintln(e1.getStackTrace().toString());
 			}
-			Utilities.cleanUpDir(aSubDir);
+			//Utilities.cleanUpDir(aSubDir);
 		}
+
+		GenReducer gr = GenReducerFactory.Build(args);
+		DiagramPDFGen dpg = new DiagramPDFGen(listD, gr);
+		dpg.CreatePDFs(saveDir);
+		
 		Utilities.PerfLogPrintln("AfterTraversalJarAnalysis_RunAllAllFunctions," + Long.toString(System.nanoTime()));
 		
 	}
@@ -392,14 +407,6 @@ public class TestUI implements ActionListener{
 		});
 	}
 	
-	private static String GetArgument(String[] args, String tag){
-		for(int i = 0; i < args.length-1; i++){
-			if(args[i].equals(tag)){
-				return args[i+1];
-			}
-		}
-		return "";
-	}
 
 	/**
 	 * Create the application.
@@ -510,7 +517,8 @@ public class TestUI implements ActionListener{
 			
 			try {
 				//this is the interesting call.
-				SDGenerator.Generate(currentHypergraph, aNode, saveFile, new Query(""));
+				SequenceDiagram sd = SDGenerator.Generate(currentHypergraph, aNode, new Query(""));
+				sd.CreatePDF(saveFile);
 			} catch (Exception e1) {
 				// TODO Auto-generated catch block				
 				e1.printStackTrace();
