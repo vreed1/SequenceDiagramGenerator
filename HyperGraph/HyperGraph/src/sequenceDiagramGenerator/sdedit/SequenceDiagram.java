@@ -39,12 +39,44 @@ public class SequenceDiagram {
     
     private Map<Integer, SDObject> objects;
     private List<SDMessage> messages;
-    private Map<SootClass, SDObject> theStaticObjects;
+    private Map<String, SDObject> theStaticObjects;
     private String theName;
     
     private static String diagType = "pdf";
     private static String diagFormat = "A4";
     private static String diagOrientation = "portrait";
+    
+    public SequenceDiagram(JSONObject jobj){
+    	
+    	theStaticObjects = new HashMap<String, SDObject>();
+		JSONObject sObjs = (JSONObject)jobj.get("Statics");
+		Iterator<String> iStaticNames = (Iterator<String>)sObjs.keySet().iterator();
+		while(iStaticNames.hasNext()){
+			String sName = iStaticNames.next();
+			JSONObject sObj = (JSONObject)sObjs.get(sName);
+			SDObject sdobj = new SDObject(sObj);
+			theStaticObjects.put(sName, sdobj);
+		}
+		
+		objects = new HashMap<Integer, SDObject>();
+		JSONObject iObjs = (JSONObject)jobj.get("Instances");
+		Iterator<String> iInstInts = (Iterator<String>)iObjs.keySet().iterator();
+		while(iInstInts.hasNext()){
+			Integer iName = Integer.parseInt(iInstInts.next());
+			JSONObject iObj = (JSONObject)iObjs.get(iName);
+			SDObject sdiobj = new SDObject(iObj);
+			objects.put(iName, sdiobj);
+		}
+		
+		messages = new ArrayList<SDMessage>();
+		JSONArray jarrMsg = (JSONArray)jobj.get("Messages");
+		
+		for(int i =0 ; i < jarrMsg.size(); i++){
+			JSONObject msgObj = (JSONObject)jarrMsg.get(i);
+			SDMessage aMsg = new SDMessage(msgObj);
+			messages.add(aMsg);
+		}
+    }
     
     public List<SDObject> GetObjects(){
     	List<SDObject> allObjs = new ArrayList<SDObject>();
@@ -72,7 +104,7 @@ public class SequenceDiagram {
     		aClone.AddObject(aobjClone);
     	}
 
-    	for(SootClass aClass : theStaticObjects.keySet()){
+    	for(String aClass : theStaticObjects.keySet()){
     		SDObject anObj = theStaticObjects.get(aClass);
     		SDObject aobjClone = anObj.clone();
     		aClone.AddStaticObject(aClass, aobjClone);
@@ -88,7 +120,7 @@ public class SequenceDiagram {
     public SequenceDiagram() {
         objects = new HashMap<Integer, SDObject>();
         messages = new ArrayList<SDMessage>();
-        theStaticObjects = new HashMap<SootClass,SDObject>();
+        theStaticObjects = new HashMap<String,SDObject>();
     }
     
     private Map<Integer, SDObject> getCombinedMap(){
@@ -119,11 +151,12 @@ public class SequenceDiagram {
     	}
     }
     
-    public void AddStaticObject(SootClass key, SDObject value){
+    public void AddStaticObject(String key, SDObject value){
     	theStaticObjects.put(key, value);
     }
     
-    public SDObject GetStaticObject(SootClass sc){
+    public SDObject GetStaticObject(SootClass scobj){
+    	String sc = scobj.getName();
     	if(!theStaticObjects.containsKey(sc)){
     		SDObject newObj = new SDObject(sc, SDObject.GetUniqueName(), false, true);
     		theStaticObjects.put(sc,  newObj);
@@ -357,6 +390,26 @@ public class SequenceDiagram {
 				return false;
 			}
 		}
+		
+		List<SDObject> otherObjs = other.GetObjects();
+		List<SDObject> thisObjs = this.GetObjects();
+		if(otherObjs.size() != thisObjs.size()){
+			return false;
+		}
+		for(int i = 0; i < otherObjs.size(); i++){
+			SDObject otherObj = otherObjs.get(i);
+			boolean foundMatch = false;
+			for(int j = 0; j < thisObjs.size(); j++){
+				SDObject thisObj = thisObjs.get(j);
+				if(thisObj.isEquivalent(otherObj)){
+					foundMatch = true;
+					break;
+				}
+			}
+			if(!foundMatch){
+				return false;
+			}
+		}
 		return true;
 	}
 	
@@ -387,13 +440,12 @@ public class SequenceDiagram {
 		JSONObject topObj = new JSONObject();
 		
 		JSONObject sObjs = new JSONObject();
-		Iterator<SootClass> iStatics = this.theStaticObjects.keySet().iterator();
+		Iterator<String> iStatics = this.theStaticObjects.keySet().iterator();
 		while(iStatics.hasNext())
 		{
-			SootClass sc = iStatics.next();
+			String sc = iStatics.next();
 			SDObject aStaticObj = theStaticObjects.get(sc);
-			String aName = sc.getName();
-			sObjs.put(aName, aStaticObj.toJSONObject());
+			sObjs.put(sc, aStaticObj.toJSONObject());
 		}
 		
 		topObj.put("Statics", sObjs);

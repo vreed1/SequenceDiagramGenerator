@@ -134,6 +134,36 @@ public class SDObject
 		theSootClass = sc;
 	}
 	
+	public SDObject(JSONObject jobj){
+		
+		ID = Integer.parseInt((String)jobj.get("ID"));
+		name = (String)jobj.get("name");
+		type = (String)jobj.get("type");
+		label = (String)jobj.get("label");
+		
+		isConstructed = Boolean.parseBoolean((String)jobj.get("isConstructed"));
+		isStatic = Boolean.parseBoolean((String)jobj.get("isStatic"));
+		
+		JSONArray jarr = (JSONArray)jobj.get("theNameHistory");
+		theNameHistory = new ArrayList<String>();
+		
+		for(int i = 0; i < jarr.size(); i++){
+			theNameHistory.add((String)jarr.get(i));
+		}
+		
+		JSONObject jobjFields = (JSONObject)jobj.get("theFields");
+		Iterator<String> i = (Iterator<String>)jobjFields.keySet().iterator();
+		
+		theFields = new HashMap<String, Integer>();
+		while(i.hasNext()){
+			String s = i.next();
+			theFields.put(s, Integer.parseInt((String)jobjFields.get(s)));
+		}
+		
+		nameFixed = Boolean.parseBoolean((String)jobj.get("nameFixed"));
+	    
+	}
+	
 	public JSONObject toJSONObject(){
 		JSONObject jobj = new JSONObject();
 		
@@ -336,5 +366,15 @@ public class SDObject
 
 	public void setField(String key, SDObject value) {
 		theFields.put(key, value.ID);
+	}
+
+	public boolean isEquivalent(SDObject otherObj) {
+		if(this.isStatic != otherObj.isStatic){
+			return false;
+		}
+		if(!this.GetTypeName().equals(otherObj.GetTypeName())){
+			return false;
+		}
+		return true;
 	}
 }

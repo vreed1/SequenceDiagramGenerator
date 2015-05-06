@@ -102,6 +102,24 @@ public class SDMessage
     	}
     }
     
+    public SDMessage(JSONObject jobj){
+
+    	finalLevel = Integer.parseInt((String)jobj.get("finalLevel"));
+    	callLevel = Integer.parseInt((String)jobj.get("callLevel"));
+    	callerID = Integer.parseInt((String)jobj.get("callerID"));
+    	calleeID = Integer.parseInt((String)jobj.get("calleeID"));
+    	
+    	answer = (String)jobj.get("answer");
+    	message = (String)jobj.get("message");
+    	specifier = (String)jobj.get("specifier");
+    	mnemonic = (String)jobj.get("mnemonic");
+    	fullMethodName = (String)jobj.get("fullMethodName");
+    	
+    	isConstruction = Boolean.parseBoolean((String)jobj.get("isConstruction"));
+    	isSuper = Boolean.parseBoolean((String)jobj.get("isSuper"));
+		
+    }
+    
 	public JSONObject toJSONObject(){
 		JSONObject topObj = new JSONObject();
 		
