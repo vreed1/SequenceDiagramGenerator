@@ -24,7 +24,7 @@ public class GenReduceByMessageCount implements GenReducer, Comparator<SequenceD
 	public List<SequenceDiagram> SelectTopK(List<SequenceDiagram> aList) {
 		// TODO Auto-generated method stub
 		List<SequenceDiagram> afterSort = Prioritize(aList);
-		for(int i = k; i < afterSort.size(); i++){
+		for(int i = k; i < aList.size(); i++){
 			afterSort.remove(k);
 		}
 		return afterSort;
