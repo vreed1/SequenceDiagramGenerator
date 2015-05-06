@@ -1,12 +1,14 @@
 package sequenceDiagramGenerator.sdedit;
 
 import java.io.ByteArrayInputStream;
+import java.io.File;
 import java.io.FileNotFoundException;
 import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
 import java.io.OutputStreamWriter;
+import java.io.PrintStream;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.HashMap;
@@ -243,35 +245,27 @@ public class SequenceDiagram {
     		Utilities.DebugPrintln("--------------------");
     	}
     	MakePDFFromSDEdit(this.toString(), outFile);
-//        InputStream in = new ByteArrayInputStream(this.toString().getBytes());
-//        OutputStream out = null;
-//        try {
-//            out = new FileOutputStream(outFile);
-//            try {
-//                Pair<String, Bean<Configuration>> pair = DiagramFileHandler
-//                        .load(in, ConfigurationManager.getGlobalConfiguration()
-//                                .getFileEncoding());
-//                TextHandler th = new TextHandler(pair.getFirst());
-//                Bean<Configuration> conf = pair.getSecond();
-//                
-//                Exporter paintDevice = Exporter.getExporter(diagType, diagOrientation, diagFormat, out);
-//                new Diagram(conf.getDataObject(), th, paintDevice).generate();
-//                paintDevice.export();
-//                paintDevice.close();
-//            } catch (IOException | XMLException | SemanticError | SyntaxError e) {
-//                // TODO Auto-generated catch block
-//                e.printStackTrace();
-//            } finally {
-//
-//                out.flush();
-//                out.close();
-//            }
-//        } catch (IOException e) {
-//            // TODO Auto-generated catch block
-//            e.printStackTrace();
-//        } finally {
-//            
-//        }
+
+    	MakeJSONFile(outFile);
+    }
+    
+    private void MakeJSONFile(String pdfFile){
+    	String jsonFile = pdfFile.substring(0, pdfFile.length()-3) + "json";
+    	JSONObject jobj = this.toJSONObject();
+    	String filecontents = jobj.toJSONString();
+    	
+		File aFile = new File(jsonFile);
+		try {
+			PrintStream ps = new PrintStream(aFile);
+			ps.print(filecontents);
+			ps.flush();
+			ps.close();
+			ps = null;
+		} catch (FileNotFoundException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+			Utilities.DebugPrintln("JSON File Not Found");
+		}
     }
     
     public static void MakePDFFromSDEdit(String sdeditString, String outFile){
