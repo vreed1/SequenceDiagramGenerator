@@ -7,6 +7,8 @@ import java.util.List;
 import java.util.Map;
 import java.util.Stack;
 
+import org.json.simple.JSONObject;
+
 import soot.Scene;
 import soot.SootClass;
 import soot.SootField;
@@ -34,7 +36,9 @@ public class SDObject
     
     private SootClass theSootClass;
 
-	public SDObject(Type sc, String startName, boolean aIsConstructed,
+	public SDObject(Type sc, 
+			String startName, 
+			boolean aIsConstructed,
 			boolean aIsStatic) {
 		theCurrentNames = new ArrayList<String>();
 		theNameHistory = new ArrayList<String>();
@@ -57,7 +61,11 @@ public class SDObject
         }
 	}
     
-	public SDObject(SootClass aClass, String startName, boolean aIsConstructed, boolean aIsStatic){
+	public SDObject(
+			SootClass aClass, 
+			String startName, 
+			boolean aIsConstructed, 
+			boolean aIsStatic){
 		theCurrentNames = new ArrayList<String>();
 		theNameHistory = new ArrayList<String>();
 		theCallStackNames = new Stack<List<String>>();
@@ -75,7 +83,10 @@ public class SDObject
         theSootClass = aClass;
 	}
 	
-	public SDObject(String typeName, String startName, boolean isCons, boolean isStat){
+	public SDObject(String typeName, 
+			String startName,
+			boolean isCons, 
+			boolean isStat){
 		theCurrentNames = new ArrayList<String>();
 		theNameHistory = new ArrayList<String>();
 		theCallStackNames = new Stack<List<String>>();
@@ -118,6 +129,10 @@ public class SDObject
 		theCallStackNames = aCallStackNames;
 		theFields = aFields;
 		theSootClass = sc;
+	}
+	
+	public JSONObject toJSONObject(){
+		//TODO writethis.
 	}
 	
 	public SDObject getField(String fname, SequenceDiagram sd){

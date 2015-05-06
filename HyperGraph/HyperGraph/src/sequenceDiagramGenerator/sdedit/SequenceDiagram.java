@@ -10,9 +10,14 @@ import java.io.OutputStreamWriter;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.HashMap;
+import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 import java.util.regex.Pattern;
+
+import org.json.simple.JSONArray;
+import org.json.simple.JSONObject;
 
 import soot.SootClass;
 import utilities.SetableList;
@@ -376,5 +381,40 @@ public class SequenceDiagram {
 		}
 		
 		return true;
+	}
+	
+	public JSONObject toJSONObject(){
+		JSONObject topObj = new JSONObject();
+		
+		JSONObject sObjs = new JSONObject();
+		Iterator<SootClass> iStatics = this.theStaticObjects.keySet().iterator();
+		while(iStatics.hasNext())
+		{
+			SootClass sc = iStatics.next();
+			SDObject aStaticObj = theStaticObjects.get(sc);
+			String aName = sc.getName();
+			sObjs.put(aName, aStaticObj.toJSONObject());
+		}
+		
+		topObj.put("Statics", sObjs);
+		
+		JSONObject iObjs = new JSONObject();
+		Iterator<Integer> iInst = this.objects.keySet().iterator();
+		while(iInst.hasNext()){
+			Integer i = iInst.next();
+			SDObject aInst = objects.get(i);
+			iObjs.put(Integer.toString(i), aInst.toJSONObject());
+		}
+		
+		topObj.put("Instances", iObjs);
+		
+		JSONArray jmsgArr = new JSONArray();
+		for(int i = 0; i < messages.size(); i++){
+			jmsgArr.add(messages.get(i).toJSONObject());
+		}
+		
+		topObj.put("Messages", jmsgArr);
+		
+		return topObj;
 	}
 }

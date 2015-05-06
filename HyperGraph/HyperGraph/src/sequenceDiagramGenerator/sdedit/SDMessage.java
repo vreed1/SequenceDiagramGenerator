@@ -1,6 +1,8 @@
 package sequenceDiagramGenerator.sdedit;
 import java.util.Map;
 
+import org.json.simple.JSONObject;
+
 import soot.SootMethod;
 import utilities.Utilities;
 
@@ -96,6 +98,10 @@ public class SDMessage
     		}
     	}
     }
+    
+	public JSONObject toJSONObject(){
+		//TODO writethis
+	}
     
     public String GetFullMethodName(){
     	return fullMethodName;
