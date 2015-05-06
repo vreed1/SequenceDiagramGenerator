@@ -7,6 +7,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.Stack;
 
+import org.json.simple.JSONArray;
 import org.json.simple.JSONObject;
 
 import soot.Scene;
@@ -35,6 +36,8 @@ public class SDObject
     private static int idbase = 0;
     
     private SootClass theSootClass;
+    
+    private boolean nameFixed = false;
 
 	public SDObject(Type sc, 
 			String startName, 
@@ -132,7 +135,43 @@ public class SDObject
 	}
 	
 	public JSONObject toJSONObject(){
-		//TODO writethis.
+		JSONObject jobj = new JSONObject();
+		
+		jobj.put("ID", Integer.toString(ID));
+		jobj.put("name", name);
+		jobj.put("type", type);
+		jobj.put("label", label);
+		
+		//I don't serialize
+	    //List<ObjectFlag> flags;
+		//because it is essentially vestigial and unused.
+		
+		jobj.put("isConstructed", Boolean.toString(isConstructed));
+		jobj.put("isStatic", Boolean.toString(isStatic));
+	    
+		//I don't serialize
+	    //List<String> theCurrentNames;
+	    //private Stack<List<String>> theCallStackNames;
+	    //private SootClass theSootClass;
+		//because they are only relevant during generation.
+		
+		JSONArray jarr = new JSONArray();
+		for(int i = 0; i < theNameHistory.size(); i++){
+			jarr.add(theNameHistory.get(i));
+		}
+		jobj.put("theNameHistory", jarr);
+		
+		JSONObject jobjFields = new JSONObject();
+		Iterator<String> iFieldKeys = theFields.keySet().iterator();
+		while(iFieldKeys.hasNext()){
+			String sKey = iFieldKeys.next();
+			jobjFields.put(sKey, Integer.toString(theFields.get(sKey)));
+		}
+	    
+	    jobj.put("theFields", jobjFields);
+	    
+	    jobj.put("nameFixed", Boolean.toString(nameFixed));
+	    return jobj;
 	}
 	
 	public SDObject getField(String fname, SequenceDiagram sd){
@@ -243,7 +282,6 @@ public class SDObject
             obj.append(String.format("\"%s\"", label));
         return obj.toString();
     }
-    private boolean nameFixed = false;
 	public String GetName() {
 		if(nameFixed){
 			return name;}

@@ -27,7 +27,10 @@ public class SDMessage
     private boolean isSuper;
     
     private String fullMethodName;
+
+    private int callLevel;
     
+    private int finalLevel = 0;
     // Simplest possible message <caller>:.<message>
 //    public SDMessage (String caller, String message, Dictionary<MessageOpt, String> opts)
 //    {
@@ -100,16 +103,30 @@ public class SDMessage
     }
     
 	public JSONObject toJSONObject(){
-		//TODO writethis
+		JSONObject topObj = new JSONObject();
+		
+		topObj.put("finalLevel", Integer.toString(finalLevel));
+		topObj.put("callLevel", Integer.toString(callLevel));
+
+		topObj.put("callerID", Integer.toString(callerID));
+		topObj.put("calleeID", Integer.toString(calleeID));
+		
+		topObj.put("answer", answer);
+		topObj.put("message", message);
+		topObj.put("specifier", specifier);
+		topObj.put("mnemonic", mnemonic);
+		topObj.put("fullMethodName", fullMethodName);
+
+		topObj.put("isConstruction", Boolean.toString(isConstruction));
+		topObj.put("isSuper", Boolean.toString(isSuper));
+		
+		return topObj;
 	}
     
     public String GetFullMethodName(){
     	return fullMethodName;
     }
     
-    private int callLevel;
-    
-    private int finalLevel = 0;
     
     public void SetFinalLevel(int lvl){
     	finalLevel = lvl;
