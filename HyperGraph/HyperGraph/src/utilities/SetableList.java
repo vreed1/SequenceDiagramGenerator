@@ -23,7 +23,8 @@ public class SetableList<T> extends ArrayList<T> {
 	}
 	
 	public void SetSize(int val){
-		for(int i = val; i < this.size(); i++){
+		int prevSize = this.size();
+		for(int i = val; i < prevSize; i++){
 			this.remove(val);
 		}
 	}

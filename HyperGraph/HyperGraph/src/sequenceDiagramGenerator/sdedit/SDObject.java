@@ -143,7 +143,9 @@ public class SDObject
 		
 		isConstructed = Boolean.parseBoolean((String)jobj.get("isConstructed"));
 		isStatic = Boolean.parseBoolean((String)jobj.get("isStatic"));
-		
+
+        this.flags = new ArrayList<ObjectFlag>();
+        
 		JSONArray jarr = (JSONArray)jobj.get("theNameHistory");
 		theNameHistory = new ArrayList<String>();
 		

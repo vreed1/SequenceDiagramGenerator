@@ -64,8 +64,9 @@ public class SequenceDiagram {
 		JSONObject iObjs = (JSONObject)jobj.get("Instances");
 		Iterator<String> iInstInts = (Iterator<String>)iObjs.keySet().iterator();
 		while(iInstInts.hasNext()){
-			Integer iName = Integer.parseInt(iInstInts.next());
-			JSONObject iObj = (JSONObject)iObjs.get(iName);
+			String sName = iInstInts.next();
+			Integer iName = Integer.parseInt(sName);
+			JSONObject iObj = (JSONObject)iObjs.get(sName);
 			SDObject sdiobj = new SDObject(iObj);
 			objects.put(iName, sdiobj);
 		}
@@ -220,6 +221,9 @@ public class SequenceDiagram {
     		for(int j = now.GetCallLevel(); j < slist.size(); j++){
     			if(slist.get(j)){
     				flvl++;
+    			}
+    			else{
+    				break;
     			}
     		}
     		slist.SetSize(now.GetCallLevel());

@@ -5,12 +5,17 @@ import java.awt.EventQueue;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.io.File;
+import java.io.FileReader;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
 
 import javax.swing.JFileChooser;
 import javax.swing.JFrame;
+
+import org.json.simple.JSONObject;
+import org.json.simple.parser.JSONParser;
+import org.json.simple.parser.ParseException;
 
 import sequenceDiagramGenerator.MethodNodeAnnot;
 import sequenceDiagramGenerator.Query;
@@ -89,11 +94,30 @@ public class TestUI implements ActionListener{
 		else if(args[0].equals("-td")){
 			RunADiagram(args);
 		}
+		else if(args[0].equals("-gj")){
+			RunADiagramFromJSON(args);
+		}
 		else
 		{ 
 			System.out.println("Bad Input Arg 0 =" + args[0]);
 		}
 			
+	}
+	
+	private static void RunADiagramFromJSON(String[] args){
+		try {
+			String jsonFile = Utilities.GetArgument(args, "-jsonfile");
+			String pdfFile = Utilities.GetArgument(args, "-pdffile");
+			JSONParser jp = new JSONParser();
+			FileReader fr = new FileReader(jsonFile);
+			JSONObject jobj = (JSONObject) jp.parse(fr);
+			SequenceDiagram sd = new SequenceDiagram(jobj);
+			sd.CreatePDF(pdfFile);
+		} catch (IOException | ParseException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		}
+		
 	}
 	
 	private static void RunADiagram(String[] args){
