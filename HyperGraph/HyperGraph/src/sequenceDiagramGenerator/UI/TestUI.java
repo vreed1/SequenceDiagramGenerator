@@ -6,6 +6,7 @@ import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.io.File;
 import java.io.FileReader;
+import java.io.FilenameFilter;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
@@ -19,6 +20,7 @@ import org.json.simple.parser.ParseException;
 
 import sequenceDiagramGenerator.MethodNodeAnnot;
 import sequenceDiagramGenerator.Query;
+import sequenceDiagramGenerator.Query.QueryResponse;
 import sequenceDiagramGenerator.SDGenerator;
 import sequenceDiagramGenerator.hypergraph.EdgeAnnotation;
 import sequenceDiagramGenerator.hypergraph.GroupableHyperNode;
@@ -98,11 +100,61 @@ public class TestUI implements ActionListener{
 		else if(args[0].equals("-gj")){
 			RunADiagramFromJSON(args);
 		}
+		else if(args[0].equals("-jd")){
+			String queryFile = Utilities.GetArgument(args, "-queryfile");
+			Query q = Query.FromFile(queryFile);
+			RunJSONDirectory(args, q);
+		}
 		else
 		{ 
 			System.out.println("Bad Input Arg 0 =" + args[0]);
 		}
 			
+	}
+	
+	private static void RunJSONDirectory(String[] args, Query q){
+		String jsonInputDir = Utilities.GetArgument(args, "-jsoninputdir");
+		File dir = new File(jsonInputDir);
+		List<SequenceDiagram> lsd = new ArrayList<SequenceDiagram>();
+		File[] files = dir.listFiles();
+		
+		for(int i = 0; i < files.length; i++ ){
+			if(files[i].getName().endsWith(".json")){
+				FileReader fr = null;
+				try {
+					JSONParser jp = new JSONParser();
+					fr = new FileReader(files[i]);
+					JSONObject jobj = (JSONObject) jp.parse(fr);
+					SequenceDiagram sd = new SequenceDiagram(jobj);
+					QueryResponse qr = q.CheckFinishedDiagram(sd);
+					if(qr == QueryResponse.True){
+						lsd.add(sd);
+					}
+				} catch (IOException e) {
+					// TODO Auto-generated catch block
+					e.printStackTrace();
+				} catch (ParseException e) {
+					// TODO Auto-generated catch block
+					e.printStackTrace();
+				}
+				finally{
+					if(fr != null){
+						try {
+							fr.close();
+						} catch (IOException e) {
+							// TODO Auto-generated catch block
+							e.printStackTrace();
+						}
+						fr = null;
+					}
+				}
+			}
+		}
+		String outdir = Utilities.GetArgument(args, "-outdir");
+		GenReducer gr = GenReducerFactory.Build(args);
+		DiagramPDFGen dpg = new DiagramPDFGen(lsd, gr);
+		dpg.CreatePDFs(outdir);
+		
 	}
 	
 	private static void RunADiagramFromJSON(String[] args){
