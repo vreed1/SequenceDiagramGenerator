@@ -5,9 +5,9 @@ import java.util.Collections;
 import java.util.Comparator;
 import java.util.List;
 
-public class GenReduceByMessageCount implements GenReducer, Comparator<SequenceDiagram> {
+public class GenReduceByMessageCount implements GenReducer {
 
-	private int k;
+	protected int k;
 	public GenReduceByMessageCount(int aK){
 		k = aK;
 	}
@@ -16,7 +16,20 @@ public class GenReduceByMessageCount implements GenReducer, Comparator<SequenceD
 	public List<SequenceDiagram> Prioritize(List<SequenceDiagram> aList) {
 		// TODO Auto-generated method stub
 		ArrayList<SequenceDiagram> newList = new ArrayList<SequenceDiagram>(aList);
-		Collections.sort(newList, this);
+		Collections.sort(newList, new MessageCountComparator());
+		for(int i = newList.size() -1; i > 0; i--){
+			SequenceDiagram test = newList.get(i);
+			for(int j = i -1; j >= 0; j--){
+				SequenceDiagram pred = newList.get(j);
+				if(test.isSubsetOf(pred)){
+					newList.remove(i);
+					break;
+				}
+			}
+		}
+		for(int i  = 0; i < newList.size(); i++){
+			newList.get(i).SetPriority(i);
+		}
 		return newList;
 	}
 
@@ -24,23 +37,11 @@ public class GenReduceByMessageCount implements GenReducer, Comparator<SequenceD
 	public List<SequenceDiagram> SelectTopK(List<SequenceDiagram> aList) {
 		// TODO Auto-generated method stub
 		List<SequenceDiagram> afterSort = Prioritize(aList);
-		for(int i = k; i < aList.size(); i++){
+		int startSize = afterSort.size();
+		for(int i = k; i < startSize; i++){
 			afterSort.remove(k);
 		}
 		return afterSort;
-	}
-
-	@Override
-	public int compare(SequenceDiagram x, SequenceDiagram y) {
-		int xsize = x.GetMessages().size();
-		int ysize = y.GetMessages().size();
-		//this is deliberate inversion of the ordering
-		//as defined by the comparator interface
-		//in order to produce a descending sorted array
-		//which is what we want.
-		if(xsize < ysize){return 1;}
-		else if(xsize > ysize){return -1;}
-		return 0;
 	}
 
 }

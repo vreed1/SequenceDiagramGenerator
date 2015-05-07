@@ -252,4 +252,12 @@ public final class Utilities {
 		}
 		return "";
 	}
+	
+	public static String twoDecimal(double d){
+		String s= Double.toString(d);
+		if(!s.contains(".")){return s;}
+		int ind = s.indexOf('.');
+		if(s.length() - ind < 4){return s;}
+		return s.substring(0, ind+3);
+	}
 }

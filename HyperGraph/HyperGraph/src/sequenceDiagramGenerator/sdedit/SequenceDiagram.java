@@ -44,12 +44,24 @@ public class SequenceDiagram {
     private Map<String, SDObject> theStaticObjects;
     private String theName;
     
+    private int thePriority;
+    private int theUniqueMsgCount;
+    private int theMaxDepth;
+    private int theTotalMsgsInGroup;
+    
     private static String diagType = "pdf";
     private static String diagFormat = "A4";
     private static String diagOrientation = "portrait";
     
     public SequenceDiagram(JSONObject jobj){
     	
+    	theName = (String)jobj.get("Name");
+    	thePriority = Integer.parseInt((String)jobj.get("Priority"));
+    	
+    	theUniqueMsgCount = Integer.parseInt((String)jobj.get("UniqueMsgCount"));
+    	theMaxDepth = Integer.parseInt((String)jobj.get("MaxDepth"));
+    	theTotalMsgsInGroup = Integer.parseInt((String)jobj.get("TotalMsgsInGroup"));
+
     	theStaticObjects = new HashMap<String, SDObject>();
 		JSONObject sObjs = (JSONObject)jobj.get("Statics");
 		Iterator<String> iStaticNames = (Iterator<String>)sObjs.keySet().iterator();
@@ -79,6 +91,14 @@ public class SequenceDiagram {
 			SDMessage aMsg = new SDMessage(msgObj);
 			messages.add(aMsg);
 		}
+    }
+    
+    public void SetPriority(int inval){
+    	thePriority = inval;
+    }
+    
+    public int GetPriority(){
+    	return thePriority;
     }
     
     public List<SDObject> GetObjects(){
@@ -117,6 +137,11 @@ public class SequenceDiagram {
     		SDMessage aMsgClone = aMsg.clone();
     		aClone.AddMessage(aMsgClone);
     	}
+    	aClone.SetName(this.GetName());
+    	aClone.SetPriority(this.GetPriority());
+    	aClone.SetNewMsgCount(this.theUniqueMsgCount);
+    	aClone.SetTotalMsgsInGroup(this.theTotalMsgsInGroup);
+    	aClone.SetMaxDepth(this.theMaxDepth);
     	return aClone;
     }
     
@@ -214,10 +239,11 @@ public class SequenceDiagram {
     	if(messages.size() == 0){return;}
     	SetableList<Boolean> slist = new SetableList<Boolean>();
     	slist.SetR(messages.get(0).isSelfMessage(), messages.get(0).GetCallLevel());
-
+    	
     	for(int i = 1; i < messages.size(); i++){
     		SDMessage now = messages.get(i);
     		int flvl = 0;
+    		
     		for(int j = now.GetCallLevel(); j < slist.size(); j++){
     			if(slist.get(j)){
     				flvl++;
@@ -233,7 +259,18 @@ public class SequenceDiagram {
     }
     
     public void CreatePDFInDir(String dirName){
-    	String fileName = Utilities.endWithSlash(dirName) + GetName();
+    	SetMaxDepth();
+    	String fileName = Utilities.endWithSlash(dirName) + 
+    			Integer.toString(thePriority) + "_P-" +
+    			
+    					Utilities.twoDecimal(
+    					
+    							(100.0 * this.theUniqueMsgCount)
+    							/ this.theTotalMsgsInGroup
+    					
+    					) +
+    			"%_D-" + Integer.toString(theMaxDepth)
+    			+ "_" + GetName();
     	CreatePDF(fileName);
     }
     
@@ -376,6 +413,32 @@ public class SequenceDiagram {
 		return null;
 	}
 	
+	public boolean isSubsetOf(SequenceDiagram other){
+		List<SDMessage> otherMsg = other.GetMessages();
+		List<SDMessage> thisMsg = this.GetMessages();
+		if(thisMsg.size() == 0){
+			return true;
+		}
+		if(otherMsg.size() <= thisMsg.size()){
+			return false;
+		}
+		for(int i = 0; i <= otherMsg.size()-thisMsg.size(); i++){
+			if(MessageMatches(this, thisMsg.get(0), other, otherMsg.get(i))){
+				boolean issubset = true;
+				for(int j = 1; j < thisMsg.size(); j++){
+					if(!MessageMatches(this, thisMsg.get(j), other, otherMsg.get(i+j))){
+						issubset = false;
+						break;
+					}
+				}
+				if(issubset){
+					return true;
+				}
+			}
+		}
+		return false;
+	}
+	
 	public boolean isEquivalent(SequenceDiagram other){
 		List<SDMessage> otherMsg = other.GetMessages();
 		List<SDMessage> thisMsg = this.GetMessages();
@@ -435,6 +498,7 @@ public class SequenceDiagram {
 	}
 	
 	public JSONObject toJSONObject(){
+		SetMaxDepth();
 		JSONObject topObj = new JSONObject();
 		
 		JSONObject sObjs = new JSONObject();
@@ -465,6 +529,32 @@ public class SequenceDiagram {
 		
 		topObj.put("Messages", jmsgArr);
 		
+		topObj.put("Name", this.theName);
+		topObj.put("Priority", Integer.toString(this.thePriority));
+		topObj.put("UniqueMsgCount", Integer.toString(this.theUniqueMsgCount));
+		topObj.put("MaxDepth", Integer.toString(this.theMaxDepth));
+		topObj.put("TotalMsgsInGroup", Integer.toString(this.theTotalMsgsInGroup));
+		
 		return topObj;
+	}
+
+	public void SetNewMsgCount(int newMsgCount) {
+		this.theUniqueMsgCount = newMsgCount;
+	}
+	
+	public void SetTotalMsgsInGroup(int msgCount){
+		theTotalMsgsInGroup = msgCount;
+	}
+	
+	public void SetMaxDepth(){
+		for(int i = 0;i < this.messages.size(); i++){
+			if(theMaxDepth < this.messages.get(i).GetCallLevel()){
+				theMaxDepth = this.messages.get(i).GetCallLevel();
+			}
+		}
+	}
+	
+	public void SetMaxDepth(int maxDepth){
+		theMaxDepth = maxDepth;
 	}
 }

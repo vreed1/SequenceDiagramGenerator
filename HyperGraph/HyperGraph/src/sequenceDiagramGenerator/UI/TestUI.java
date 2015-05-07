@@ -59,6 +59,7 @@ public class TestUI implements ActionListener{
 		catch(Exception ex){
 			Utilities.DebugPrintln("Top level crash:");
 			Utilities.DebugPrintln(ex.getMessage());
+			ex.printStackTrace();
 		}
 		Utilities.cleanup();
 	}
