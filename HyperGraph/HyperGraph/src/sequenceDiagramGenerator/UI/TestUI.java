@@ -20,6 +20,8 @@ import org.json.simple.parser.ParseException;
 
 import sequenceDiagramGenerator.MethodNodeAnnot;
 import sequenceDiagramGenerator.Query;
+import sequenceDiagramGenerator.QueryFactory;
+import sequenceDiagramGenerator.SimpleQuery;
 import sequenceDiagramGenerator.Query.QueryResponse;
 import sequenceDiagramGenerator.SDGenerator;
 import sequenceDiagramGenerator.hypergraph.EdgeAnnotation;
@@ -67,6 +69,9 @@ public class TestUI implements ActionListener{
 	}
 	private static void RunAnyCommandLine(String[] args){
 		String debugFile = Utilities.GetArgument(args, "-debugfile");
+		QueryFactory qf = new QueryFactory(args);
+		String queryFile = Utilities.GetArgument(args, "-queryfile");
+		Query q = qf.FromFileName(queryFile);
 		if(debugFile != null && !debugFile.equals("")){
 			Utilities.SetDebugFile(debugFile);
 		}
@@ -75,23 +80,15 @@ public class TestUI implements ActionListener{
 			Utilities.SetPerfFile(perfFile);
 		}
 		if(args[0].equals("-c")){
-			String queryFile = Utilities.GetArgument(args, "-queryfile");
-			Query q = Query.FromFile(queryFile);
 			RunCommandLine(args, q);
 		}
 		else if(args[0].equals("-t")){
-			String queryFile = Utilities.GetArgument(args, "-queryfile");
-			Query q = Query.FromFile(queryFile);
 			RunTest(args, q);
 		}
 		else if(args[0].equals("-a")){
-			String queryFile = Utilities.GetArgument(args, "-queryfile");
-			Query q = Query.FromFile(queryFile);
 			RunAllOneFunction(args, q);
 		}
 		else if(args[0].equals("-aa")){
-			String queryFile = Utilities.GetArgument(args, "-queryfile");
-			Query q = Query.FromFile(queryFile);
 			RunAllAllFunctions(args, q);
 		}
 		else if(args[0].equals("-td")){
@@ -101,8 +98,6 @@ public class TestUI implements ActionListener{
 			RunADiagramFromJSON(args);
 		}
 		else if(args[0].equals("-jd")){
-			String queryFile = Utilities.GetArgument(args, "-queryfile");
-			Query q = Query.FromFile(queryFile);
 			RunJSONDirectory(args, q);
 		}
 		else
@@ -180,7 +175,7 @@ public class TestUI implements ActionListener{
 		SequenceDiagram.MakePDFFromSDEdit(fileContents, outFile);
 	}
 	
-	private static void RunTest(String[] args, Query byQuery){
+	private static void RunTest(String[] args, Query q){
 		GroupableHypergraph<MethodNodeAnnot, EdgeAnnotation> hg = null;
 		String ClassPath = Utilities.GetArgument(args, "-classpath");
 		String Files = Utilities.GetArgument(args, "-jars");
@@ -229,7 +224,7 @@ public class TestUI implements ActionListener{
 		try {
 			//this is the interesting call.
 			//SDGenerator.Generate(hg, aNode, saveFile);
-			SDGenerator.GenTest(hg, aNode, saveFile, byQuery);
+			SDGenerator.GenTest(hg, aNode, saveFile, q);
 		} catch (Exception e1) {
 			// TODO Auto-generated catch block				
 			e1.printStackTrace();
@@ -594,7 +589,7 @@ public class TestUI implements ActionListener{
 			
 			try {
 				//this is the interesting call.
-				SequenceDiagram sd = SDGenerator.Generate(currentHypergraph, aNode, new Query(""));
+				SequenceDiagram sd = SDGenerator.Generate(currentHypergraph, aNode, new SimpleQuery(""));
 				sd.CreatePDF(saveFile);
 			} catch (Exception e1) {
 				// TODO Auto-generated catch block				

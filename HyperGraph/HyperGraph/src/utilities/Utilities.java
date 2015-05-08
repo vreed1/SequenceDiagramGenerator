@@ -11,7 +11,7 @@ import java.util.Scanner;
 import java.util.zip.ZipEntry;
 import java.util.zip.ZipInputStream;
 
-import sequenceDiagramGenerator.Query;
+import sequenceDiagramGenerator.SimpleQuery;
 import soot.SootMethod;
 
 public final class Utilities {
