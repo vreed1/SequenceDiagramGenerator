@@ -30,10 +30,10 @@ public class QueryFragment implements Query {
 			theMode = QueryMode.Filter;
 		}
 		if(str[1].equals("method")){
-			theMethod = str[1];
+			theMethod = str[2];
 		}
 		else if(str[1].equals("type")){
-			theType = str[1];
+			theType = str[2];
 		}
 	}
 	

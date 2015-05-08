@@ -29,6 +29,7 @@ public class Tokenizer {
 						nontoken = new StringBuilder();
 					}
 					s = s.substring(definedTokens.get(i).length());
+					ret.add(definedTokens.get(i));
 					tokenFound = true;
 					break;
 				}

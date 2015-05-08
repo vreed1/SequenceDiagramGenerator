@@ -89,24 +89,12 @@ public class CompoundQuery implements Query {
 
 	@Override
 	public QueryResponse RunOnData(QueryDataContainer toQuery) {
-		QueryResponse first = theFragment.RunOnData(toQuery);
-
-		if(theRest == null){
-			return first;
-		}
-		QueryResponse second = theRest.RunOnData(toQuery);
-		return respond(first, second);
+		return QueryResponse.True;
 	}
 
 	@Override
 	public QueryResponse RunOnMethodName(String outerMethodName) {
-		QueryResponse first = theFragment.RunOnMethodName(outerMethodName);
-
-		if(theRest == null){
-			return first;
-		}
-		QueryResponse second = theRest.RunOnMethodName(outerMethodName);
-		return respond(first, second);
+		return QueryResponse.True;
 	}
 
 	@Override
