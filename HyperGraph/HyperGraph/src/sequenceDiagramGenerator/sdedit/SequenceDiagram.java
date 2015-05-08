@@ -258,7 +258,7 @@ public class SequenceDiagram {
     	}
     }
     
-    public void CreatePDFInDir(String dirName){
+    public void CreatePDFInDir(String dirName, boolean tersemode){
     	SetMaxDepth();
     	String fileName = Utilities.endWithSlash(dirName) + 
     			Integer.toString(thePriority) + "_P-" +
@@ -271,10 +271,11 @@ public class SequenceDiagram {
     					) +
     			"%_D-" + Integer.toString(theMaxDepth)
     			+ "_" + GetName();
-    	CreatePDF(fileName);
+    	CreatePDF(fileName, tersemode);
     }
-    
-    public void CreatePDF(String outFile) {    
+    private boolean terse = false;
+    public void CreatePDF(String outFile, boolean tersemode) {
+    	terse = tersemode;
     	NameSafetyCheck();
     	MessageLevelCheck();
     	if(this.toString().trim().equals("")){
@@ -356,12 +357,14 @@ public class SequenceDiagram {
         }
         
         for(SDObject obj : theStaticObjects.values()){
+        	obj.SetTerse(terse);
         	if(usedIDs.contains(obj.ID)){
         		diagram.append(obj.toString());
         		diagram.append(NEW_LINE);
         	}
         }
         for (SDObject obj : objects.values()) {
+        	obj.SetTerse(terse);
             if(usedIDs.contains(obj.ID)){
             	diagram.append(obj.toString());
             	diagram.append(NEW_LINE);

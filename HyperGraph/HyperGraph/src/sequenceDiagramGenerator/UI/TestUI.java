@@ -147,7 +147,7 @@ public class TestUI implements ActionListener{
 		}
 		String outdir = Utilities.GetArgument(args, "-outdir");
 		GenReducer gr = GenReducerFactory.Build(args);
-		DiagramPDFGen dpg = new DiagramPDFGen(lsd, gr);
+		DiagramPDFGen dpg = new DiagramPDFGen(lsd, gr,args);
 		dpg.CreatePDFs(outdir);
 		
 	}
@@ -160,7 +160,12 @@ public class TestUI implements ActionListener{
 			FileReader fr = new FileReader(jsonFile);
 			JSONObject jobj = (JSONObject) jp.parse(fr);
 			SequenceDiagram sd = new SequenceDiagram(jobj);
-			sd.CreatePDF(pdfFile);
+			String tersemode = Utilities.GetArgument(args, "-terse");
+			boolean terse = false;
+			if(tersemode == null && tersemode.length() > 0){
+				terse = Boolean.parseBoolean(tersemode);
+			}
+			sd.CreatePDF(pdfFile, terse);
 		} catch (IOException | ParseException e) {
 			// TODO Auto-generated catch block
 			e.printStackTrace();
@@ -291,7 +296,12 @@ public class TestUI implements ActionListener{
 		try {
 			//this is the interesting call.
 			SequenceDiagram sd = SDGenerator.Generate(hg, aNode, q);
-			sd.CreatePDF(saveFile);
+			String tersemode = Utilities.GetArgument(args, "-terse");
+			boolean terse = false;
+			if(tersemode == null && tersemode.length() > 0){
+				terse = Boolean.parseBoolean(tersemode);
+			}
+			sd.CreatePDF(saveFile, terse);
 		} catch (Exception e1) {
 			// TODO Auto-generated catch block				
 			e1.printStackTrace();
@@ -363,7 +373,7 @@ public class TestUI implements ActionListener{
 		}
 		
 		GenReducer gr = GenReducerFactory.Build(args);
-		DiagramPDFGen dpg = new DiagramPDFGen(listD, gr);
+		DiagramPDFGen dpg = new DiagramPDFGen(listD, gr,args);
 		dpg.CreatePDFs(saveDir);
 	}
 	
@@ -460,7 +470,7 @@ public class TestUI implements ActionListener{
 		}
 
 		GenReducer gr = GenReducerFactory.Build(args);
-		DiagramPDFGen dpg = new DiagramPDFGen(listD, gr);
+		DiagramPDFGen dpg = new DiagramPDFGen(listD, gr,args);
 		dpg.CreatePDFs(saveDir);
 		
 		Utilities.PerfLogPrintln("AfterTraversalJarAnalysis_RunAllAllFunctions," + Long.toString(System.nanoTime()));
@@ -590,7 +600,8 @@ public class TestUI implements ActionListener{
 			try {
 				//this is the interesting call.
 				SequenceDiagram sd = SDGenerator.Generate(currentHypergraph, aNode, new SimpleQuery(""));
-				sd.CreatePDF(saveFile);
+
+				sd.CreatePDF(saveFile, false);
 			} catch (Exception e1) {
 				// TODO Auto-generated catch block				
 				e1.printStackTrace();

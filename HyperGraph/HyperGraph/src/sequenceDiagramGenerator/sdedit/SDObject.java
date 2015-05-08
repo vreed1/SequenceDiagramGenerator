@@ -306,7 +306,11 @@ public class SDObject
         if(isConstructed){
         	obj.append("/");
         }
-        obj.append(String.format("%s:%s", name, type));
+        String useType = type;
+        if(isTerse){
+        	useType = useType.substring(useType.lastIndexOf(".")+1);
+        }
+        obj.append(String.format("%s:%s", name, useType));
         for (ObjectFlag f : flags) {
             obj.append(String.format("[%s]", f.tag()));
         }
@@ -378,5 +382,10 @@ public class SDObject
 			return false;
 		}
 		return true;
+	}
+
+	private boolean isTerse = false;
+	public void SetTerse(boolean terse) {
+		isTerse = terse;
 	}
 }
