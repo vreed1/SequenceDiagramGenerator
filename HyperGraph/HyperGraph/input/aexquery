@@ -1,1 +1,1 @@
-rf filtermethod:java.util.Random.nextInt(int) rejectmethod:bp.sddemoapp6.MainActivity.SetUpperLeftButton(int)
+filter:method:java.util.Random.nextInt(int)||filter:method:java.util.Random.nextBoolean()||filter:method:android.widget.TextView.setText(java.lang.CharSequence)

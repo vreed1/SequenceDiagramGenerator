@@ -39,8 +39,8 @@ import net.sf.sdedit.util.Pair;
 
 public class SequenceDiagram {
     
-    private Map<Integer, SDObject> objects;
-    private List<SDMessage> messages;
+    private Map<Integer, SDObject> theInstanceObjects;
+    private List<SDMessage> theMessages;
     private Map<String, SDObject> theStaticObjects;
     private String theName;
     
@@ -72,7 +72,7 @@ public class SequenceDiagram {
 			theStaticObjects.put(sName, sdobj);
 		}
 		
-		objects = new HashMap<Integer, SDObject>();
+		theInstanceObjects = new HashMap<Integer, SDObject>();
 		JSONObject iObjs = (JSONObject)jobj.get("Instances");
 		Iterator<String> iInstInts = (Iterator<String>)iObjs.keySet().iterator();
 		while(iInstInts.hasNext()){
@@ -80,16 +80,16 @@ public class SequenceDiagram {
 			Integer iName = Integer.parseInt(sName);
 			JSONObject iObj = (JSONObject)iObjs.get(sName);
 			SDObject sdiobj = new SDObject(iObj);
-			objects.put(iName, sdiobj);
+			theInstanceObjects.put(iName, sdiobj);
 		}
 		
-		messages = new ArrayList<SDMessage>();
+		theMessages = new ArrayList<SDMessage>();
 		JSONArray jarrMsg = (JSONArray)jobj.get("Messages");
 		
 		for(int i =0 ; i < jarrMsg.size(); i++){
 			JSONObject msgObj = (JSONObject)jarrMsg.get(i);
 			SDMessage aMsg = new SDMessage(msgObj);
-			messages.add(aMsg);
+			theMessages.add(aMsg);
 		}
     }
     
@@ -103,7 +103,7 @@ public class SequenceDiagram {
     
     public List<SDObject> GetObjects(){
     	List<SDObject> allObjs = new ArrayList<SDObject>();
-    	allObjs.addAll(objects.values());
+    	allObjs.addAll(theInstanceObjects.values());
     	allObjs.addAll(theStaticObjects.values());
     	return allObjs;
     }
@@ -117,12 +117,12 @@ public class SequenceDiagram {
     }
     
     public List<SDMessage> GetMessages(){
-    	return new ArrayList<SDMessage>(messages);
+    	return new ArrayList<SDMessage>(theMessages);
     }
     
     public SequenceDiagram clone(){
     	SequenceDiagram aClone = new SequenceDiagram();
-    	for(SDObject anObj : objects.values()){
+    	for(SDObject anObj : theInstanceObjects.values()){
     		SDObject aobjClone = anObj.clone();
     		aClone.AddObject(aobjClone);
     	}
@@ -133,7 +133,7 @@ public class SequenceDiagram {
     		aClone.AddStaticObject(aClass, aobjClone);
     	}
     	
-    	for(SDMessage aMsg : messages){
+    	for(SDMessage aMsg : theMessages){
     		SDMessage aMsgClone = aMsg.clone();
     		aClone.AddMessage(aMsgClone);
     	}
@@ -146,13 +146,13 @@ public class SequenceDiagram {
     }
     
     public SequenceDiagram() {
-        objects = new HashMap<Integer, SDObject>();
-        messages = new ArrayList<SDMessage>();
+        theInstanceObjects = new HashMap<Integer, SDObject>();
+        theMessages = new ArrayList<SDMessage>();
         theStaticObjects = new HashMap<String,SDObject>();
     }
     
     private Map<Integer, SDObject> getCombinedMap(){
-    	Map<Integer,SDObject> aMap = new HashMap<Integer,SDObject>(objects);
+    	Map<Integer,SDObject> aMap = new HashMap<Integer,SDObject>(theInstanceObjects);
     	for(SDObject anObj : theStaticObjects.values()){
     		aMap.put(anObj.ID, anObj);
     	}
@@ -160,21 +160,21 @@ public class SequenceDiagram {
     }
     
     public void AddObject(SDObject obj) {
-    	objects.put(new Integer(obj.ID), obj);
+    	theInstanceObjects.put(new Integer(obj.ID), obj);
     }
     
     public void AddMessage(SDMessage msg) {
-        messages.add(msg);
+        theMessages.add(msg);
     }
     
     public void PushNames(){
-    	for(SDObject anObj : objects.values()){
+    	for(SDObject anObj : theInstanceObjects.values()){
     		anObj.PushNames();
     	}
     }
     
     public void PopNames(){
-    	for(SDObject anObj : objects.values()){
+    	for(SDObject anObj : theInstanceObjects.values()){
     		anObj.PopNames();
     	}
     }
@@ -201,7 +201,7 @@ public class SequenceDiagram {
     		sdObj.setField(parts[1], obj);
     	}
     	else{
-	    	for(SDObject anObj : objects.values()){
+	    	for(SDObject anObj : theInstanceObjects.values()){
 	    		anObj.DetachName(name);
 	    	}
 	    	//There is a problem here.
@@ -210,7 +210,7 @@ public class SequenceDiagram {
     }
     
     public SDObject GetObjectFromName(String name){
-    	for(SDObject anObj : objects.values()){
+    	for(SDObject anObj : theInstanceObjects.values()){
     		if(anObj.MatchesName(name)){
     			return anObj;
     		}
@@ -225,7 +225,7 @@ public class SequenceDiagram {
     
     private void NameSafetyCheck(){
     	List<String> listUsedStrings = new ArrayList<String>();
-    	for(SDObject anObj : objects.values()){
+    	for(SDObject anObj : theInstanceObjects.values()){
     		anObj.fixFinalName(listUsedStrings);
     		listUsedStrings.add(anObj.GetName());
     	}
@@ -236,12 +236,12 @@ public class SequenceDiagram {
     }
     
     private void MessageLevelCheck(){
-    	if(messages.size() == 0){return;}
+    	if(theMessages.size() == 0){return;}
     	SetableList<Boolean> slist = new SetableList<Boolean>();
-    	slist.SetR(messages.get(0).isSelfMessage(), messages.get(0).GetCallLevel());
+    	slist.SetR(theMessages.get(0).isSelfMessage(), theMessages.get(0).GetCallLevel());
     	
-    	for(int i = 1; i < messages.size(); i++){
-    		SDMessage now = messages.get(i);
+    	for(int i = 1; i < theMessages.size(); i++){
+    		SDMessage now = theMessages.get(i);
     		int flvl = 0;
     		
     		for(int j = now.GetCallLevel(); j < slist.size(); j++){
@@ -351,7 +351,7 @@ public class SequenceDiagram {
         StringBuilder diagram = new StringBuilder();
         
         List<Integer> usedIDs = new ArrayList<Integer>();
-        for(SDMessage aMsg : messages){
+        for(SDMessage aMsg : theMessages){
         	usedIDs.add(aMsg.calleeID);
         	usedIDs.add(aMsg.callerID);
         }
@@ -363,7 +363,7 @@ public class SequenceDiagram {
         		diagram.append(NEW_LINE);
         	}
         }
-        for (SDObject obj : objects.values()) {
+        for (SDObject obj : theInstanceObjects.values()) {
         	obj.SetTerse(terse);
             if(usedIDs.contains(obj.ID)){
             	diagram.append(obj.toString());
@@ -377,7 +377,7 @@ public class SequenceDiagram {
         
         Map<Integer, SDObject> aMap = getCombinedMap();
         
-        for (SDMessage msg : messages) {
+        for (SDMessage msg : theMessages) {
             diagram.append(msg.toString(aMap));
             diagram.append(NEW_LINE);
         }
@@ -405,8 +405,8 @@ public class SequenceDiagram {
 	}
 
 	public SDObject GetObjectFromID(int sourceObjID) {
-		if(objects.containsKey(sourceObjID)){
-			return objects.get(sourceObjID);
+		if(theInstanceObjects.containsKey(sourceObjID)){
+			return theInstanceObjects.get(sourceObjID);
 		}
 		for(SDObject anObj : theStaticObjects.values()){
 			if(anObj.ID == sourceObjID){
@@ -516,18 +516,18 @@ public class SequenceDiagram {
 		topObj.put("Statics", sObjs);
 		
 		JSONObject iObjs = new JSONObject();
-		Iterator<Integer> iInst = this.objects.keySet().iterator();
+		Iterator<Integer> iInst = this.theInstanceObjects.keySet().iterator();
 		while(iInst.hasNext()){
 			Integer i = iInst.next();
-			SDObject aInst = objects.get(i);
+			SDObject aInst = theInstanceObjects.get(i);
 			iObjs.put(Integer.toString(i), aInst.toJSONObject());
 		}
 		
 		topObj.put("Instances", iObjs);
 		
 		JSONArray jmsgArr = new JSONArray();
-		for(int i = 0; i < messages.size(); i++){
-			jmsgArr.add(messages.get(i).toJSONObject());
+		for(int i = 0; i < theMessages.size(); i++){
+			jmsgArr.add(theMessages.get(i).toJSONObject());
 		}
 		
 		topObj.put("Messages", jmsgArr);
@@ -550,14 +550,46 @@ public class SequenceDiagram {
 	}
 	
 	public void SetMaxDepth(){
-		for(int i = 0;i < this.messages.size(); i++){
-			if(theMaxDepth < this.messages.get(i).GetCallLevel()){
-				theMaxDepth = this.messages.get(i).GetCallLevel();
+		for(int i = 0;i < this.theMessages.size(); i++){
+			if(theMaxDepth < this.theMessages.get(i).GetCallLevel()){
+				theMaxDepth = this.theMessages.get(i).GetCallLevel();
 			}
 		}
 	}
 	
 	public void SetMaxDepth(int maxDepth){
 		theMaxDepth = maxDepth;
+	}
+
+	public void Filter(SDObject sdObject) {
+		if(sdObject.isStatic){
+
+			String stype = sdObject.GetTypeName();
+			if(theStaticObjects.containsKey(stype)){
+				theStaticObjects.remove(stype);
+			}
+		}
+		else if(theInstanceObjects.containsKey(sdObject.ID)){
+			theInstanceObjects.remove(sdObject.ID);
+		}
+		for(int i = theMessages.size()-1; i >= 0; i--){
+			if(theMessages.get(i).calleeID == sdObject.ID || theMessages.get(i).callerID == sdObject.ID){
+				Filter(theMessages.get(i));
+			}
+		}
+	}
+
+	public void Filter(SDMessage sdMessage) {
+		int ind = theMessages.indexOf(sdMessage);
+		if(ind == -1){return;}
+		int maxtoremove = ind+1;
+		for(maxtoremove = ind+1; maxtoremove < theMessages.size(); maxtoremove++){
+			if(theMessages.get(maxtoremove).GetCallLevel() <= theMessages.get(maxtoremove).GetCallLevel()){
+				break;
+			}
+		}
+		for(int i = maxtoremove -1; i >= ind; i--){
+			theMessages.remove(i);
+		}
 	}
 }

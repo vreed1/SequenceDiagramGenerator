@@ -45,48 +45,65 @@ public class QueryFragment implements Query {
 
 	@Override
 	public QueryResponse RunOnData(QueryDataContainer toQuery) {
-		if(theMode == QueryMode.Reject){
-			for(int i = 0; i < toQuery.theListRefTypes.size(); i++){
-				String s = toQuery.theListRefTypes.get(i).toString();
-				if(theType.equals(s)){
-					return QueryResponse.False;
-				}
-			}
-			for(int i = 0; i < toQuery.theListCalledMethods.size(); i++){
-				String s = Utilities.getMethodString(toQuery.theListCalledMethods.get(i));
-				if(theMethod.equals(s)){
-					return QueryResponse.False;
-				}
-			}
-		}
-		if(theMode ==QueryMode.Filter){
-			for(int i = 0; i < toQuery.theListRefTypes.size(); i++){
-				String s = toQuery.theListRefTypes.get(i).toString();
-				if(theType.equals(s)){
-					return QueryResponse.Filter;
-				}
-			}
-		}
+//		if(theMode == QueryMode.Reject){
+//			for(int i = 0; i < toQuery.theListRefTypes.size(); i++){
+//				String s = toQuery.theListRefTypes.get(i).toString();
+//				if(theType.equals(s)){
+//					return QueryResponse.False;
+//				}
+//			}
+//			for(int i = 0; i < toQuery.theListCalledMethods.size(); i++){
+//				String s = Utilities.getMethodString(toQuery.theListCalledMethods.get(i));
+//				if(theMethod.equals(s)){
+//					return QueryResponse.False;
+//				}
+//			}
+//		}
+//		if(theMode ==QueryMode.Filter){
+//			for(int i = 0; i < toQuery.theListRefTypes.size(); i++){
+//				String s = toQuery.theListRefTypes.get(i).toString();
+//				if(theType.equals(s)){
+//					return QueryResponse.Filter;
+//				}
+//			}
+//		}
 		return QueryResponse.True;
 	}
 
 	@Override
 	public QueryResponse RunOnMethodName(String outerMethodName) {
-		if(theMode == QueryMode.Filter){
-			if(outerMethodName.equals(theMethod)){
-				return QueryResponse.Filter;
-			}
-		}
-		else if(theMode == QueryMode.Reject){
-			if(outerMethodName.equals(theMethod)){
-				return QueryResponse.False;
-			}
-		}
+//		if(theMode == QueryMode.Filter){
+//			if(outerMethodName.equals(theMethod)){
+//				return QueryResponse.Filter;
+//			}
+//		}
+//		else if(theMode == QueryMode.Reject){
+//			if(outerMethodName.equals(theMethod)){
+//				return QueryResponse.False;
+//			}
+//		}
 		return QueryResponse.True;
 	}
 
 	@Override
 	public QueryResponse CheckFinishedDiagram(SequenceDiagram sd) {
+
+		if(theMode == QueryMode.Filter){
+			List<SDObject> lObjs = sd.GetObjects();
+			for(int i = 0; i < lObjs.size(); i++){
+				String s = lObjs.get(i).GetTypeName();
+				if(theType.equals(s)){
+					sd.Filter(lObjs.get(i));
+				}
+			}
+			List<SDMessage> listMsg = sd.GetMessages();
+			for(int i = 0; i < listMsg.size(); i++){
+				String s = listMsg.get(i).GetFullMethodName();
+				if(theMethod.equals(s)){
+					sd.Filter(listMsg.get(i));
+				}
+			}
+		}
 		if(theMode == QueryMode.Accept){
 			List<SDObject> lObjs = sd.GetObjects();
 			for(int i = 0; i < lObjs.size(); i++){

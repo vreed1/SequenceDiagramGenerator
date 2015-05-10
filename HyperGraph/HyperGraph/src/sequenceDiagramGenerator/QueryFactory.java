@@ -18,7 +18,9 @@ public class QueryFactory {
 		if(queryStyle.equals("SimpleQuery")){
 			theStyle = QueryStyle.SimpleQuery;
 		}
-		theStyle = QueryStyle.CompoundQuery;
+		else{
+			theStyle = QueryStyle.CompoundQuery;
+		}
 	}
 	
 	public Query FromFileName(String fileName){
