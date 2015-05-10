@@ -218,7 +218,7 @@ public final class Utilities {
 		if(debug_ps == null){
 			return;
 		}
-		else{
+		else if(perf_ps != null){
 			perf_ps.println(s);
 		}}
 	}

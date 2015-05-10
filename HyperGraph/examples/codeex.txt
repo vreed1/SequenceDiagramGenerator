@@ -1,0 +1,67 @@
+public class MainActivity extends ActionBarActivity {
+
+[...]
+
+    @Override
+    public boolean onOptionsItemSelected(MenuItem item) {
+        int id = item.getItemId();
+        if (id == R.id.action_settings) {
+            return true;
+        }
+        return super.onOptionsItemSelected(item);
+    }
+    public void middleButtonOnClick(View v){
+        Button b = (Button)v;
+        b.setText("Clicked");
+        TextView tv = (TextView)findViewById(R.id.txtResult);
+        tv.setText("Simon Says");
+        int opt = r.nextInt(4);
+        int c = 0;
+        if(r.nextBoolean()){
+            c = getRed();
+        }
+        else{
+            c = getBlue();
+        }
+        if(opt == 0){
+            SetUpperLeftButton(c);
+        }
+        else if(opt == 1){
+            SetUpperRightButton(c);
+        }
+        else if(opt == 2){
+            SetLowerLeftButton(c);
+        }
+        else{
+            SetLowerRightButton(c);
+        }
+    }
+    private int getRed(){return Color.RED;}
+    private int getBlue(){return Color.BLUE;}
+
+[...]
+
+    private void SetUpperLeftButton(int c) {
+        Button b = (Button)findViewById(R.id.btnUpperLeft);
+        SetButtonColor(b, c);
+    }
+
+    private void SetUpperRightButton(int c){
+        Button b = (Button)findViewById(R.id.btnUpperRight);
+        SetButtonColor(b, c);
+    }
+
+    private void SetLowerLeftButton(int c){
+        Button b = (Button)findViewById(R.id.btnLowerLeft);
+        SetButtonColor(b, c);
+    }
+    private void SetLowerRightButton(int c){
+        Button b = (Button)findViewById(R.id.btnLowerRight);
+        SetButtonColor(b, c);
+    }
+    private void SetButtonColor(Button b, int color){
+        b.setBackgroundColor(color);
+        goodId = b.getId();
+    }
+}
+
