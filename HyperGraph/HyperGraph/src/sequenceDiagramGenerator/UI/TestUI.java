@@ -431,11 +431,15 @@ public class TestUI implements ActionListener{
 		}
 		String saveDir = Utilities.GetArgument(args, "-outdir");
 
+		saveDir = saveDir + "temp";
 		if(saveDir == null || saveDir.length() == 0){
 			System.out.println("outdir not specified");
 			return;
 		}
 		File aFile = new File(saveDir);
+		if(!aFile.exists()){
+			aFile.mkdir();
+		}
 		if(!aFile.isDirectory()){
 			System.out.println("outdir not directory");
 		}
@@ -479,6 +483,50 @@ public class TestUI implements ActionListener{
 
 		
 		Utilities.PerfLogPrintln("AfterTraversalJarAnalysis_RunAllAllFunctions," + Long.toString(System.nanoTime()));
+		
+		
+		File dir = new File(saveDir);
+		List<SequenceDiagram> lsd = new ArrayList<SequenceDiagram>();
+		File[] files = dir.listFiles();
+		
+		for(int i = 0; i < files.length; i++ ){
+			if(files[i].getName().endsWith(".json")){
+				FileReader fr = null;
+				try {
+					JSONParser jp = new JSONParser();
+					fr = new FileReader(files[i]);
+					JSONObject jobj = (JSONObject) jp.parse(fr);
+					SequenceDiagram sd = new SequenceDiagram(jobj);
+					QueryResponse qr = q.CheckFinishedDiagram(sd);
+					if(qr == QueryResponse.True){
+						lsd.add(sd);
+					}
+				} catch (IOException e) {
+					// TODO Auto-generated catch block
+					e.printStackTrace();
+				} catch (ParseException e) {
+					// TODO Auto-generated catch block
+					e.printStackTrace();
+				}
+				finally{
+					if(fr != null){
+						try {
+							fr.close();
+						} catch (IOException e) {
+							// TODO Auto-generated catch block
+							e.printStackTrace();
+						}
+						fr = null;
+					}
+				}
+			}
+		}
+		String outdir = Utilities.GetArgument(args, "-outdir");
+		GenReducer gr = GenReducerFactory.Build(args);
+		DiagramPDFGen dpg = new DiagramPDFGen(lsd, gr,args);
+		dpg.CreatePDFs(outdir);
+		
+		Utilities.PerfLogPrintln("AfterQueryReduction_RunAllAllFunctions," + Long.toString(System.nanoTime()));
 		
 	}
 	private static void RunUI(){
