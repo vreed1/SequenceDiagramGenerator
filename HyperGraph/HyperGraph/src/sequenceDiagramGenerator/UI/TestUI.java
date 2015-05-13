@@ -391,10 +391,17 @@ public class TestUI implements ActionListener{
 		}
 		List<String> listClasses = new ArrayList<String>();
 		Utilities.PerfLogPrintln("BeforeHyperGraph_RunAllAllFunctions," + Long.toString(System.nanoTime()));
+
+		String startswith = Utilities.GetArgument(args, "-startswith");
 		
 		try {
 			for(int i = 0; i < jars.length; i++){
-				listClasses.addAll(Utilities.ListClassesInJar(jars[i]));
+				List<String> unfilteredClasses = Utilities.ListClassesInJar(jars[i]);
+				for(int j = 0; j < unfilteredClasses.size(); j++){
+					if(unfilteredClasses.get(j).startsWith(startswith)){
+						listClasses.add(unfilteredClasses.get(j));
+					}
+				}
 				String parentDir;
 					parentDir = jars[i].getCanonicalPath();
 				ClassPath = ClassPath + Utilities.GetClassPathDelim() + parentDir;
@@ -413,7 +420,6 @@ public class TestUI implements ActionListener{
 		Utilities.DebugPrintln("HG-NODECOUNT:"+Integer.toString(hg.size()));
 		Utilities.DebugPrintln("HG-EDGECOUNT:"+Integer.toString(hg.EdgeCount()));
 		
-		String startswith = Utilities.GetArgument(args, "-startswith");
 		List<String> listFuncsToRun = new ArrayList<String>();
 		List<HyperNode<MethodNodeAnnot,EdgeAnnotation>> lh = hg.GetNodes();
 		for(int i = 0; i < lh.size(); i++){
@@ -436,9 +442,8 @@ public class TestUI implements ActionListener{
 		
 		Utilities.PerfLogPrintln("BeforeTraversalJarAnalysis_RunAllAllFunctions," + Long.toString(System.nanoTime()));
 		
-		List<SequenceDiagram> listD = new ArrayList<SequenceDiagram>();
 		for(int i = 0; i < listFuncsToRun.size(); i++){
-			
+
 			Utilities.DebugPrintln("Starting Method #" + Integer.toString(i));
 			String startMethod = listFuncsToRun.get(i);
 			Utilities.DebugPrintln("    Name: "+ startMethod);
@@ -458,7 +463,10 @@ public class TestUI implements ActionListener{
 //			aSubDir.mkdirs();
 			try {
 				//this is the interesting call.
-				listD.addAll(SDGenerator.GenerateAll(hg, aNode, q));
+				List<SequenceDiagram> listD = SDGenerator.GenerateAll(hg, aNode, q);
+				GenReducer gr = GenReducerFactory.Build(args);
+				DiagramPDFGen dpg = new DiagramPDFGen(listD, gr,args);
+				dpg.CreatePDFs(saveDir);
 			} catch (Exception e1) {
 				// TODO Auto-generated catch block				
 				//e1.printStackTrace();
@@ -469,9 +477,6 @@ public class TestUI implements ActionListener{
 			//Utilities.cleanUpDir(aSubDir);
 		}
 
-		GenReducer gr = GenReducerFactory.Build(args);
-		DiagramPDFGen dpg = new DiagramPDFGen(listD, gr,args);
-		dpg.CreatePDFs(saveDir);
 		
 		Utilities.PerfLogPrintln("AfterTraversalJarAnalysis_RunAllAllFunctions," + Long.toString(System.nanoTime()));
 		

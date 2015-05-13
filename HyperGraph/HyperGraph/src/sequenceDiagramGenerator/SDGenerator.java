@@ -191,15 +191,17 @@ public class SDGenerator {
 			return toReturn;
 		}
 		
-		List<TraceStatement> tstmts = aGNode.data.getTraces();
-		if(tstmts == null || tstmts.size() == 0){return toReturn;}
+		if(aGNode.data.getTraces() == null){return toReturn;}
 		
+		int tstmtssize = aGNode.data.getTraces().size();
+		if(tstmtssize == 0){return toReturn;}
 
 		SDListAndReturns cloneSource = toReturn.clone();
 		toReturn.clear();
-		for(int i = 0; i < tstmts.size(); i++){
+		
+		for(int i = 0; i < tstmtssize; i++){
 
-			TraceStatement tc = tstmts.get(i);
+			TraceStatement tc = aGNode.data.getTraces().get(i);
 			QueryDataContainer qd = new QueryDataContainer(tc);
 			result = q.RunOnData(new QueryDataContainer(tc));
 			if(result == QueryResponse.False){
