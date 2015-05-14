@@ -444,6 +444,9 @@ public class TestUI implements ActionListener{
 			System.out.println("outdir not directory");
 		}
 		
+		Utilities.PerfLogPrintln("HG_NODES,"+Integer.toString(hg.GetNodes().size()));
+		Utilities.PerfLogPrintln("HG_EDGES,"+Integer.toString(hg.EdgeCount()));
+		
 		Utilities.PerfLogPrintln("BeforeTraversalJarAnalysis_RunAllAllFunctions," + Long.toString(System.nanoTime()));
 		
 		for(int i = 0; i < listFuncsToRun.size(); i++){
@@ -488,9 +491,10 @@ public class TestUI implements ActionListener{
 		File dir = new File(saveDir);
 		List<SequenceDiagram> lsd = new ArrayList<SequenceDiagram>();
 		File[] files = dir.listFiles();
-		
+		int firstCount = 0;
 		for(int i = 0; i < files.length; i++ ){
 			if(files[i].getName().endsWith(".json")){
+				firstCount++;
 				FileReader fr = null;
 				try {
 					JSONParser jp = new JSONParser();
@@ -521,6 +525,7 @@ public class TestUI implements ActionListener{
 				}
 			}
 		}
+		Utilities.PerfLogPrintln("FirstDiaCount,"+Integer.toString(firstCount));
 		String outdir = Utilities.GetArgument(args, "-outdir");
 		GenReducer gr = GenReducerFactory.Build(args);
 		DiagramPDFGen dpg = new DiagramPDFGen(lsd, gr,args);

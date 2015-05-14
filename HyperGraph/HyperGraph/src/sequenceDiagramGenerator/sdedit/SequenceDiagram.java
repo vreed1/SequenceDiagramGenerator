@@ -592,4 +592,8 @@ public class SequenceDiagram {
 			theMessages.remove(i);
 		}
 	}
+
+	public int GetMaxDepth() {
+		return this.theMaxDepth;
+	}
 }

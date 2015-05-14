@@ -58,4 +58,38 @@ public class SDListAndReturns {
 		}
 		return toReturn;
 	}
+
+	public void compress() {
+		for(int i = listDiagrams.size()-1; i>= 0; i--){
+			SequenceDiagram sdTest = listDiagrams.get(i);
+			SDObject testReturn = null;
+			if(i < listReturns.size()){
+				testReturn = listReturns.get(i);
+			}
+			for(int j = i-1; j>=0; j--){
+				
+				SDObject checkReturn = null;
+				if(j < listReturns.size()){
+					checkReturn = listReturns.get(j);
+				}
+				if(checkReturn == null && testReturn == null){
+					
+				}
+				else if(checkReturn == null || testReturn == null){
+					continue;
+				}
+				else if(!checkReturn.isEquivalent(testReturn)){
+					continue;
+				}
+				SequenceDiagram sdCheck = listDiagrams.get(j);
+				if(sdCheck.isEquivalent(sdTest)){
+					listDiagrams.remove(i);
+					if(i < listReturns.size()){
+						listReturns.remove(i);
+					}
+					break;
+				}
+			}
+		}
+	}
 }

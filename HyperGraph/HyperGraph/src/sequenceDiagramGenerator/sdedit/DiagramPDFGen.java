@@ -27,7 +27,10 @@ public class DiagramPDFGen {
 		
 		for(int i = 0; i < listDiagram.size(); i++){
 			listDiagram.get(i).CreatePDFInDir(directory, tersemode);
+			Utilities.PerfLogPrintln("DiagramDepth,"+Integer.toString(listDiagram.get(i).GetMaxDepth()));
 		}
+		Utilities.PerfLogPrintln("DPDFGenCount,"+Integer.toString(listDiagram.size()));
+		
 	}
 	
 }

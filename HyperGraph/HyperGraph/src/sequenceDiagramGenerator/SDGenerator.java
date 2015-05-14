@@ -227,6 +227,7 @@ public class SDGenerator {
 					q,
 					lvl));
 		}
+		toReturn.compress();
 		return toReturn;
 	}
 	
