@@ -1,4 +1,4 @@
-package utilities;
+package Automata;
 
 import java.util.ArrayList;
 import java.util.Collections;

@@ -3,8 +3,8 @@ package sequenceDiagramGenerator;
 import java.util.ArrayList;
 import java.util.List;
 
+import Automata.Tokenizer;
 import sequenceDiagramGenerator.sdedit.SequenceDiagram;
-import utilities.Tokenizer;
 
 public class CompoundQuery implements Query {
 	

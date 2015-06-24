@@ -260,4 +260,14 @@ public final class Utilities {
 		if(s.length() - ind < 4){return s;}
 		return s.substring(0, ind+3);
 	}
+	
+	public static boolean isInteger(String str){
+		try{
+			int x = Integer.parseInt(str);
+		}
+		catch(NumberFormatException nfe){
+			return false;
+		}
+		return true;
+	}
 }

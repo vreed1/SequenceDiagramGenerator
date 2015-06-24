@@ -39,19 +39,25 @@ import net.sf.sdedit.util.Pair;
 
 public class SequenceDiagram {
     
-    private Map<Integer, SDObject> theInstanceObjects;
-    private List<SDMessage> theMessages;
-    private Map<String, SDObject> theStaticObjects;
-    private String theName;
+    protected Map<Integer, SDObject> theInstanceObjects;
+    protected List<SDMessage> theMessages;
+    protected Map<String, SDObject> theStaticObjects;
+    protected String theName;
     
-    private int thePriority;
-    private int theUniqueMsgCount;
-    private int theMaxDepth;
-    private int theTotalMsgsInGroup;
+    protected int thePriority;
+    protected int theUniqueMsgCount;
+    protected int theMaxDepth;
+    protected int theTotalMsgsInGroup;
     
-    private static String diagType = "pdf";
-    private static String diagFormat = "A4";
-    private static String diagOrientation = "portrait";
+    protected static String diagType = "pdf";
+    protected static String diagFormat = "A4";
+    protected static String diagOrientation = "portrait";
+
+    public SequenceDiagram() {
+        theInstanceObjects = new HashMap<Integer, SDObject>();
+        theMessages = new ArrayList<SDMessage>();
+        theStaticObjects = new HashMap<String,SDObject>();
+    }
     
     public SequenceDiagram(JSONObject jobj){
     	
@@ -144,13 +150,7 @@ public class SequenceDiagram {
     	aClone.SetMaxDepth(this.theMaxDepth);
     	return aClone;
     }
-    
-    public SequenceDiagram() {
-        theInstanceObjects = new HashMap<Integer, SDObject>();
-        theMessages = new ArrayList<SDMessage>();
-        theStaticObjects = new HashMap<String,SDObject>();
-    }
-    
+      
     private Map<Integer, SDObject> getCombinedMap(){
     	Map<Integer,SDObject> aMap = new HashMap<Integer,SDObject>(theInstanceObjects);
     	for(SDObject anObj : theStaticObjects.values()){
