@@ -33,6 +33,7 @@ import sequenceDiagramGenerator.sdedit.DiagramPDFGen;
 import sequenceDiagramGenerator.sdedit.GenReducer;
 import sequenceDiagramGenerator.sdedit.GenReducerFactory;
 import sequenceDiagramGenerator.sdedit.SequenceDiagram;
+import sequenceDiagramGenerator.sdedit.SequenceDiagramPattern;
 import sequenceDiagramGenerator.sootAnalyzer.Analyzer;
 import soot.SootClass;
 import soot.SootMethod;
@@ -70,8 +71,9 @@ public class TestUI implements ActionListener{
 	private static void RunAnyCommandLine(String[] args){
 		String debugFile = Utilities.GetArgument(args, "-debugfile");
 		QueryFactory qf = new QueryFactory(args);
+		Query q = null;
 		String queryFile = Utilities.GetArgument(args, "-queryfile");
-		Query q = qf.FromFileName(queryFile);
+		q = qf.FromFileName(queryFile);
 		if(debugFile != null && !debugFile.equals("")){
 			Utilities.SetDebugFile(debugFile);
 		}
@@ -100,6 +102,9 @@ public class TestUI implements ActionListener{
 		else if(args[0].equals("-jd")){
 			RunJSONDirectory(args, q);
 		}
+		else if(args[0].equals("-findpattern")){
+			RunFindPattern(args);
+		}
 		else
 		{ 
 			System.out.println("Bad Input Arg 0 =" + args[0]);
@@ -107,10 +112,11 @@ public class TestUI implements ActionListener{
 			
 	}
 	
-	private static void RunJSONDirectory(String[] args, Query q){
-		String jsonInputDir = Utilities.GetArgument(args, "-jsoninputdir");
-		File dir = new File(jsonInputDir);
+	private static List<SequenceDiagram> mineDirectory(String sdir, Query q){
 		List<SequenceDiagram> lsd = new ArrayList<SequenceDiagram>();
+		
+		File dir = new File(sdir);
+		
 		File[] files = dir.listFiles();
 		
 		for(int i = 0; i < files.length; i++ ){
@@ -121,8 +127,13 @@ public class TestUI implements ActionListener{
 					fr = new FileReader(files[i]);
 					JSONObject jobj = (JSONObject) jp.parse(fr);
 					SequenceDiagram sd = new SequenceDiagram(jobj);
-					QueryResponse qr = q.CheckFinishedDiagram(sd);
-					if(qr == QueryResponse.True){
+					if(q != null){
+						QueryResponse qr = q.CheckFinishedDiagram(sd);
+						if(qr == QueryResponse.True){
+							lsd.add(sd);
+						}
+					}
+					else{
 						lsd.add(sd);
 					}
 				} catch (IOException e) {
@@ -145,6 +156,36 @@ public class TestUI implements ActionListener{
 				}
 			}
 		}
+		return lsd;
+	}
+	
+	private static void RunFindPattern(String[] args){
+		String jsonPattern = Utilities.GetArgument(args, "-jsonpattern");
+		String jsonExamineDir = Utilities.GetArgument(args, "-jsonexamine");
+		
+		List<SequenceDiagram> lsd = mineDirectory(jsonExamineDir, null);
+		
+		JSONParser jp = new JSONParser();
+		JSONObject jobj = null;
+		try {
+			FileReader fr = new FileReader(jsonPattern);
+			jobj = (JSONObject) jp.parse(fr);
+		} catch (IOException | ParseException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		}
+		SequenceDiagramPattern sdp = new SequenceDiagramPattern(jobj);
+		
+		List<Integer> listMatches = new ArrayList<Integer>();
+		for(int i = 0; i < lsd.size(); i++){
+			listMatches.add(sdp.MatchExact(lsd.get(i)));
+		}
+	}
+	
+	private static void RunJSONDirectory(String[] args, Query q){
+		String jsonInputDir = Utilities.GetArgument(args, "-jsoninputdir");
+		List<SequenceDiagram> lsd = mineDirectory(jsonInputDir, q);
+		
 		String outdir = Utilities.GetArgument(args, "-outdir");
 		GenReducer gr = GenReducerFactory.Build(args);
 		DiagramPDFGen dpg = new DiagramPDFGen(lsd, gr,args);

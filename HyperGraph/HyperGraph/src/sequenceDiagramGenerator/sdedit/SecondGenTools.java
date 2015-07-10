@@ -53,35 +53,4 @@ public class SecondGenTools {
 			return 0;
 		}
 	}
-	
-	private static boolean testMethod(
-			SequenceDiagram pattern, int patternind, 
-			SequenceDiagram toTest, int testind,
-			List<LinkObject> listLinks){
-		
-	}
-	
-	private static float SingleCompare(
-			SequenceDiagram pattern, SequenceDiagram toTest, int testIndex){
-		List<LinkObject> listLinks = new ArrayList<LinkObject>();
-		
-		
-	}
-	 
-    public static float PatternMatches(
-    		SequenceDiagram pattern, SequenceDiagram toTest){
-    	List<SDMessage> listPatternMsg = pattern.GetMessages();
-    	if(listPatternMsg.size() == 0){return 0.0f;}
-    	float toReturn = 0.0f;
-    	int nextStartIndex = -1;
-    	while(true){
-    		nextStartIndex = findNextStartIndex(nextStartIndex, pattern, toTest);
-    		if(nextStartIndex == -1){break;}
-    		float v = SingleCompare(pattern, toTest, nextStartIndex);
-    		if(v > toReturn){
-    			toReturn = v;
-    		}
-    	}
-    	return toReturn;
-    }
 }
