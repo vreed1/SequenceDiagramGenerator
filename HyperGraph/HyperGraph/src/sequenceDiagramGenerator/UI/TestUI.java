@@ -180,6 +180,19 @@ public class TestUI implements ActionListener{
 		for(int i = 0; i < lsd.size(); i++){
 			listMatches.add(sdp.MatchExact(lsd.get(i)));
 		}
+		
+		StringBuilder sb = new StringBuilder();
+		sb.append("Matches (index:count), ;;");
+		for(int i = 0; i < listMatches.size(); i++){
+			if(listMatches.get(0) > 0){
+				sb.append("(");
+				sb.append(i);
+				sb.append(":");
+				sb.append(listMatches.get(i));
+				sb.append("),");
+			}
+		}
+		System.out.println(sb.toString());
 	}
 	
 	private static void RunJSONDirectory(String[] args, Query q){

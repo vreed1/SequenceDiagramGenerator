@@ -58,8 +58,8 @@ public class SequenceDiagramPattern extends SequenceDiagram{
 			SDObject thisSrc = this.GetObjectFromID(thisMsg.callerID);
 			SDObject thisTgt = this.GetObjectFromID(thisMsg.calleeID);
 			SDMessage otherMsg = other.theMessages.get(i+n);
-			SDObject otherSrc = this.GetObjectFromID(thisMsg.calleeID);
-			SDObject otherTgt = this.GetObjectFromID(otherMsg.callerID);
+			SDObject otherSrc = other.GetObjectFromID(otherMsg.calleeID);
+			SDObject otherTgt = other.GetObjectFromID(otherMsg.callerID);
 			boolean needsSrc = true;
 			boolean needsTgt = true;
 			for(int j = 0; j < links.size(); j++){

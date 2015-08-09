@@ -15,7 +15,7 @@ public class GenReducerFactory {
 			return new GRMsgCountAndUnique(k);
 		}
 		else{
-			throw new RuntimeException("Bad Reducer Mode");
+			return new NoGenReducer();
 		}
 	}
 }
