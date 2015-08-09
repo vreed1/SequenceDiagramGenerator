@@ -9,7 +9,9 @@ import java.io.FileReader;
 import java.io.FilenameFilter;
 import java.io.IOException;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.List;
+import java.util.Set;
 
 import javax.swing.JFileChooser;
 import javax.swing.JFrame;
@@ -433,13 +435,15 @@ public class TestUI implements ActionListener{
 		List<String> listClasses = new ArrayList<String>();
 		Utilities.PerfLogPrintln("BeforeHyperGraph_RunAllAllFunctions," + Long.toString(System.nanoTime()));
 
-		String startswith = Utilities.GetArgument(args, "-startswith");
+		String startsWithAll = Utilities.GetArgument(args, "-startswith");
+		
+		List<String> startswith = Arrays.asList(startsWithAll.split("|"));
 		
 		try {
 			for(int i = 0; i < jars.length; i++){
 				List<String> unfilteredClasses = Utilities.ListClassesInJar(jars[i]);
 				for(int j = 0; j < unfilteredClasses.size(); j++){
-					if(unfilteredClasses.get(j).startsWith(startswith)){
+					if(Utilities.StartsWithAny(unfilteredClasses.get(j), startswith)){
 						listClasses.add(unfilteredClasses.get(j));
 					}
 				}
@@ -466,7 +470,7 @@ public class TestUI implements ActionListener{
 		for(int i = 0; i < lh.size(); i++){
 			SootMethod sm = lh.get(i).data.GetMethod();
 			String mName = Utilities.getMethodString(sm);
-			if(mName.startsWith(startswith)){
+			if(Utilities.StartsWithAny(mName, startswith)){
 				listFuncsToRun.add(mName);
 			}
 		}

@@ -115,7 +115,7 @@ public class SequenceDiagram {
     }
     
     public void SetName(String aName){
-    	theName = aName;
+    	theName = Utilities.MakeFileSafe(aName);
     }
     
     public String GetName(){

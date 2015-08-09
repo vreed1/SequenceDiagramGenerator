@@ -6,8 +6,11 @@ import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.io.PrintStream;
 import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Scanner;
+import java.util.Set;
 import java.util.zip.ZipEntry;
 import java.util.zip.ZipInputStream;
 
@@ -235,6 +238,22 @@ public final class Utilities {
 			perf_ps = null;
 		}
 	}
+	
+	private static Set<Character> UnsafeSet = new HashSet<Character>(Arrays.asList(new Character[] {'\\', '/', ':', '*', '?', '"', '<', '>', '|'}));
+	
+	public static String MakeFileSafe(String name){
+		if(name == null){return null;}
+		StringBuilder sb = new StringBuilder();
+		for(int i = 0; i < name.length(); i++){
+			if(UnsafeSet.contains(name.charAt(i))){
+				sb.append("");
+			}
+			else{
+				sb.append(name.charAt(i));
+			}
+		}
+		return sb.toString();
+	}
 
 	private static final int TRUNCLEN = 15;
 	public static String Truncate(String name) {
@@ -269,5 +288,14 @@ public final class Utilities {
 			return false;
 		}
 		return true;
+	}
+
+	public static boolean StartsWithAny(String string, List<String> startswith) {
+		for(int i = 0; i < startswith.size(); i++){
+			if(string.startsWith(startswith.get(i))){
+				return true;
+			}
+		}
+		return false;
 	}
 }
