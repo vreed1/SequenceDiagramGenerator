@@ -450,7 +450,7 @@ public class TestUI implements ActionListener{
 
 		String startsWithAll = Utilities.GetArgument(args, "-startswith");
 		
-		List<String> startswith = Arrays.asList(startsWithAll.split("|"));
+		List<String> startswith = Arrays.asList(startsWithAll.split(";"));
 		
 		try {
 			for(int i = 0; i < jars.length; i++){
