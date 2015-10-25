@@ -1,10 +1,10 @@
 package sequenceDiagramGenerator.hypergraph;
 
-public class GroupableHyperNodeFactory<T, A> implements HyperNodeFactory<T, A> {
+public class GroupableHyperNodeFactory<T> implements HyperNodeFactory<T> {
 
 	@Override
-	public HyperNode<T, A> Generate(T data) {
-		return new GroupableHyperNode<T, A>(data, uniqueint());
+	public HyperNode<T> Generate(T data) {
+		return new GroupableHyperNode<T>(data, uniqueint());
 	}
 	
 	private static int anInt = 0;

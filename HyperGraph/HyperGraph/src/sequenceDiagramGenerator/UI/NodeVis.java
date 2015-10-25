@@ -2,13 +2,15 @@ package sequenceDiagramGenerator.UI;
 
 import javax.swing.JPanel;
 
+import sequenceDiagramGenerator.MethodNodeAnnot;
 import sequenceDiagramGenerator.hypergraph.HyperNode;
-import sequenceDiagramGenerator.hypergraph.Hypergraph;
+import sequenceDiagramGenerator.hypergraph.SimpleNodeCollection;
+
 import java.awt.BorderLayout;
 
 public class NodeVis extends JPanel {
 
-	public Hypergraph theGraph;
+	public SimpleNodeCollection<MethodNodeAnnot> theGraph;
 	public HyperNode theCenterNode;
 	
 	JPanel topPanel;
@@ -25,7 +27,7 @@ public class NodeVis extends JPanel {
 		this.add(centerPanel, BorderLayout.CENTER);
 	}
 	
-	public void SetCenterNode(Hypergraph aGraph, HyperNode aNode){
+	public void SetCenterNode(SimpleNodeCollection<MethodNodeAnnot> aGraph, HyperNode aNode){
 		theGraph = aGraph;
 		theCenterNode = aNode;
 	}

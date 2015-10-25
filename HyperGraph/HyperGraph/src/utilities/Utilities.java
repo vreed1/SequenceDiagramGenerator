@@ -1,8 +1,10 @@
 package utilities;
 
+import java.io.BufferedReader;
 import java.io.File;
 import java.io.FileInputStream;
 import java.io.FileNotFoundException;
+import java.io.FileReader;
 import java.io.IOException;
 import java.io.PrintStream;
 import java.util.ArrayList;
@@ -13,6 +15,10 @@ import java.util.Scanner;
 import java.util.Set;
 import java.util.zip.ZipEntry;
 import java.util.zip.ZipInputStream;
+
+import org.json.simple.JSONObject;
+import org.json.simple.parser.JSONParser;
+import org.json.simple.parser.ParseException;
 
 import sequenceDiagramGenerator.SimpleQuery;
 import soot.SootMethod;
@@ -298,4 +304,150 @@ public final class Utilities {
 		}
 		return false;
 	}
+
+	public static String ConcatePaths(String one, String two) {
+		return endWithSlash(one) + two;
+	}
+
+	public static String compareDirectoriesJSONTest(String testPath,
+			String baselinePath) {
+		StringBuilder sb = new StringBuilder();
+		File ftest = new File(testPath);
+		File fbase = new File(baselinePath);
+		
+		if(ftest.isDirectory() && fbase.isDirectory()){
+			File[] testsub = ftest.listFiles();
+			File[] basesub = fbase.listFiles();
+			if(testsub.length != basesub.length){
+				sb.append("Compared Directories have different file counts.\nTest:");
+				sb.append(testsub.length);
+				sb.append("\nBase:");
+				sb.append(basesub.length);
+				sb.append("\n");
+			}
+			for(int i = 0; i < testsub.length; i++){
+				boolean foundmatch = false;
+				for(int j = 0; j < basesub.length; j++){
+					if(testsub[i].getName() == basesub[j].getName()){
+						foundmatch = true;
+						sb.append(compareDirectoriesJSONTest(testsub[i].getAbsolutePath(), basesub[j].getAbsolutePath()));
+						break;
+					}
+				}
+				if(!foundmatch){
+					sb.append("No match for testfile:\n");
+					sb.append(testsub[i].getAbsolutePath());
+					sb.append("\nfound");
+				}
+			}
+		}
+		else if(ftest.isFile() && fbase.isFile()){
+			if(ftest.getName().endsWith("json") && fbase.getName().endsWith("json")){
+				sb.append(CompareJSONFiles(ftest, fbase));
+			}
+		}
+		else{
+			sb.append("Dir/File match failure\n");
+			sb.append("Test file:\n");
+			sb.append(ftest.getAbsolutePath());
+			sb.append("\nBase file:\n");
+			sb.append(fbase.getAbsolutePath());
+		}
+		
+		return sb.toString();
+	}
+
+	private static String CompareJSONFiles(File ftest, File fbase) {
+		FileReader frtest = null, frbase = null;
+		StringBuilder sb = new StringBuilder();
+		try {
+			frtest = new FileReader(ftest);
+			frbase = new FileReader(fbase);
+		
+			
+			String info = CompareOpenedFiles(frtest, frbase);
+			if(info != null && info.length() > 0){
+				sb.append("Diff found while comparing jsons, \nTest:\n");
+				sb.append(ftest.getAbsolutePath());
+				sb.append("\nBase:\n");
+				sb.append(fbase.getAbsolutePath());
+				sb.append("\nInfo:\n");
+				sb.append(info);
+			}
+			
+		} catch (IOException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+			sb.append("Error while comparing jsons, \nTest:\n");
+			sb.append(ftest.getAbsolutePath());
+			sb.append("\nBase:\n");
+			sb.append(fbase.getAbsolutePath());
+			sb.append(e.getMessage());
+		}
+		finally{
+			if(frtest != null){
+				try {
+					frtest.close();
+				} catch (IOException e) {
+					// TODO Auto-generated catch block
+					e.printStackTrace();
+					sb.append("Error while comparing jsons, \nTest:\n");
+					sb.append(ftest.getAbsolutePath());
+					sb.append("\nBase:\n");
+					sb.append(fbase.getAbsolutePath());
+					sb.append(e.getMessage());
+				}
+				frtest = null;
+			}
+			if(frbase != null){
+				try {
+					frbase.close();
+				} catch (IOException e) {
+					// TODO Auto-generated catch block
+					e.printStackTrace();
+					sb.append("Error while comparing jsons, \nTest:\n");
+					sb.append(ftest.getAbsolutePath());
+					sb.append("\nBase:\n");
+					sb.append(fbase.getAbsolutePath());
+					sb.append(e.getMessage());
+				}
+				frbase = null;
+			}
+		}
+		return sb.toString();
+		
+	}
+
+
+	private static String CompareOpenedFiles(FileReader frtest,
+			FileReader frbase) {
+		BufferedReader brtest = new BufferedReader(frtest);
+		BufferedReader brbase = new BufferedReader(frbase);
+		StringBuilder sb = new StringBuilder();
+		try {
+			int i = 0;
+			while(true){
+				String test = brtest.readLine();
+				String base = brbase.readLine();
+				if(test == null && base == null){
+					break;
+				}
+				if(test != base){
+					sb.append("Mismatch on line:");
+					sb.append(i);
+				}
+				if(test == null || base == null){
+					sb.append("Error, files of different line length");
+					break;
+				}
+			}
+		} catch (IOException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+			sb.append("Error while reading files");
+			sb.append(e.getMessage());
+		}
+		return sb.toString();
+	}
+
 }

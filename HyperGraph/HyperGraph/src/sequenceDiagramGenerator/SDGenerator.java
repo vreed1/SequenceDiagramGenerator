@@ -4,11 +4,8 @@ import java.util.ArrayList;
 import java.util.List;
 
 import sequenceDiagramGenerator.Query.QueryResponse;
-import sequenceDiagramGenerator.hypergraph.EdgeAnnotation;
-import sequenceDiagramGenerator.hypergraph.GroupableHyperEdge;
 import sequenceDiagramGenerator.hypergraph.GroupableHyperNode;
-import sequenceDiagramGenerator.hypergraph.GroupableHypergraph;
-import sequenceDiagramGenerator.hypergraph.Hypergraph;
+import sequenceDiagramGenerator.hypergraph.SimpleNodeCollection;
 import sequenceDiagramGenerator.sdedit.SDListAndReturns;
 import sequenceDiagramGenerator.sdedit.SDMessage;
 import sequenceDiagramGenerator.sdedit.SDObject;
@@ -42,8 +39,8 @@ public class SDGenerator {
 //	}
 	
 	public static List<SequenceDiagram> GenerateAll(
-			GroupableHypergraph<MethodNodeAnnot, EdgeAnnotation> hg,
-			GroupableHyperNode<MethodNodeAnnot, EdgeAnnotation> aNode,
+			SimpleNodeCollection<MethodNodeAnnot> hg,
+			GroupableHyperNode<MethodNodeAnnot> aNode,
 			Query q) throws Exception {
 		// TODO Auto-generated method stub
 		List<SequenceDiagram> listSDs = GenerateAllDiagrams(hg, aNode, q);
@@ -75,8 +72,8 @@ public class SDGenerator {
 	//and a hypernode at which to begin traversal
 	//generate a sequence diagram at SaveFile
 	public static SequenceDiagram Generate(
-			Hypergraph<MethodNodeAnnot, EdgeAnnotation> hg,
-			GroupableHyperNode<MethodNodeAnnot, EdgeAnnotation> aGNode,
+			SimpleNodeCollection<MethodNodeAnnot> hg,
+			GroupableHyperNode<MethodNodeAnnot> aGNode,
 			Query q) throws Exception{
 
 		SequenceDiagram sd = GenerateDiagramObj(hg, aGNode, q);
@@ -84,8 +81,8 @@ public class SDGenerator {
 	}
 
 	public static void GenTest(
-			GroupableHypergraph<MethodNodeAnnot, EdgeAnnotation> hg,
-			GroupableHyperNode<MethodNodeAnnot, EdgeAnnotation> aNode,
+			SimpleNodeCollection<MethodNodeAnnot> hg,
+			GroupableHyperNode<MethodNodeAnnot> aNode,
 			String saveFile,
 			Query q) throws Exception {
 		SequenceDiagram sd = GenerateDiagramObj(hg, aNode, q);
@@ -94,8 +91,8 @@ public class SDGenerator {
 	
 
 	private static List<SequenceDiagram> GenerateAllDiagrams(
-			GroupableHypergraph<MethodNodeAnnot, EdgeAnnotation> hg,
-			GroupableHyperNode<MethodNodeAnnot, EdgeAnnotation> aNode,
+			SimpleNodeCollection<MethodNodeAnnot> hg,
+			GroupableHyperNode<MethodNodeAnnot> aNode,
 			Query q) throws Exception {
 		
 		List<SequenceDiagram> listToReturn;
@@ -136,8 +133,8 @@ public class SDGenerator {
 
 
 	private static SequenceDiagram GenerateDiagramObj(
-			Hypergraph<MethodNodeAnnot, EdgeAnnotation> hg,
-			GroupableHyperNode<MethodNodeAnnot, EdgeAnnotation> aGNode,
+			SimpleNodeCollection<MethodNodeAnnot> hg,
+			GroupableHyperNode<MethodNodeAnnot> aGNode,
 			Query q) throws Exception{
 
 		SDListAndReturns allSDs = new SDListAndReturns();
@@ -169,8 +166,8 @@ public class SDGenerator {
 
 	private static SDListAndReturns MakeAllDiagrams(
 			String outerMethodName,
-			Hypergraph<MethodNodeAnnot, EdgeAnnotation> hg,
-			GroupableHyperNode<MethodNodeAnnot, EdgeAnnotation> aGNode,
+			SimpleNodeCollection<MethodNodeAnnot> hg,
+			GroupableHyperNode<MethodNodeAnnot> aGNode,
 			SDListAndReturns allSDs,
 			int sdIndex,
 			SDObject outerObject,
@@ -233,8 +230,8 @@ public class SDGenerator {
 	
 	private static SDListAndReturns MakeDiagram(
 			String outerMethodName,
-			Hypergraph<MethodNodeAnnot, EdgeAnnotation> hg,
-			GroupableHyperNode<MethodNodeAnnot, EdgeAnnotation> aGNode,
+			SimpleNodeCollection<MethodNodeAnnot> hg,
+			GroupableHyperNode<MethodNodeAnnot> aGNode,
 			SDListAndReturns allSDs,
 			int sdIndex,
 			SDObject outerObject,
@@ -287,8 +284,8 @@ public class SDGenerator {
 	
 	private static SDListAndReturns RecFillTraceAllStmtDiagram(
 			String outerMethodName,
-			Hypergraph<MethodNodeAnnot, EdgeAnnotation> hg,
-			GroupableHyperNode<MethodNodeAnnot, EdgeAnnotation> aGNode,
+			SimpleNodeCollection<MethodNodeAnnot> hg,
+			GroupableHyperNode<MethodNodeAnnot> aGNode,
 			TraceStatement aStmt,
 			SDListAndReturns allSDs,
 			int sdIndex,
@@ -438,8 +435,8 @@ public class SDGenerator {
 	}
 	
 	private static SDListAndReturns HandleInvoke(InvokeExpr ie,
-			Hypergraph<MethodNodeAnnot, EdgeAnnotation> hg,
-			GroupableHyperNode<MethodNodeAnnot, EdgeAnnotation> aGNode,
+			SimpleNodeCollection<MethodNodeAnnot> hg,
+			GroupableHyperNode<MethodNodeAnnot> aGNode,
 			SDListAndReturns allSDs,
 			int sdIndex,
 			SDObject sourceObj,
@@ -461,10 +458,9 @@ public class SDGenerator {
 		if(qr == QueryResponse.False || qr == QueryResponse.Filter){
 			return toReturn;
 		}
-		GroupableHyperEdge<EdgeAnnotation> gEdge = aGNode.GetGroupableEdge(calledMethod);
-		if(gEdge != null){
-			GroupableHyperNode<MethodNodeAnnot, EdgeAnnotation> subGNode = 
-					(GroupableHyperNode<MethodNodeAnnot, EdgeAnnotation>) hg.GetCompleteNode(gEdge.targetNode);
+		int methodCode = Utilities.getMethodString(calledMethod).hashCode();
+		GroupableHyperNode<MethodNodeAnnot> subGNode = hg.GetNode(methodCode);
+		if(subGNode != null){
 			
 			//If an object doesn't have an instance name
 			//(might be static)
@@ -602,8 +598,8 @@ public class SDGenerator {
 	}
 	
 	private static SDListAndReturns HandleAssignment(
-			Hypergraph<MethodNodeAnnot, EdgeAnnotation> hg,
-			GroupableHyperNode<MethodNodeAnnot, EdgeAnnotation> aGNode,
+			SimpleNodeCollection<MethodNodeAnnot> hg,
+			GroupableHyperNode<MethodNodeAnnot> aGNode,
 			SDListAndReturns allSDs,
 			int sdIndex,
 			SDObject sourceObj,

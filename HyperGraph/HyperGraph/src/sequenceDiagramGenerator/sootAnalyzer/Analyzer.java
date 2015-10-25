@@ -11,11 +11,9 @@ import sequenceDiagramGenerator.MethodNodeAnnot;
 import sequenceDiagramGenerator.QueryDataContainer;
 import sequenceDiagramGenerator.TraceStatement;
 import sequenceDiagramGenerator.TraceStatement.BranchStatus;
-import sequenceDiagramGenerator.hypergraph.EdgeAnnotation;
 import sequenceDiagramGenerator.hypergraph.GroupableHyperNode;
-import sequenceDiagramGenerator.hypergraph.GroupableHypergraph;
 import sequenceDiagramGenerator.hypergraph.HyperNode;
-import sequenceDiagramGenerator.hypergraph.Hypergraph;
+import sequenceDiagramGenerator.hypergraph.SimpleNodeCollection;
 import soot.Body;
 import soot.PatchingChain;
 import soot.Scene;
@@ -64,7 +62,7 @@ public class Analyzer {
 	//one of two possible entry points for hypergraph generation
 	//this is called if the user provides a list of .class files
 	//or a directory to search.
-	public static Hypergraph<MethodNodeAnnot, EdgeAnnotation> AnalyzeFromSpecificClasses(
+	public static SimpleNodeCollection<MethodNodeAnnot> AnalyzeFromSpecificClasses(
 			String ApplicationClassName,
 			String ClassDirectory,
 			String AppendToClassPath){
@@ -104,7 +102,7 @@ public class Analyzer {
 	//uninteresting, except this is the entry point from UI
 	//for JARs.  AddClassToHypergraph and AddEdgeToHypergraph are 
 	//common between all entries.
-	public static GroupableHypergraph<MethodNodeAnnot, EdgeAnnotation> AnalyzeFromJAR(
+	public static SimpleNodeCollection<MethodNodeAnnot> AnalyzeFromJAR(
 			List<String> listClassNames,
 			String AppendtoClassPath){
 
@@ -114,7 +112,7 @@ public class Analyzer {
 			}
 		}
 
-		GroupableHypergraph<MethodNodeAnnot, EdgeAnnotation> toReturn = new GroupableHypergraph<MethodNodeAnnot, EdgeAnnotation>();
+		SimpleNodeCollection<MethodNodeAnnot> toReturn = new SimpleNodeCollection<MethodNodeAnnot>();
 		
 		//The following statement makes soot/jimple 
 		//preserve original variable names
@@ -132,6 +130,33 @@ public class Analyzer {
 				Utilities.DebugPrintln("Couldn't load class: " + listClassNames.get(i));
 				Utilities.DebugPrintln(ex.getMessage());
 			}
+			if(c == null){
+				try{
+				c = Scene.v().loadClass(listClassNames.get(i), 1);
+				}
+				catch(Exception ex){
+					Utilities.DebugPrintln("2nd Couldn't load class: " + listClassNames.get(i));
+					Utilities.DebugPrintln(ex.getMessage());
+				}
+			}
+			if(c == null){
+				try{
+					c = Scene.v().forceResolve(listClassNames.get(i), 0);
+				}
+				catch(Exception ex){
+					Utilities.DebugPrintln("3rd Couldn't load class: " + listClassNames.get(i));
+					Utilities.DebugPrintln(ex.getMessage());
+				}
+			}
+			if(c == null){
+				try{
+					c = Scene.v().getSootClass(listClassNames.get(i));
+				}
+				catch(Exception ex){
+					Utilities.DebugPrintln("4th Couldn't load class: " + listClassNames.get(i));
+					Utilities.DebugPrintln(ex.getMessage());
+				}
+			}
 			if(c != null){
 			AddClassToHypergraph(
 					toReturn,
@@ -145,7 +170,7 @@ public class Analyzer {
 	}
 	
 	//also calls AddClasstoHyperGraph and AddEdgesToHypergraph.
-	public static Hypergraph<MethodNodeAnnot, EdgeAnnotation> AnalyzeSpecificClasses(
+	public static SimpleNodeCollection<MethodNodeAnnot> AnalyzeSpecificClasses(
 			String ApplicationClassName,
 			List<String> otherClassNames,
 			String AppendToClassPath){
@@ -156,7 +181,7 @@ public class Analyzer {
 			}
 		}
 		
-		GroupableHypergraph<MethodNodeAnnot, EdgeAnnotation> toReturn = new GroupableHypergraph<MethodNodeAnnot, EdgeAnnotation>();
+		SimpleNodeCollection<MethodNodeAnnot> toReturn = new SimpleNodeCollection<MethodNodeAnnot>();
 		
 		//The following statement makes soot/jimple 
 		//preserve original variable names
@@ -191,51 +216,49 @@ public class Analyzer {
 	//in the node to find invoke statements
 	//after which we can add edges for those statements.
 	private static void AddEdgesToHypergraph(
-			GroupableHypergraph<MethodNodeAnnot, EdgeAnnotation> hg){
-		List<HyperNode<MethodNodeAnnot, EdgeAnnotation>> lNodes = hg.GetNodes();
+			SimpleNodeCollection<MethodNodeAnnot> hg){
+		List<GroupableHyperNode<MethodNodeAnnot>> lNodes = hg.getNodes();
 		for(int i = 0; i < lNodes.size(); i++){
 			BranchableStmt aBStmt = lNodes.get(i).data.theBStmt;
-			GroupableHyperNode<MethodNodeAnnot, EdgeAnnotation> gNode = (GroupableHyperNode<MethodNodeAnnot, EdgeAnnotation>) lNodes.get(i);
+			GroupableHyperNode<MethodNodeAnnot> gNode = lNodes.get(i);
 			AddRecStmts(aBStmt, gNode, hg, new ArrayList<BranchableStmt>());
 		}
 	}
 	
 	private static void AddRecStmts(
 			BranchableStmt aStmt, 
-			GroupableHyperNode<MethodNodeAnnot, EdgeAnnotation> sourceNode, 
-			GroupableHypergraph<MethodNodeAnnot, EdgeAnnotation> hg,
+			GroupableHyperNode<MethodNodeAnnot> sourceNode, 
+			SimpleNodeCollection<MethodNodeAnnot> hg,
 			List<BranchableStmt> seen){
 		if(seen.contains(aStmt)){return;}
 		if(aStmt != null){
 			if(aStmt.theStmt != null && aStmt.theStmt.containsInvokeExpr()){
 				try{
-				InvokeExpr ie = null;
-				if(aStmt.theStmt instanceof JAssignStmt){
-					JAssignStmt assignStmt = (JAssignStmt)aStmt.theStmt;
-					ie = assignStmt.getInvokeExpr();
+					InvokeExpr ie = null;
+					if(aStmt.theStmt instanceof JAssignStmt){
+						JAssignStmt assignStmt = (JAssignStmt)aStmt.theStmt;
+						ie = assignStmt.getInvokeExpr();
+						
+					}
+					else{
+						InvokeStmt anInvoke = (InvokeStmt)aStmt.theStmt;
+	
+						ie = anInvoke.getInvokeExpr();
+					}
 					
+					SootMethod sm = ie.getMethod();
+					
+					//MethodNodeAnnot finder = new MethodNodeAnnot(sm, null, null);
+					MethodNodeAnnot finder = new MethodNodeAnnot(sm);
+					
+					HyperNode<MethodNodeAnnot> tarNode = hg.GetNode(finder);
+					
+					if(tarNode == null)
+					{
+						hg.AddNewNode(finder);
+						tarNode = hg.GetNode(finder);
+					}
 				}
-				else{
-					InvokeStmt anInvoke = (InvokeStmt)aStmt.theStmt;
-
-					ie = anInvoke.getInvokeExpr();
-				}
-				
-				SootMethod sm = ie.getMethod();
-				
-				//MethodNodeAnnot finder = new MethodNodeAnnot(sm, null, null);
-				MethodNodeAnnot finder = new MethodNodeAnnot(sm);
-				
-				HyperNode<MethodNodeAnnot, EdgeAnnotation> tarNode = hg.GetCompleteNode(finder);
-				
-				if(tarNode == null){
-					hg.AddNode(finder);
-					tarNode = hg.GetCompleteNode(finder);
-				}
-				List<MethodNodeAnnot> ante = new ArrayList<MethodNodeAnnot>();
-				ante.add(sourceNode.data);
-				EdgeAnnotation ea = new EdgeAnnotation();
-				hg.AddGroupableEdge(ante, tarNode.data, ea, sm);}
 				catch(Exception ex){
 					Utilities.DebugPrintln("Failed to parse method");
 					Utilities.DebugPrintln(ex.getMessage());
@@ -260,11 +283,30 @@ public class Analyzer {
 			SootMethod sm){
 		PatchingChain<Unit> pcu = null;
 		try{
+			//Stopping heinous bug with heinous patch
+			if(sm.getName().equals("createListOfAllFilesToMerge") || 
+					sm.getName().equals("configureFindbugsEngine") ||
+					sm.getName().equals("propagateDerefSetsToMergeInputValues")||
+					sm.getName().equals("examineRedundantBranches")||
+					sm.getName().equals("availableLoadMapAsString")||
+					sm.getName().equals("getLoad")||
+					sm.getName().equals("mergeAvailableLoadSets")||
+					sm.getName().equals("valueNumbersForLoads")||
+					sm.getName().equals("visitClassContext")||
+					sm.getName().equals("sawOpcode")||
+					sm.getName().equals("hasInterestingMethod")||
+					sm.getName().equals("addDesignationKey")||
+					sm.getName().equals("addCategoryKey")){
+				throw new Exception("This method causes System.exit");
+			}
+			System.out.print("AAAAHHHH::");
+			System.out.println(sm.getName());
+			System.out.flush();
 			Body b = sm.retrieveActiveBody();
 			ShimpleBody sb = Shimple.v().newBody(b);
 			pcu = sb.getUnits();
 		}
-		catch(java.lang.RuntimeException ex){
+		catch(java.lang.Throwable ex){
 			Utilities.DebugPrintln("Not possible to analyze method: " + sm.getName() + " Error: " + ex.getMessage());
 		}
 		if(pcu != null){
@@ -629,7 +671,7 @@ public class Analyzer {
 	//by going through every method 
 	//and creating a node for it.
 	private static void AddClassToHypergraph(
-			Hypergraph<MethodNodeAnnot, EdgeAnnotation> hg,
+			SimpleNodeCollection<MethodNodeAnnot> hg,
 			SootClass aClass
 			){
 
@@ -640,7 +682,7 @@ public class Analyzer {
 		for(int i = 0; i < listMethods.size(); i++){
 			SootMethod m = listMethods.get(i);
 			MethodNodeAnnot mannot = BuildAnnotFromMethod(m);
-			hg.AddNode(mannot);
+			hg.AddNewNode(mannot);
 		}
 	}
 	

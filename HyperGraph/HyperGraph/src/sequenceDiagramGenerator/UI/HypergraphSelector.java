@@ -2,7 +2,8 @@ package sequenceDiagramGenerator.UI;
 
 import javax.swing.JPanel;
 
-import sequenceDiagramGenerator.hypergraph.Hypergraph;
+import sequenceDiagramGenerator.MethodNodeAnnot;
+import sequenceDiagramGenerator.hypergraph.SimpleNodeCollection;
 
 import java.awt.GridBagLayout;
 
@@ -23,7 +24,7 @@ public class HypergraphSelector extends JPanel {
 	 * Create the panel.
 	 */
 	
-	private Hypergraph theGraph;
+	private SimpleNodeCollection<MethodNodeAnnot> theGraph;
 	
 	JComboBox cmbHyperNodes;
 	
@@ -46,10 +47,10 @@ public class HypergraphSelector extends JPanel {
 		cmbHyperNodes.setEnabled(false);
 	}
 	
-	public void SetHypergraph(Hypergraph aGraph){
+	public void SetHypergraph(SimpleNodeCollection<MethodNodeAnnot> aGraph){
 		theGraph = aGraph;
 		cmbHyperNodes.removeAllItems();
-		List v = theGraph.getVertices();
+		List v = theGraph.getNodes();
 		for(int i = 0; i < v.size(); i++){
 			cmbHyperNodes.addItem(v.get(i));
 		}

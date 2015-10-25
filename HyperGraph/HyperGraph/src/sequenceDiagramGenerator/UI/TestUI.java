@@ -5,6 +5,7 @@ import java.awt.EventQueue;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.io.File;
+import java.io.FileNotFoundException;
 import java.io.FileReader;
 import java.io.FilenameFilter;
 import java.io.IOException;
@@ -16,6 +17,7 @@ import java.util.Set;
 import javax.swing.JFileChooser;
 import javax.swing.JFrame;
 
+import org.json.simple.JSONArray;
 import org.json.simple.JSONObject;
 import org.json.simple.parser.JSONParser;
 import org.json.simple.parser.ParseException;
@@ -26,11 +28,9 @@ import sequenceDiagramGenerator.QueryFactory;
 import sequenceDiagramGenerator.SimpleQuery;
 import sequenceDiagramGenerator.Query.QueryResponse;
 import sequenceDiagramGenerator.SDGenerator;
-import sequenceDiagramGenerator.hypergraph.EdgeAnnotation;
 import sequenceDiagramGenerator.hypergraph.GroupableHyperNode;
-import sequenceDiagramGenerator.hypergraph.GroupableHypergraph;
 import sequenceDiagramGenerator.hypergraph.HyperNode;
-import sequenceDiagramGenerator.hypergraph.Hypergraph;
+import sequenceDiagramGenerator.hypergraph.SimpleNodeCollection;
 import sequenceDiagramGenerator.sdedit.DiagramPDFGen;
 import sequenceDiagramGenerator.sdedit.GenReducer;
 import sequenceDiagramGenerator.sdedit.GenReducerFactory;
@@ -48,7 +48,7 @@ public class TestUI implements ActionListener{
 	private JFrame frame;
 	private ControlPanel theControlPanel;
 	
-	public Hypergraph<MethodNodeAnnot, EdgeAnnotation> currentHypergraph;
+	public SimpleNodeCollection<MethodNodeAnnot> currentHypergraph;
 
 	/**
 	 * Launch the application.
@@ -237,63 +237,77 @@ public class TestUI implements ActionListener{
 	}
 	
 	private static void RunTest(String[] args, Query q){
-		GroupableHypergraph<MethodNodeAnnot, EdgeAnnotation> hg = null;
-		String ClassPath = Utilities.GetArgument(args, "-classpath");
-		String Files = Utilities.GetArgument(args, "-jars");
-		String[] SplitFiles = Files.split(";");
-		File[] jars = new File[SplitFiles.length];
-		for(int i = 0; i < jars.length; i++){
-			jars[i] = new File(SplitFiles[i]);
-		}
-		List<String> listClasses = new ArrayList<String>();
+		
+		String testpath = Utilities.GetArgument(args, "testpath");
+		String testjson = Utilities.GetArgument(args, "testjson");
+		String testjsonpath = Utilities.ConcatePaths(testpath, testjson);
+		FileReader fr = null;
+		
 		try {
-			for(int i = 0; i < jars.length; i++){
-				listClasses.addAll(Utilities.ListClassesInJar(jars[i]));
-				String parentDir;
-					parentDir = jars[i].getCanonicalPath();
-				ClassPath = ClassPath + Utilities.GetClassPathDelim() + parentDir;
+			JSONParser jp = new JSONParser();
+			fr = new FileReader(testjsonpath);
+			JSONObject jtop = (JSONObject) jp.parse(fr);
+			
+			JSONArray jtests = (JSONArray)jtop.get("tests");
+			
+			for(int t = 0; t < jtests.size(); t++){
+			
+				JSONObject jtest = (JSONObject)jtests.get(t);
+				JSONArray jarr = (JSONArray)jtest.get("DirectoriesToClean");
+				
+				for(int i = 0; i < jarr.size(); i++){
+					String dirpath = (String)jarr.get(i);
+					File f = new File(dirpath);
+					if(f.exists()){
+						Utilities.deleteDirectory(f);
+					}
+					f.mkdirs();
+				}
+				
+				JSONArray jargs = (JSONArray)jtest.get("testargs");
+				List<String> largs = new ArrayList<String>();
+				for(int a = 0; a < jargs.size(); a++){
+					largs.add((String)jargs.get(a));
+				}
+				TestUI.RunAnyCommandLine(largs.toArray(new String[0]));
+			
+				JSONArray jcompare = (JSONArray)jtest.get("Compares");
+				for(int c = 0; c < jcompare.size(); c++){
+					JSONObject jpair = (JSONObject)jcompare.get(c);
+					String testPath = (String)jpair.get("testpath");
+					String baselinePath = (String)jpair.get("baselinepath");
+					String output = Utilities.compareDirectoriesJSONTest(testPath, baselinePath);
+					if(output.length() > 0){
+						System.out.println("FAILURE\n");
+						System.out.println(output);
+					}
+				}
 			}
-			hg = Analyzer.AnalyzeFromJAR(listClasses, ClassPath);
-		} catch (IOException e1) {
+		} catch (FileNotFoundException e) {
 			// TODO Auto-generated catch block
-			e1.printStackTrace();
+			e.printStackTrace();
+		} catch (IOException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		} catch (ParseException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
 		}
-		if(hg == null){
-			System.out.println("Could not generate hypergraph");
-			return;
-		}
-		
-		String startMethod = Utilities.GetArgument(args, "-startmethod");
-		
-		GroupableHyperNode<MethodNodeAnnot, EdgeAnnotation> aNode = hg.GetNodeByName(startMethod);
-		if(aNode == null){
-			System.out.println("Could not find node by name: " + startMethod);
-			return;
-		}
-		String saveFile = Utilities.GetArgument(args, "-outfile");
-		
-		if(saveFile == null || saveFile.length() == 0){
-			System.out.println("outfile not specified");
-			return;
-		}
-		
-		File aFile = new File(saveFile);
-		if(aFile.exists()){
-			aFile.delete();
-		}
-		
-		try {
-			//this is the interesting call.
-			//SDGenerator.Generate(hg, aNode, saveFile);
-			SDGenerator.GenTest(hg, aNode, saveFile, q);
-		} catch (Exception e1) {
-			// TODO Auto-generated catch block				
-			e1.printStackTrace();
+		finally{
+			if(fr != null){
+				try {
+					fr.close();
+				} catch (IOException e) {
+					// TODO Auto-generated catch block
+					e.printStackTrace();
+				}
+				fr = null;
+			}
 		}
 	}
 	
 	private static void RunCommandLine(String[] args, Query q){
-		GroupableHypergraph<MethodNodeAnnot, EdgeAnnotation> hg = null;
+		SimpleNodeCollection<MethodNodeAnnot> hg = null;
 		String ClassPath = Utilities.GetArgument(args, "-classpath");
 		String Files = Utilities.GetArgument(args, "-jars");
 		String[] SplitFiles = Files.split(";");
@@ -321,7 +335,7 @@ public class TestUI implements ActionListener{
 
 		if(Utilities.DEBUG){
 			Utilities.DebugPrintln("*********METHODS**********");
-			List<HyperNode<MethodNodeAnnot,EdgeAnnotation>> lh = hg.GetNodes();
+			List<GroupableHyperNode<MethodNodeAnnot>> lh = hg.getNodes();
 			for(int i = 0; i < lh.size(); i++){
 				SootMethod sm = lh.get(i).data.GetMethod();
 				String mName = Utilities.getMethodString(sm);
@@ -332,7 +346,7 @@ public class TestUI implements ActionListener{
 		}
 		String startMethod = Utilities.GetArgument(args, "-startmethod");
 		
-		GroupableHyperNode<MethodNodeAnnot, EdgeAnnotation> aNode = hg.GetNodeByName(startMethod);
+		GroupableHyperNode<MethodNodeAnnot> aNode = hg.GetNode(startMethod.hashCode());
 		if(aNode == null){
 			System.out.println("Could not find node by name: " + startMethod);
 			return;
@@ -365,7 +379,7 @@ public class TestUI implements ActionListener{
 	}
 	
 	private static void RunAllOneFunction(String[] args, Query q){
-		GroupableHypergraph<MethodNodeAnnot, EdgeAnnotation> hg = null;
+		SimpleNodeCollection<MethodNodeAnnot> hg = null;
 		String ClassPath = Utilities.GetArgument(args, "-classpath");
 		String Files = Utilities.GetArgument(args, "-jars");
 		String[] SplitFiles = Files.split(";");
@@ -392,7 +406,7 @@ public class TestUI implements ActionListener{
 		}
 		if(Utilities.DEBUG){
 			Utilities.DebugPrintln("*********METHODS**********");
-			List<HyperNode<MethodNodeAnnot,EdgeAnnotation>> lh = hg.GetNodes();
+			List<GroupableHyperNode<MethodNodeAnnot>> lh = hg.getNodes();
 			for(int i = 0; i < lh.size(); i++){
 				SootMethod sm = lh.get(i).data.GetMethod();
 				String mName = Utilities.getMethodString(sm);
@@ -402,7 +416,7 @@ public class TestUI implements ActionListener{
 		
 		String startMethod = Utilities.GetArgument(args, "-startmethod");
 		
-		GroupableHyperNode<MethodNodeAnnot, EdgeAnnotation> aNode = hg.GetNodeByName(startMethod);
+		GroupableHyperNode<MethodNodeAnnot> aNode = hg.GetNode(startMethod.hashCode());
 		if(aNode == null){
 			System.out.println("Could not find node by name: " + startMethod);
 			return;
@@ -437,7 +451,7 @@ public class TestUI implements ActionListener{
 		
 		Utilities.PerfLogPrintln("Start_RunAllAllFunctions," + Long.toString(System.nanoTime()));
 		
-		GroupableHypergraph<MethodNodeAnnot, EdgeAnnotation> hg = null;
+		SimpleNodeCollection<MethodNodeAnnot> hg = null;
 		String ClassPath = Utilities.GetArgument(args, "-classpath");
 		String Files = Utilities.GetArgument(args, "-jars");
 		String[] SplitFiles = Files.split(";");
@@ -476,10 +490,10 @@ public class TestUI implements ActionListener{
 		Utilities.PerfLogPrintln("AfterHyperGraph_RunAllAllFunctions," + Long.toString(System.nanoTime()));
 		
 		Utilities.DebugPrintln("HG-NODECOUNT:"+Integer.toString(hg.size()));
-		Utilities.DebugPrintln("HG-EDGECOUNT:"+Integer.toString(hg.EdgeCount()));
+		//Utilities.DebugPrintln("HG-EDGECOUNT:"+Integer.toString(hg.EdgeCount()));
 		
 		List<String> listFuncsToRun = new ArrayList<String>();
-		List<HyperNode<MethodNodeAnnot,EdgeAnnotation>> lh = hg.GetNodes();
+		List<GroupableHyperNode<MethodNodeAnnot>> lh = hg.getNodes();
 		for(int i = 0; i < lh.size(); i++){
 			SootMethod sm = lh.get(i).data.GetMethod();
 			String mName = Utilities.getMethodString(sm);
@@ -502,8 +516,8 @@ public class TestUI implements ActionListener{
 			System.out.println("outdir not directory");
 		}
 		
-		Utilities.PerfLogPrintln("HG_NODES,"+Integer.toString(hg.GetNodes().size()));
-		Utilities.PerfLogPrintln("HG_EDGES,"+Integer.toString(hg.EdgeCount()));
+		Utilities.PerfLogPrintln("HG_NODES,"+Integer.toString(hg.size()));
+		//Utilities.PerfLogPrintln("HG_EDGES,"+Integer.toString(hg.EdgeCount()));
 		
 		Utilities.PerfLogPrintln("BeforeTraversalJarAnalysis_RunAllAllFunctions," + Long.toString(System.nanoTime()));
 		
@@ -513,7 +527,7 @@ public class TestUI implements ActionListener{
 			String startMethod = listFuncsToRun.get(i);
 			Utilities.DebugPrintln("    Name: "+ startMethod);
 					
-			GroupableHyperNode<MethodNodeAnnot, EdgeAnnotation> aNode = hg.GetNodeByName(startMethod);
+			GroupableHyperNode<MethodNodeAnnot> aNode = hg.GetNode(startMethod);
 			if(aNode == null){
 				System.out.println("Could not find node by name: " + startMethod);
 				continue;
@@ -585,6 +599,10 @@ public class TestUI implements ActionListener{
 		}
 		Utilities.PerfLogPrintln("FirstDiaCount,"+Integer.toString(firstCount));
 		String outdir = Utilities.GetArgument(args, "-outdir");
+		aFile = new File(outdir);
+		if(!aFile.exists()){
+			aFile.mkdir();
+		}
 		GenReducer gr = GenReducerFactory.Build(args);
 		DiagramPDFGen dpg = new DiagramPDFGen(lsd, gr,args);
 		dpg.CreatePDFs(outdir);
@@ -630,7 +648,7 @@ public class TestUI implements ActionListener{
 	private void PopulateCmb(){
 		theControlPanel.cmbFunctions.removeAllItems();
 		if(currentHypergraph != null){
-			List<HyperNode<MethodNodeAnnot,EdgeAnnotation>> lh = currentHypergraph.GetNodes();
+			List<GroupableHyperNode<MethodNodeAnnot>> lh = currentHypergraph.getNodes();
 			for(int i = 0; i < lh.size(); i++){
 				SootMethod sm = lh.get(i).data.GetMethod();
 				SootClass sc = sm.getDeclaringClass();
@@ -701,7 +719,7 @@ public class TestUI implements ActionListener{
 			if(currentHypergraph == null){return;}
 			CmbBoxItem cbi = (CmbBoxItem) this.theControlPanel.cmbFunctions.getSelectedItem();
 			if(cbi == null){return;}
-			GroupableHyperNode<MethodNodeAnnot, EdgeAnnotation> aNode = (GroupableHyperNode<MethodNodeAnnot, EdgeAnnotation>) cbi.theObject;
+			GroupableHyperNode<MethodNodeAnnot> aNode = (GroupableHyperNode<MethodNodeAnnot>) cbi.theObject;
 			if(aNode == null){return;}
 			String saveFile = this.theControlPanel.tfSaveFile.getText();
 			

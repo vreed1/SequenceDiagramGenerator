@@ -71,6 +71,11 @@ public class MethodNodeAnnot {
 	}
 	
 	@Override
+	public int hashCode(){
+		return this.toString().hashCode();
+	}
+	
+	@Override
 	public String toString(){
 		return Utilities.getMethodString(theMethod);
 	}
