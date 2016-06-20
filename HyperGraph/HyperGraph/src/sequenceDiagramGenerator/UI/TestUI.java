@@ -441,7 +441,8 @@ public class TestUI implements ActionListener{
 	//-classpath
 	//-jars
 	//-startswith
-	//
+	//-taintfile
+	//-outdir
 	private static void RunTaintAnalysis(String[] args, Query q){
 		
 		Utilities.PerfLogPrintln("Start_RunTaintAnalysis," + Long.toString(System.nanoTime()));

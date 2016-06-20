@@ -20,7 +20,7 @@ public class SDObject
 {
 	public enum TaintState{Safe, Tainted};
 	
-	public TaintState tState;
+	public TaintState tState = TaintState.Safe;
 	
 	public int ID;
     private String name;
@@ -147,6 +147,15 @@ public class SDObject
 		
 		isConstructed = Boolean.parseBoolean((String)jobj.get("isConstructed"));
 		isStatic = Boolean.parseBoolean((String)jobj.get("isStatic"));
+		if(jobj.containsKey("TaintState")){
+			String tString = (String)jobj.get("TaintState");
+			if(tString == "Tainted"){
+				this.tState = TaintState.Tainted;
+			}
+			else{
+				this.tState = TaintState.Safe;
+			}
+		}
 
         this.flags = new ArrayList<ObjectFlag>();
         
@@ -177,7 +186,8 @@ public class SDObject
 		jobj.put("name", name);
 		jobj.put("type", type);
 		jobj.put("label", label);
-		
+
+		jobj.put("TaintState", tState.toString());
 		//I don't serialize
 	    //List<ObjectFlag> flags;
 		//because it is essentially vestigial and unused.

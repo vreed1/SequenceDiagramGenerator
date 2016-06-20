@@ -3,6 +3,7 @@ import java.util.Map;
 
 import org.json.simple.JSONObject;
 
+import sequenceDiagramGenerator.sdedit.SDObject.TaintState;
 import soot.SootMethod;
 import utilities.Utilities;
 
@@ -18,6 +19,8 @@ public class SDMessage
 	
 	public int callerID;
 	public int calleeID;
+	
+	public TaintState tState = TaintState.Safe;
 	
     private String answer;
     private String message;
@@ -109,6 +112,17 @@ public class SDMessage
     	callerID = Integer.parseInt((String)jobj.get("callerID"));
     	calleeID = Integer.parseInt((String)jobj.get("calleeID"));
     	
+    	if(jobj.containsKey("TaintState")){
+			String tString = (String)jobj.get("TaintState");
+			if(tString == "Tainted"){
+				this.tState = TaintState.Tainted;
+			}
+			else{
+				this.tState = TaintState.Safe;
+			}
+		}
+    	
+		
     	answer = (String)jobj.get("answer");
     	message = (String)jobj.get("message");
     	specifier = (String)jobj.get("specifier");
@@ -128,6 +142,8 @@ public class SDMessage
 
 		topObj.put("callerID", Integer.toString(callerID));
 		topObj.put("calleeID", Integer.toString(calleeID));
+		
+		topObj.put("TaintState", tState.toString());
 		
 		topObj.put("answer", answer);
 		topObj.put("message", message);
