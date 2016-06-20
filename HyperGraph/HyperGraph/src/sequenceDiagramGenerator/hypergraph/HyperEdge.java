@@ -9,8 +9,12 @@ public class HyperEdge<A>
     public int targetNode;
     public A annotation;
     
+    private static int baseid = 0;
+    private int uniqueid;
+    
     public HyperEdge(List<Integer> src, int target, A annot)
     {
+    	uniqueid = baseid++;
         sourceNodes = src;
         targetNode = target;
         annotation = annot;
@@ -20,6 +24,10 @@ public class HyperEdge<A>
         //if(src.contains(new Integer(target))) {
         //    throw new IllegalArgumentException("There exists a direct cycle in a hyperedge" + this);
         //}
+    }
+    
+    public int getUID(){
+    	return uniqueid;
     }
 
     public boolean DefinesEdge(List<Integer> antecedent, int consequent)

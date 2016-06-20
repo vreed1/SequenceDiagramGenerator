@@ -734,6 +734,7 @@ public class SDGenerator {
 		if(obj instanceof ParameterRef){
 			ParameterRef pr = (ParameterRef)obj;
 			int pind = pr.getIndex();
+			
 			String prname = "@parameter" + String.valueOf(pind);
 			if(mode == 0){
 				return sd.GetObjectFromName(prname);
@@ -1129,7 +1130,7 @@ public class SDGenerator {
 //			aEdge.annotation.getMethodName()
 //			);
 //
-//	for(SDObject sdo : dma.GetSDObjects()){
+//	for(SDObject sdo : dma.GeSDObjects()){
 //		sd.AddObject(sdo);
 //	}
 //	sd.AddMessage(dma.GenerateSDEditMessage());
@@ -1166,7 +1167,7 @@ public class SDGenerator {
 //			aEdge.annotation.getMethodName()
 //			);
 //
-//	for(SDObject sdo : dma.GetSDObjects()){
+//	for(SDObject sdo : dma.GeSDObjects()){
 //		sd.AddObject(sdo);
 //	}
 //	sd.AddMessage(dma.GenerateSDEditMessage());

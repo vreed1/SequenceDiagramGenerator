@@ -18,6 +18,10 @@ import utilities.Utilities;
 
 public class SDObject
 {
+	public enum TaintState{Safe, Tainted};
+	
+	public TaintState tState;
+	
 	public int ID;
     private String name;
     private String type;
@@ -265,6 +269,7 @@ public class SDObject
 		theCallStackNames.push(CloneNames());
 		theCurrentNames = new ArrayList<String>();
 	}
+	
 	public void PopNames(){
 		if(theCallStackNames.size() > 0){
 			theCurrentNames = theCallStackNames.pop();

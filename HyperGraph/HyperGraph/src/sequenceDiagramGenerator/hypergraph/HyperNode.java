@@ -22,6 +22,20 @@ public class HyperNode<T, A>
         edges = new ArrayList<HyperEdge<A>>();
         targetEdges = new ArrayList<HyperEdge<A>>();
     }
+   
+    
+    public void removeEdge(int eid){
+    	for(int i = edges.size() -1; i >=0; i--){
+    		if(edges.get(i).getUID() == eid){
+    			edges.remove(i);
+    		}
+    	}
+    	for(int i = targetEdges.size() -1; i >= 0; i--){
+    		if(targetEdges.get(i).getUID() == eid){
+    			targetEdges.remove(i);
+    		}
+    	}
+    }
     
     public void AddEdge(HyperEdge<A> edge)
     {

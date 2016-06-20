@@ -28,6 +28,20 @@ public class Hypergraph<T, A>
         vertices = new ArrayList<HyperNode<T, A>>();
         edgeCount = 0;
     }
+    
+    public void RemoveVertex(int vid){
+    	for(int i = vertices.size() - 1; i >= 0; i--){
+    		if(vertices.get(i).uniqueId == vid){
+    			vertices.remove(i);
+    		}
+    	}
+    }
+    
+    public void RemoveEdge(int eid){
+    	for(int i = 0; i < vertices.size(); i++){
+    		vertices.get(i).removeEdge(eid);
+    	}
+    }
 
     public Hypergraph(int capacity, HyperNodeFactory<T,A> aFactory)
     {
@@ -35,6 +49,7 @@ public class Hypergraph<T, A>
         vertices = new ArrayList<HyperNode<T, A>>(capacity);
         edgeCount = 0;
     }
+    
 
     //
     // Integer-based representation of the main hypergraph

@@ -23,7 +23,7 @@ public class DiagramMessageAggregator
     //
     // Acquire all SD objects for this particular message
     //
-//	public List<SDObject> GetSDObjects()
+//	public List<SDObject> GeSDObjects()
 //	{
 //	    ArrayList<SDObject> names = new ArrayList<SDObject>();
 //	    

@@ -37,6 +37,8 @@ import sequenceDiagramGenerator.sdedit.GenReducerFactory;
 import sequenceDiagramGenerator.sdedit.SequenceDiagram;
 import sequenceDiagramGenerator.sdedit.SequenceDiagramPattern;
 import sequenceDiagramGenerator.sootAnalyzer.Analyzer;
+import sequenceDiagramGenerator.sootAnalyzer.TSOrInvoke;
+import sequenceDiagramGenerator.sootAnalyzer.TaintAnalyzer;
 import soot.SootClass;
 import soot.SootMethod;
 import utilities.Utilities;
@@ -106,6 +108,9 @@ public class TestUI implements ActionListener{
 		}
 		else if(args[0].equals("-findpattern")){
 			RunFindPattern(args);
+		}
+		else if(args[0].equals("-ta")){
+			RunTaintAnalysis(args,q);
 		}
 		else
 		{ 
@@ -431,6 +436,70 @@ public class TestUI implements ActionListener{
 		GenReducer gr = GenReducerFactory.Build(args);
 		DiagramPDFGen dpg = new DiagramPDFGen(listD, gr,args);
 		dpg.CreatePDFs(saveDir);
+	}
+	
+	//-classpath
+	//-jars
+	//-startswith
+	//
+	private static void RunTaintAnalysis(String[] args, Query q){
+		
+		Utilities.PerfLogPrintln("Start_RunTaintAnalysis," + Long.toString(System.nanoTime()));
+		
+		GroupableHypergraph<MethodNodeAnnot, EdgeAnnotation> hg = null;
+		String ClassPath = Utilities.GetArgument(args, "-classpath");
+		String Files = Utilities.GetArgument(args, "-jars");
+		String[] SplitFiles = Files.split(";");
+		File[] jars = new File[SplitFiles.length];
+		for(int i = 0; i < jars.length; i++){
+			jars[i] = new File(SplitFiles[i]);
+		}
+		List<String> listClasses = new ArrayList<String>();
+		Utilities.PerfLogPrintln("Before_RunTaintAnalysis," + Long.toString(System.nanoTime()));
+
+		String startsWithAll = Utilities.GetArgument(args, "-startswith");
+		
+		List<String> startswith = Arrays.asList(startsWithAll.split(";"));
+		
+		try {
+			for(int i = 0; i < jars.length; i++){
+				List<String> unfilteredClasses = Utilities.ListClassesInJar(jars[i]);
+				for(int j = 0; j < unfilteredClasses.size(); j++){
+					if(Utilities.StartsWithAny(unfilteredClasses.get(j), startswith)){
+						listClasses.add(unfilteredClasses.get(j));
+					}
+				}
+				String parentDir;
+					parentDir = jars[i].getCanonicalPath();
+				ClassPath = ClassPath + Utilities.GetClassPathDelim() + parentDir;
+			}
+			hg = Analyzer.AnalyzeFromJAR(listClasses, ClassPath);
+		} catch (IOException e1) {
+			// TODO Auto-generated catch block
+			e1.printStackTrace();
+		}
+		if(hg == null){
+			System.out.println("Could not generate hypergraph");
+			return;
+		}
+		Utilities.PerfLogPrintln("After_RunTaintAnalysis," + Long.toString(System.nanoTime()));
+		
+		String taintFile = Utilities.GetArgument(args, "-taintfile");
+		
+		TaintAnalyzer ta = new TaintAnalyzer(taintFile);
+		
+		ta.CullObjects(hg);
+		
+		TSOrInvoke toi = new TSOrInvoke(ta);
+		List<SequenceDiagram> lDias = toi.GenerateTaintDiagrams(hg,q);
+		
+		String outdir = Utilities.GetArgument(args, "-outdir");
+		GenReducer gr = GenReducerFactory.Build(args);
+		DiagramPDFGen dpg = new DiagramPDFGen(lDias, gr,args);
+		dpg.CreatePDFs(outdir);
+		
+		Utilities.PerfLogPrintln("AfterQueryReduction_RunTaintAnalysis," + Long.toString(System.nanoTime()));
+		
 	}
 	
 	private static void RunAllAllFunctions(String[] args, Query q){
