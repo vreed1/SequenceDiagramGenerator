@@ -23,6 +23,9 @@ public class HyperNode<T, A>
         targetEdges = new ArrayList<HyperEdge<A>>();
     }
    
+    public int GetID(){
+    	return uniqueId;
+    }
     
     public void removeEdge(int eid){
     	for(int i = edges.size() -1; i >=0; i--){

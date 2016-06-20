@@ -447,9 +447,7 @@ public class TSOrInvoke{
 		if(gEdge != null){
 			GroupableHyperNode<MethodNodeAnnot, EdgeAnnotation> subGNode = 
 					(GroupableHyperNode<MethodNodeAnnot, EdgeAnnotation>) hg.GetCompleteNode(gEdge.targetNode);
-			
-
-			
+						
 			//grab the three things we need to write a 
 			//message into sd, source, target, message
 			

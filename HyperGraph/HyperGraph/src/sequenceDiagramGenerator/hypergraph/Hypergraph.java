@@ -4,7 +4,9 @@ package sequenceDiagramGenerator.hypergraph;
 import java.util.AbstractMap.SimpleEntry;
 import java.util.ArrayList;
 import java.util.Collections;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 
 import sequenceDiagramGenerator.pebbler.*;
 import utilities.Utilities;
@@ -13,8 +15,8 @@ import utilities.Utilities;
 public class Hypergraph<T, A>
 {
     // The main graph data structure
-	protected List<HyperNode<T, A>> vertices;
-    public List<HyperNode<T,A>> getVertices() { return vertices; }
+	protected Map<Integer, HyperNode<T, A>> vertices;
+    public List<HyperNode<T,A>> getVertices() { return new ArrayList<HyperNode<T,A>>(vertices.values()); }
     public int size() { return vertices.size(); }
 
     protected int edgeCount;
@@ -25,28 +27,28 @@ public class Hypergraph<T, A>
     public Hypergraph(HyperNodeFactory<T,A> aFactory)
     {
     	theNodeFactory = aFactory;
-        vertices = new ArrayList<HyperNode<T, A>>();
+        vertices = new HashMap<Integer, HyperNode<T, A>>();
         edgeCount = 0;
     }
     
     public void RemoveVertex(int vid){
-    	for(int i = vertices.size() - 1; i >= 0; i--){
-    		if(vertices.get(i).uniqueId == vid){
-    			vertices.remove(i);
-    		}
+    	if(vertices.containsKey(vid)){
+    		vertices.remove(vid);
     	}
     }
     
     public void RemoveEdge(int eid){
-    	for(int i = 0; i < vertices.size(); i++){
-    		vertices.get(i).removeEdge(eid);
+    	for (HyperNode<T, A> vertex : vertices.values()) {
+        	
+    	//for(int i = 0; i < vertices.size(); i++){
+    		vertex.removeEdge(eid);
     	}
     }
 
     public Hypergraph(int capacity, HyperNodeFactory<T,A> aFactory)
     {
     	theNodeFactory = aFactory;
-        vertices = new ArrayList<HyperNode<T, A>>(capacity);
+        vertices = new HashMap<Integer, HyperNode<T, A>>(capacity);
         edgeCount = 0;
     }
     
@@ -60,15 +62,23 @@ public class Hypergraph<T, A>
         // Strictly create the nodes
         //
         ArrayList<PebblerHyperNode<T, A>> pebblerNodes = new ArrayList<PebblerHyperNode<T, A>>(vertices.size());
-        for (int v = 0; v < vertices.size(); v++) {
-            pebblerNodes.set(v, vertices.get(v).CreatePebblerNode());
+        
+        int v = 0;
+        for (HyperNode<T, A> vertex : vertices.values()) {
+        	
+        //for (int v = 0; v < vertices.size(); v++) {
+            pebblerNodes.set(v, vertex.CreatePebblerNode());
+            v++;
         }
 
         //
         // Non-redundantly create all hyperedges
         //
-        for (int v = 0; v < vertices.size(); v++) {
-            for (HyperEdge<A> edge : vertices.get(v).edges) {
+        List<HyperNode<T,A>> vtex = this.getVertices();
+        for (int vx = 0; vx < vtex.size(); v++) {
+        //for (HyperNode<T, A> vertex : vertices.values()) {
+        		
+            for (HyperEdge<A> edge : vtex.get(vx).edges) {
                 // Only add once to all nodes when this is the 'minimum' source node
                 if (v == Collections.min(edge.sourceNodes)) {
                     PebblerHyperEdge<A> newEdge = new PebblerHyperEdge<A>(edge.sourceNodes, edge.targetNode, edge.annotation);
@@ -88,14 +98,18 @@ public class Hypergraph<T, A>
     private int ConvertToLocalIntegerIndex(T inputData)
     {
     	  int sz = vertices.size();
-    	
-        for (int i = 0; i < sz; i++)
+    	  for (HyperNode<T, A> vertex : vertices.values()) {
+    		  if(vertex.data.equals(inputData)){
+    			  return vertex.GetID();
+    		  }
+    	  }
+        /*for (int i = 0; i < sz; i++)
         {
             if (vertices.get(i).data.equals(inputData))
             {
                 return i;
             }
-        }
+        }*/
 
         return -1;
     }
@@ -122,16 +136,16 @@ public class Hypergraph<T, A>
     
     public HyperNode<T,A> GetCompleteNode(int id){
 
-        if (id < 0 || id > vertices.size()) {
-            throw new IllegalArgumentException("Unexpected id in hypergraph node access: " + id);
-        }
+        //if (id < 0 || id > vertices.size()) {
+         //   throw new IllegalArgumentException("Unexpected id in hypergraph node access: " + id);
+        //}
 
         return vertices.get(id);
     }
     
     public List<HyperNode<T,A>> GetNodes(){
     	List<HyperNode<T,A>> toReturn = new ArrayList<HyperNode<T,A>>();
-    	toReturn.addAll(vertices);
+    	toReturn.addAll(this.getVertices());
     	return toReturn;
     }
 
@@ -139,7 +153,7 @@ public class Hypergraph<T, A>
     // Check if the graph contains this specific grounded clause
     //
     public boolean HasNode(T inputData) {
-        for (HyperNode<T, A> vertex : vertices) {
+        for (HyperNode<T, A> vertex : vertices.values()) {
             if (vertex.data.equals(inputData)) return true;
         }
 
@@ -150,7 +164,7 @@ public class Hypergraph<T, A>
     // Check if the graph contains this specific grounded clause
     //
     public T GetNode(T inputData) {
-        for (HyperNode<T, A> vertex : vertices) {
+        for (HyperNode<T, A> vertex : vertices.values()) {
             if (vertex.data.equals(inputData)) return vertex.data;
         }
 
@@ -158,7 +172,7 @@ public class Hypergraph<T, A>
     }
     
     public HyperNode<T,A> GetCompleteNode(T inputData){
-    	for (HyperNode<T,A> vertex : vertices){
+    	for (HyperNode<T,A> vertex : vertices.values()){
     		if(vertex.data.equals(inputData)) return vertex;
     	}
     	return null;
@@ -172,7 +186,8 @@ public class Hypergraph<T, A>
         	//Brian commented out the following line when I changed to a factory pattern
         	//to allow experimenting with extending hypernode class.
             //vertices.add(new HyperNode<T, A>(inputData, vertices.size())); // <data, id>
-        	vertices.add(theNodeFactory.Generate(inputData));
+        	HyperNode<T,A> node = theNodeFactory.Generate(inputData);
+        	vertices.put(node.GetID(), node);
             return true;
         }
 
@@ -193,7 +208,7 @@ public class Hypergraph<T, A>
             throw new IllegalArgumentException("Index of bounds on local edge: " + consequent);
 
 
-        for (HyperNode<T, A> vertex : vertices) {
+        for (HyperNode<T, A> vertex : vertices.values()) {
             for (HyperEdge<A> edge : vertex.edges) {
                 if (edge.DefinesEdge(antecedent, consequent)) return true;
             }
@@ -292,8 +307,10 @@ public class Hypergraph<T, A>
     	Utilities.DebugPrintln("All Clauses:\n");
 
         StringBuilder edgeStr = new StringBuilder();
-        for (int v = 0; v < vertices.size(); v++) {
-        	Utilities.DebugPrintln(edgeStr + " " + v + " " + vertices.get(v).data.toString());
+        for (HyperNode<T, A> vertex : vertices.values()) {
+        	
+        //for (int v = 0; v < vertices.size(); v++) {
+        	Utilities.DebugPrintln(edgeStr + " " + vertex.GetID() + " " + vertex.data.toString());
         }
 
         Utilities.DebugPrintln("\nEdges: ");
@@ -302,8 +319,10 @@ public class Hypergraph<T, A>
     
     public List<HyperEdge<A>> GetAllEdges(){
     	List<HyperEdge<A>> toReturn = new ArrayList<HyperEdge<A>>();
-    	for(int v = 0; v < vertices.size(); v++){
-    		HyperNode<T,A> aNode = vertices.get(v);
+    	for (HyperNode<T, A> vertex : vertices.values()) {
+        	
+    	//for(int v = 0; v < vertices.size(); v++){
+    		HyperNode<T,A> aNode = vertex;
     		for(int e = 0; e < aNode.edges.size(); e++){
     			HyperEdge<A> aEdge = aNode.edges.get(e);
     			if(!toReturn.contains(aEdge)){
@@ -316,10 +335,12 @@ public class Hypergraph<T, A>
 
     private void DumpEdges() {
         StringBuilder edgeStr = new StringBuilder();
-        for (int v = 0; v < vertices.size(); v++) {
-            if (!vertices.get(v).edges.isEmpty()) {
-                edgeStr.append(v + ": {");
-                for (HyperEdge<A> edge : vertices.get(v).edges) {
+        for (HyperNode<T, A> vertex : vertices.values()) {
+        	
+        //for (int v = 0; v < vertices.size(); v++) {
+            if (!vertex.edges.isEmpty()) {
+                edgeStr.append(vertex.GetID() + ": {");
+                for (HyperEdge<A> edge : vertex.edges) {
                     edgeStr.append(" { ");
                     for (int s : edge.sourceNodes) {
                         edgeStr.append(s + " ");

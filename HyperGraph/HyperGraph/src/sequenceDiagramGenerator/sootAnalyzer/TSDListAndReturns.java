@@ -11,7 +11,7 @@ public class TSDListAndReturns {
 
 	public List<SequenceDiagram> listDiagrams;
 	public List<SDObject> listReturns;
-	public TaintState tState;
+	public TaintState tState = TaintState.Safe;
 	
 		public TSDListAndReturns(){
 			listDiagrams = new ArrayList<SequenceDiagram>();

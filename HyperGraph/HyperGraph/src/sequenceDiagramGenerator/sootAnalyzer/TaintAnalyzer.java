@@ -67,12 +67,26 @@ public class TaintAnalyzer {
     	}
     	List<Integer> listNext = new ArrayList<Integer>();
     	
+    	List<Integer> protectedEdges = new ArrayList<Integer>();
+    	
     	boolean NodesAdded = true;
     	while(NodesAdded){
     		NodesAdded = false;
-			for(int j = listCurrent.size(); j < listCurrent.size(); j++){
+			for(int j = 0; j < listCurrent.size(); j++){
 				for(int i = le.size()-1; i >= 0; i--){
+					boolean touchesNode = false;
+					
     				if(le.get(i).targetNode == listCurrent.get(j)){
+    					touchesNode = true;
+    				}
+    				else{
+    					for(Integer aSrc : le.get(i).sourceNodes){
+    						if(aSrc == listCurrent.get(j)){
+    							touchesNode = true;
+    							break;
+    					}
+    				}
+    				if(touchesNode)
     					for(int k = 0; k < le.get(i).sourceNodes.size(); k++){
     						if(!listSeen.contains(le.get(i).sourceNodes.get(k))){
     							listSeen.add(le.get(i).sourceNodes.get(k));
@@ -81,8 +95,15 @@ public class TaintAnalyzer {
     							NodesAdded = true;
     						}
     					}
-    					hg.RemoveEdge(le.get(i).getUID());
-    					le.remove(i);
+    					if(!listSeen.contains(le.get(i).targetNode)){
+    						listSeen.add(le.get(i).targetNode);
+    						listNext.add(le.get(i).targetNode);
+    						listTS.add(hg.GetCompleteNode(le.get(i).targetNode));
+    						NodesAdded = true;
+    					}
+    					protectedEdges.add(le.get(i).getUID());
+    					//hg.RemoveEdge(le.get(i).getUID());
+    					//le.remove(i);
     				}
     			}
     		}
@@ -91,6 +112,13 @@ public class TaintAnalyzer {
 			listNext.clear();
     	}
     	
+    	
+    	for(int i = 0; i < le.size(); i++){
+    		if(!protectedEdges.contains(le.get(i).getUID()))
+    		{
+    			hg.RemoveEdge(le.get(i).getUID());
+    		}
+    	}
     	List<HyperNode<MethodNodeAnnot, EdgeAnnotation>> lNodes = hg.getVertices();
     	
     	for(int i = lNodes.size()-1; i >= 0; i--){

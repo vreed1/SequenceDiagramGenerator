@@ -51,8 +51,10 @@ public class GroupableHypergraph<T,A> extends Hypergraph<T,A> {
 
 	public GroupableHyperNode<T, A> GetNodeByName(
 			String search) {
-		for(int i = 0; i < vertices.size(); i++){
-			GroupableHyperNode<T,A> v = (GroupableHyperNode<T,A>)vertices.get(i);
+		for (HyperNode<T, A> vertex : vertices.values()) {
+        	
+		//for(int i = 0; i < vertices.size(); i++){
+			GroupableHyperNode<T,A> v = (GroupableHyperNode<T,A>)vertex;
 			if(v.data.toString().equals(search)){
 				return v;
 			}
