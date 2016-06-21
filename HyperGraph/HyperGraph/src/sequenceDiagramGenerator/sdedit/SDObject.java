@@ -20,7 +20,7 @@ public class SDObject
 {
 	public enum TaintState{Safe, Tainted};
 	
-	public TaintState tState = TaintState.Safe;
+	private TaintState tState = TaintState.Safe;
 	
 	public int ID;
     private String name;
@@ -46,7 +46,8 @@ public class SDObject
 	public SDObject(Type sc, 
 			String startName, 
 			boolean aIsConstructed,
-			boolean aIsStatic) {
+			boolean aIsStatic,
+			TaintState inTState) {
 		theCurrentNames = new ArrayList<String>();
 		theNameHistory = new ArrayList<String>();
 		theCallStackNames = new Stack<List<String>>();
@@ -56,6 +57,7 @@ public class SDObject
         this.flags = new ArrayList<ObjectFlag>();
         isConstructed = aIsConstructed;
         isStatic = aIsStatic;
+        tState = inTState;
         if(isStatic){
         	label = "<static>:"+type;
         }
@@ -72,11 +74,13 @@ public class SDObject
 			SootClass aClass, 
 			String startName, 
 			boolean aIsConstructed, 
-			boolean aIsStatic){
+			boolean aIsStatic,
+			TaintState inTState){
 		theCurrentNames = new ArrayList<String>();
 		theNameHistory = new ArrayList<String>();
 		theCallStackNames = new Stack<List<String>>();
 		theFields = new HashMap<String, Integer>();
+		tState = inTState;
 		AttachName(startName);
 		type = aClass.getName();
         this.flags = new ArrayList<ObjectFlag>();
@@ -93,11 +97,13 @@ public class SDObject
 	public SDObject(String typeName, 
 			String startName,
 			boolean isCons, 
-			boolean isStat){
+			boolean isStat,
+			TaintState inTState){
 		theCurrentNames = new ArrayList<String>();
 		theNameHistory = new ArrayList<String>();
 		theCallStackNames = new Stack<List<String>>();
 		theFields = new HashMap<String, Integer>();
+		tState = inTState;
 		AttachName(startName);
 		type = typeName;
         this.flags = new ArrayList<ObjectFlag>();
@@ -123,12 +129,14 @@ public class SDObject
 			List<String> aNameHistory,
 			Stack<List<String>> aCallStackNames,
 			Map<String, Integer> aFields,
-			SootClass sc){
+			SootClass sc,
+			TaintState inTstate){
 		ID = aID;
 		name = aName;
 		type = aType;
 		label = aLabel;
 		flags = aFlags;
+		tState = inTstate;
 		isConstructed = aIsConstructed;
 		isStatic = aIsStatic;
 		theCurrentNames = aCurrentNames;
@@ -177,6 +185,13 @@ public class SDObject
 		
 		nameFixed = Boolean.parseBoolean((String)jobj.get("nameFixed"));
 	    
+	}
+	
+	public void SetTaintState(SequenceDiagram sd, TaintState input){
+		this.tState = input;
+		for(int i = 0; i < theFields.values().size(); i++){
+			sd.GetObjectFromID(theFields.get(i)).SetTaintState(sd, input);
+		}
 	}
 	
 	public JSONObject toJSONObject(){
@@ -236,10 +251,10 @@ public class SDObject
 					}
 				}
 				Type t = sf.getType();
-				newObj = new SDObject(t, "", false, sf.isStatic());
+				newObj = new SDObject(t, "", false, sf.isStatic(), tState);
 			}
 			else{
-				newObj = new SDObject("UnknownType", "", false, false);
+				newObj = new SDObject("UnknownType", "", false, false, tState);
 			}
 			sd.AddObject(newObj);
 			theFields.put(fname, newObj.ID);
@@ -271,7 +286,7 @@ public class SDObject
 		
 		SDObject anObj = new SDObject(ID,name,type,label,flags,
 				isConstructed,isStatic,newCurrentNames, newNameHistory,
-				newNameStack, aFields, theSootClass);
+				newNameStack, aFields, theSootClass, tState);
 		return anObj;
 	}
 	

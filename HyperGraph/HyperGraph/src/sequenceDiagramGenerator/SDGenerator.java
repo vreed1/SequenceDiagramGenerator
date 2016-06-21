@@ -12,6 +12,7 @@ import sequenceDiagramGenerator.hypergraph.Hypergraph;
 import sequenceDiagramGenerator.sdedit.SDListAndReturns;
 import sequenceDiagramGenerator.sdedit.SDMessage;
 import sequenceDiagramGenerator.sdedit.SDObject;
+import sequenceDiagramGenerator.sdedit.SDObject.TaintState;
 import sequenceDiagramGenerator.sdedit.SequenceDiagram;
 import soot.AbstractValueBox;
 import soot.SootClass;
@@ -107,7 +108,7 @@ public class SDGenerator {
 			outerObject = sd.GetStaticObject(aNode.data.GetMethod().getDeclaringClass());
 		}
 		else{
-			outerObject = new SDObject(aNode.data.GetMethod().getDeclaringClass(), SDObject.GetUniqueName(), false, false);
+			outerObject = new SDObject(aNode.data.GetMethod().getDeclaringClass(), SDObject.GetUniqueName(), false, false, TaintState.Safe);
 			sd.AddObject(outerObject);
 			sd.AttachNameToObject("this", outerObject);
 		}
@@ -148,7 +149,7 @@ public class SDGenerator {
 			outerObject = sd.GetStaticObject(aGNode.data.GetMethod().getDeclaringClass());
 		}
 		else{
-			outerObject = new SDObject(aGNode.data.GetMethod().getDeclaringClass(), SDObject.GetUniqueName(), false, false);
+			outerObject = new SDObject(aGNode.data.GetMethod().getDeclaringClass(), SDObject.GetUniqueName(), false, false, TaintState.Safe);
 			sd.AddObject(outerObject);
 		}
 		MakeDiagram(
@@ -330,7 +331,7 @@ public class SDGenerator {
 				else{
 					//problem, can't get soot class the way I usually do.
 					soot.Type sc = paramRight.getType();
-					SDObject newObj = new SDObject(sc, "", false, false);
+					SDObject newObj = new SDObject(sc, "", false, false, TaintState.Safe);
 					sd.AddObject(newObj);
 					sd.AttachNameToObject(leftName, newObj);
 				}
@@ -343,7 +344,7 @@ public class SDGenerator {
 				}
 				else{
 					soot.Type st = jlLeft.getType();
-					SDObject newObj = new SDObject(st, "", true, false);
+					SDObject newObj = new SDObject(st, "", true, false, TaintState.Safe);
 					sd.AddObject(newObj);
 					sd.AttachNameToObject(leftName, newObj);
 				}
@@ -529,14 +530,14 @@ public class SDGenerator {
 					if(tarObjName == null || tarObjName.length() == 0){
 						tarObjName = SDObject.GetUniqueName();
 					}
-					sdTarget = new SDObject(scTarget, tarObjName, false, false);
+					sdTarget = new SDObject(scTarget, tarObjName, false, false, TaintState.Safe);
 					sd.AddObject(sdTarget);
 				}
 			}
 			
 			//now that the sd has a source and target, we can
 			//add the message.
-			SDMessage msg = new SDMessage(sourceObj, sdTarget, sm, isSuper, lvl);
+			SDMessage msg = new SDMessage(sourceObj, sdTarget, sm, isSuper, lvl, TaintState.Safe);
 			sd.AddMessage(msg);
 			
 			String CallName = 
@@ -627,7 +628,7 @@ public class SDGenerator {
 		JNewExpr jne = extractNew(assignStmt.getRightOp());
 		if(jne != null){
 			SootClass sc = jne.getBaseType().getSootClass();
-			SDObject newObj = new SDObject(sc, "", true, false);
+			SDObject newObj = new SDObject(sc, "", true, false, TaintState.Safe);
 			sd.AddObject(newObj);
 			sd.AttachNameToObject(leftName, newObj);
 			return toReturn;
@@ -653,7 +654,7 @@ public class SDGenerator {
 			for(int i = 0; i < allResults.size(); i++){
 				SDObject retObj = null;
 				if(allResults.listReturns.size() <= i || allResults.listReturns.get(i) == null){
-					retObj = new SDObject(rType, "", false, false);
+					retObj = new SDObject(rType, "", false, false, TaintState.Safe);
 				}
 				else{
 					retObj = allResults.listReturns.get(i);
@@ -669,7 +670,7 @@ public class SDGenerator {
 			sd.AttachNameToObject(leftName, rightObj);
 		}
 		else{
-			rightObj = new SDObject("UnknownType", leftName, false, false);
+			rightObj = new SDObject("UnknownType", leftName, false, false, TaintState.Safe);
 			sd.AddObject(rightObj);
 			sd.AttachNameToObject(leftName, rightObj);
 		}
@@ -745,7 +746,7 @@ public class SDGenerator {
 		}
 		//Brian added this, used to return null until recently.
 		if(mode == 0){
-			return new SDObject("TotalUnk", SDObject.GetUniqueName(),false, false );
+			return new SDObject("TotalUnk", SDObject.GetUniqueName(),false, false , TaintState.Safe);
 		}
 		else{
 			return SDObject.GetUniqueName();

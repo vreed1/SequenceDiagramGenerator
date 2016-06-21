@@ -60,9 +60,15 @@ public class TSOrInvoke{
 		List<SequenceDiagram> lDias = new ArrayList<SequenceDiagram>();
 		for(int i = 0; i < lnodes.size(); i++){
 			try {
-				lDias.addAll(GenerateAllDiagrams(hg,
+				List<SequenceDiagram> listSDs =GenerateAllDiagrams(hg,
 						(GroupableHyperNode<MethodNodeAnnot, EdgeAnnotation>)lnodes.get(i),
-						q));
+						q);
+
+				String MethodTrunc = Utilities.Truncate(lnodes.get(i).data.GetMethod().getName());
+				for(int j = 0; j < listSDs.size(); j++){
+					listSDs.get(j).SetName(MethodTrunc + String.valueOf(j) + ".pdf");
+				}
+				lDias.addAll(listSDs);
 			} catch (Exception e) {
 				// TODO Auto-generated catch block
 				e.printStackTrace();
@@ -86,7 +92,7 @@ public class TSOrInvoke{
 			outerObject = (SDObject)sd.GetStaticObject(aNode.data.GetMethod().getDeclaringClass());
 		}
 		else{
-			outerObject = new SDObject(aNode.data.GetMethod().getDeclaringClass(), SDObject.GetUniqueName(), false, false);
+			outerObject = new SDObject(aNode.data.GetMethod().getDeclaringClass(), SDObject.GetUniqueName(), false, false, TaintState.Safe);
 			sd.AddObject(outerObject);
 			sd.AttachNameToObject("this", outerObject);
 		}
@@ -270,7 +276,7 @@ public class TSOrInvoke{
 				else{
 					//problem, can't get soot class the way I usually do.
 					soot.Type sc = paramRight.getType();
-					SDObject newObj = new SDObject(sc, "", false, false);
+					SDObject newObj = new SDObject(sc, "", false, false, TaintState.Safe);
 					sd.AddObject(newObj);
 					sd.AttachNameToObject(leftName, newObj);
 				}
@@ -283,7 +289,7 @@ public class TSOrInvoke{
 				}
 				else{
 					soot.Type st = jlLeft.getType();
-					SDObject newObj = new SDObject(st, "", true, false);
+					SDObject newObj = new SDObject(st, "", true, false, TaintState.Safe);
 					sd.AddObject(newObj);
 					sd.AttachNameToObject(leftName, newObj);
 				}
@@ -425,7 +431,7 @@ public class TSOrInvoke{
 				if(jlparam != null){
 					SDObject anObj = (SDObject)sd.GetObjectFromName(jlparam.getName());
 					params.add(anObj);
-					anObj.tState = TaintState.Tainted;
+					anObj.SetTaintState(sd, TaintState.Tainted);
 				}
 				else{
 					params.add(null);
@@ -484,15 +490,15 @@ public class TSOrInvoke{
 					if(tarObjName == null || tarObjName.length() == 0){
 						tarObjName = SDObject.GetUniqueName();
 					}
-					sdTarget = new SDObject(scTarget, tarObjName, false, false);
+					sdTarget = new SDObject(scTarget, tarObjName, false, false, TaintState.Safe);
 					sd.AddObject(sdTarget);
 				}
 			}
 			
 			//now that the sd has a source and target, we can
 			//add the message.
-			SDMessage msg = new SDMessage(sourceObj, sdTarget, sm, isSuper, lvl);
-			msg.tState = toReturn.tState;
+			SDMessage msg = new SDMessage(sourceObj, sdTarget, sm, isSuper, lvl, TaintState.Safe);
+			msg.SetTaintState(sd, toReturn.tState);
 			sd.AddMessage(msg);
 			
 			String CallName = 
@@ -586,7 +592,7 @@ public class TSOrInvoke{
 		JNewExpr jne = extractNew(assignStmt.getRightOp());
 		if(jne != null){
 			SootClass sc = jne.getBaseType().getSootClass();
-			SDObject newObj = new SDObject(sc, "", true, false);
+			SDObject newObj = new SDObject(sc, "", true, false, TaintState.Safe);
 			sd.AddObject(newObj);
 			sd.AttachNameToObject(leftName, newObj);
 			return toReturn;
@@ -616,12 +622,12 @@ public class TSOrInvoke{
 			for(int i = 0; i < allResults.size(); i++){
 				SDObject retObj = null;
 				if(allResults.listReturns.size() <= i || allResults.listReturns.get(i) == null){
-					retObj = new SDObject(rType, "", false, false);
+					retObj = new SDObject(rType, "", false, false,TaintState.Safe);
 				}
 				else{
 					retObj = allResults.listReturns.get(i);
 				}
-				retObj.tState = allResults.tState;
+				retObj.SetTaintState(sd, allResults.tState);
 				allResults.listDiagrams.get(i).AttachNameToObject(leftName, retObj);
 			}
 			return allResults;
@@ -631,13 +637,13 @@ public class TSOrInvoke{
 		
 		if(rightObj != null){
 			sd.AttachNameToObject(leftName, rightObj);
-			rightObj.tState = toReturn.tState;
+			rightObj.SetTaintState(sd, toReturn.tState);
 		}
 		else{
-			rightObj = new SDObject("UnknownType", leftName, false, false);
+			rightObj = new SDObject("UnknownType", leftName, false, false,TaintState.Safe);
 			sd.AddObject(rightObj);
 			sd.AttachNameToObject(leftName, rightObj);
-			rightObj.tState = toReturn.tState;
+			rightObj.SetTaintState(sd,toReturn.tState);
 		}
 		return toReturn;
 	}
@@ -712,7 +718,7 @@ public class TSOrInvoke{
 		}
 		//Brian added this, used to return null until recently.
 		if(mode == 0){
-			return new SDObject("TotalUnk", SDObject.GetUniqueName(),false, false );
+			return new SDObject("TotalUnk", SDObject.GetUniqueName(),false, false, TaintState.Safe );
 		}
 		else{
 			return SDObject.GetUniqueName();

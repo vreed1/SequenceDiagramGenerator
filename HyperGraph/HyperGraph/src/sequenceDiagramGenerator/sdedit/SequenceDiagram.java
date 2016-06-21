@@ -35,6 +35,7 @@ import net.sf.sdedit.text.TextHandler;
 import net.sf.sdedit.ui.components.configuration.Bean;
 import net.sf.sdedit.util.DocUtil.XMLException;
 import net.sf.sdedit.util.Pair;
+import sequenceDiagramGenerator.sdedit.SDObject.TaintState;
 
 
 public class SequenceDiagram {
@@ -118,7 +119,9 @@ public class SequenceDiagram {
     	theName = Utilities.MakeFileSafe(aName);
     }
     
+    //private static int nx = 0;
     public String GetName(){
+    	//return "Name"+nx++;
     	return theName;
     }
     
@@ -186,7 +189,7 @@ public class SequenceDiagram {
     public SDObject GetStaticObject(SootClass scobj){
     	String sc = scobj.getName();
     	if(!theStaticObjects.containsKey(sc)){
-    		SDObject newObj = new SDObject(sc, SDObject.GetUniqueName(), false, true);
+    		SDObject newObj = new SDObject(sc, SDObject.GetUniqueName(), false, true, TaintState.Safe);
     		theStaticObjects.put(sc,  newObj);
     	}
 		return theStaticObjects.get(sc);

@@ -20,7 +20,7 @@ public class SDMessage
 	public int callerID;
 	public int calleeID;
 	
-	public TaintState tState = TaintState.Safe;
+	private TaintState tState = TaintState.Safe;
 	
     private String answer;
     private String message;
@@ -34,6 +34,7 @@ public class SDMessage
     private int callLevel;
     
     private int finalLevel = 0;
+    
     // Simplest possible message <caller>:.<message>
 //    public SDMessage (String caller, String message, Dictionary<MessageOpt, String> opts)
 //    {
@@ -49,7 +50,7 @@ public class SDMessage
     public SDMessage clone(){
     	return new SDMessage(callerID, calleeID, answer,
     			message,specifier,mnemonic,isConstruction,
-    			isSuper, callLevel, fullMethodName);
+    			isSuper, callLevel, fullMethodName, tState);
     }
     
     private SDMessage(
@@ -62,7 +63,8 @@ public class SDMessage
     		boolean aIsCons,
     		boolean aIsSuper,
     		int lvl,
-    		String fMethodName){
+    		String fMethodName,
+    		TaintState inTState){
     	callerID = aCallerID;
     	calleeID = aCalleeID;
     	answer = aAnswer;
@@ -73,6 +75,7 @@ public class SDMessage
     	isSuper = aIsSuper;
     	callLevel = lvl;
     	fullMethodName = fMethodName;
+    	tState = inTState;
     }
     
     
@@ -80,12 +83,14 @@ public class SDMessage
     		SDObject sdCallee, 
     		SootMethod message, 
     		boolean aIsSuper,
-    		int lvl){
+    		int lvl,
+    		TaintState inTState){
     	//this.caller = sdCaller;
     	//this.callee = sdCallee;
     	this.calleeID = sdCallee.ID;
     	this.callerID = sdCaller.ID;
     	this.message = message.getName();
+    	this.tState = inTState;
     	isConstruction = false;
     	isSuper = aIsSuper;
     	callLevel = lvl;
@@ -159,6 +164,11 @@ public class SDMessage
     
     public String GetFullMethodName(){
     	return fullMethodName;
+    }
+    
+    public void SetTaintState(SequenceDiagram sd, TaintState inTState){
+    	this.tState = inTState;
+    	
     }
     
     
