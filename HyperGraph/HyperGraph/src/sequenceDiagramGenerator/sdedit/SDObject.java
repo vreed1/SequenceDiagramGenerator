@@ -344,6 +344,14 @@ public class SDObject
         for (ObjectFlag f : flags) {
             obj.append(String.format("[%s]", f.tag()));
         }
+        if(tState == TaintState.Tainted){
+        	if(label == null){
+        		label = ":Tainted";
+        	}
+        	else{
+        		label = label + ":Tainted";
+        	}
+        }
         if (label != null) 
             obj.append(String.format("\"%s\"", label));
         return obj.toString();

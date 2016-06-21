@@ -210,6 +210,10 @@ public class SDMessage
         }
         msg.append(String.format(".%s", message));
         
+        if(this.tState == TaintState.Tainted){
+        	msg.append(":Tainted");
+        }
+        
         return msg.toString();
     	
     }
