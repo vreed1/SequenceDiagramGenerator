@@ -168,7 +168,10 @@ public class SDMessage
     
     public void SetTaintState(SequenceDiagram sd, TaintState inTState){
     	this.tState = inTState;
-    	
+    	if(inTState == TaintState.Tainted){
+    		sd.GetObjectFromID(this.calleeID).SetTaintState(sd, inTState);
+    		//sd.GetObjectFromID(this.callerID).SetTaintState(sd, inTState);
+    	}
     }
     
     

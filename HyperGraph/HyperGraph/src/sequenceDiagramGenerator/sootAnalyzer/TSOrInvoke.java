@@ -431,7 +431,13 @@ public class TSOrInvoke{
 				if(jlparam != null){
 					SDObject anObj = (SDObject)sd.GetObjectFromName(jlparam.getName());
 					params.add(anObj);
-					anObj.SetTaintState(sd, TaintState.Tainted);
+					if(anObj != null){
+						anObj.SetTaintState(sd, TaintState.Tainted);
+					}
+					else{
+						String dbgsit = "hello";
+						System.out.println(dbgsit);
+					}
 				}
 				else{
 					params.add(null);

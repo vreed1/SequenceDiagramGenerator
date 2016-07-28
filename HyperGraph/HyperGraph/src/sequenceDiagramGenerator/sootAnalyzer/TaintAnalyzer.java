@@ -49,6 +49,8 @@ public class TaintAnalyzer {
     public void CullObjects(
     		GroupableHypergraph<MethodNodeAnnot, EdgeAnnotation> hg){
     	//List<TaintedObj> listObjs = new ArrayList<TaintedObj>();
+    	
+    	
     	List<HyperNode> listTS = new ArrayList<HyperNode>();
     	List<HyperNode<MethodNodeAnnot, EdgeAnnotation>> lv = hg.getVertices();
     	
@@ -57,6 +59,9 @@ public class TaintAnalyzer {
     			listTS.add(lv.get(i));
     		}
     	}
+    	
+    	List<HyperNode> listPrereq = new ArrayList<HyperNode>();
+    	List<HyperNode> listSubseq = new ArrayList<HyperNode>();
     	
     	List<HyperEdge<EdgeAnnotation>> le = hg.GetAllEdges();
     	List<Integer> listCurrent = new ArrayList<Integer>();
@@ -79,26 +84,26 @@ public class TaintAnalyzer {
     				if(le.get(i).targetNode == listCurrent.get(j)){
     					touchesNode = true;
     				}
-    				else{
+    				/*else{
     					for(Integer aSrc : le.get(i).sourceNodes){
     						if(aSrc == listCurrent.get(j)){
     							touchesNode = true;
     							break;
     					}
-    				}
-    				if(touchesNode)
+    				}*/
+    				if(touchesNode){
     					for(int k = 0; k < le.get(i).sourceNodes.size(); k++){
     						if(!listSeen.contains(le.get(i).sourceNodes.get(k))){
     							listSeen.add(le.get(i).sourceNodes.get(k));
     							listNext.add(le.get(i).sourceNodes.get(k));
-    							listTS.add(hg.GetCompleteNode(le.get(i).sourceNodes.get(k)));
+    							listSubseq.add(hg.GetCompleteNode(le.get(i).sourceNodes.get(k)));
     							NodesAdded = true;
     						}
     					}
     					if(!listSeen.contains(le.get(i).targetNode)){
     						listSeen.add(le.get(i).targetNode);
     						listNext.add(le.get(i).targetNode);
-    						listTS.add(hg.GetCompleteNode(le.get(i).targetNode));
+    						listSubseq.add(hg.GetCompleteNode(le.get(i).targetNode));
     						NodesAdded = true;
     					}
     					protectedEdges.add(le.get(i).getUID());
@@ -111,6 +116,60 @@ public class TaintAnalyzer {
 			listCurrent.addAll(listNext);
 			listNext.clear();
     	}
+    	
+    	
+    	listSeen.clear();
+    	for(int i = 0; i < listTS.size(); i++){
+    		listCurrent.add(listTS.get(i).uniqueId);
+    		listSeen.add(listTS.get(i).uniqueId);
+    	}
+    	
+    	NodesAdded = true;
+    	while(NodesAdded){
+    		NodesAdded = false;
+			for(int j = 0; j < listCurrent.size(); j++){
+				for(int i = le.size()-1; i >= 0; i--){
+					boolean touchesNode = false;
+					
+    				/*if(le.get(i).targetNode == listCurrent.get(j)){
+    					touchesNode = true;
+    				}
+    				else{*/
+					for(Integer aSrc : le.get(i).sourceNodes){
+						if(aSrc == listCurrent.get(j)){
+							touchesNode = true;
+							break;
+						}
+					}
+    				//}
+    				if(touchesNode){
+    					for(int k = 0; k < le.get(i).sourceNodes.size(); k++){
+    						if(!listSeen.contains(le.get(i).sourceNodes.get(k))){
+    							listSeen.add(le.get(i).sourceNodes.get(k));
+    							listNext.add(le.get(i).sourceNodes.get(k));
+    							listPrereq.add(hg.GetCompleteNode(le.get(i).sourceNodes.get(k)));
+    							NodesAdded = true;
+    						}
+    					}
+    					if(!listSeen.contains(le.get(i).targetNode)){
+    						listSeen.add(le.get(i).targetNode);
+    						listNext.add(le.get(i).targetNode);
+    						listPrereq.add(hg.GetCompleteNode(le.get(i).targetNode));
+    						NodesAdded = true;
+    					}
+    					protectedEdges.add(le.get(i).getUID());
+    					//hg.RemoveEdge(le.get(i).getUID());
+    					//le.remove(i);
+    				}
+    			}
+    		}
+			listCurrent.clear();
+			listCurrent.addAll(listNext);
+			listNext.clear();
+    	}
+    	
+    	
+    	
     	
     	
     	for(int i = 0; i < le.size(); i++){
@@ -127,6 +186,22 @@ public class TaintAnalyzer {
     			if(listTS.get(j).uniqueId == lNodes.get(i).uniqueId){
     				foundNode = true;
     				break;
+    			}
+    		}
+    		if(!foundNode){
+    			for(int j = 0; j < listSubseq.size(); j++){
+    				if(listSubseq.get(j).uniqueId == lNodes.get(i).uniqueId){
+    					foundNode = true;
+    					break;
+    				}
+    			}
+    		}
+    		if(!foundNode){
+    			for(int j = 0; j < listPrereq.size(); j++){
+    				if(listPrereq.get(j).uniqueId == lNodes.get(i).uniqueId){
+    					foundNode = true;
+    					break;
+    				}
     			}
     		}
     		if(!foundNode){

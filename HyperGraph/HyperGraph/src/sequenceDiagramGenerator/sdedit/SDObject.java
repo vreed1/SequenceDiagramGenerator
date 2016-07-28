@@ -344,16 +344,17 @@ public class SDObject
         for (ObjectFlag f : flags) {
             obj.append(String.format("[%s]", f.tag()));
         }
+        String lValue = label;
         if(tState == TaintState.Tainted){
-        	if(label == null){
-        		label = ":Tainted";
+        	if(lValue == null){
+        		lValue = ":Tainted";
         	}
         	else{
-        		label = label + ":Tainted";
+        		lValue = lValue + ":Tainted";
         	}
         }
-        if (label != null) 
-            obj.append(String.format("\"%s\"", label));
+        if (lValue != null) 
+            obj.append(String.format("\"%s\"", lValue));
         return obj.toString();
     }
 	public String GetName() {

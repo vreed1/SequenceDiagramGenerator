@@ -489,7 +489,7 @@ public class TestUI implements ActionListener{
 		
 		TaintAnalyzer ta = new TaintAnalyzer(taintFile);
 		
-		ta.CullObjects(hg);
+		//ta.CullObjects(hg);
 		
 		TSOrInvoke toi = new TSOrInvoke(ta);
 		List<SequenceDiagram> lDias = toi.GenerateTaintDiagrams(hg,q);
