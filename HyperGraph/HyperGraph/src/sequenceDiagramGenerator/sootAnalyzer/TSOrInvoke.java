@@ -409,6 +409,9 @@ public class TSOrInvoke{
 		//moved this here to help taint analysis.  
 		//i don't think this will have any impact.
 		
+		if(sourceObj.IsTainted()){
+			taintIntro = true;
+		}
 		
 		//If an object doesn't have an instance name
 		//(might be static)
@@ -432,7 +435,10 @@ public class TSOrInvoke{
 					SDObject anObj = (SDObject)sd.GetObjectFromName(jlparam.getName());
 					params.add(anObj);
 					if(anObj != null){
-						anObj.SetTaintState(sd, TaintState.Tainted);
+						if(taintIntro){
+							anObj.SetTaintState(sd, TaintState.Tainted);
+					
+						}
 					}
 					else{
 						String dbgsit = "hello";

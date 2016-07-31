@@ -174,6 +174,9 @@ public class SDMessage
     	}
     }
     
+    public boolean IsTainted(){
+    	return this.tState == TaintState.Tainted;
+    }
     
     public void SetFinalLevel(int lvl){
     	finalLevel = lvl;

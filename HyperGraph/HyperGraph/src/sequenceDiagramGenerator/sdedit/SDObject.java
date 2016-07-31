@@ -10,6 +10,7 @@ import java.util.Stack;
 import org.json.simple.JSONArray;
 import org.json.simple.JSONObject;
 
+import sequenceDiagramGenerator.sdedit.SDObject.TaintState;
 import soot.Scene;
 import soot.SootClass;
 import soot.SootField;
@@ -189,11 +190,19 @@ public class SDObject
 	
 	public void SetTaintState(SequenceDiagram sd, TaintState input){
 		this.tState = input;
-		for(int i = 0; i < theFields.values().size(); i++){
-			sd.GetObjectFromID(theFields.get(i)).SetTaintState(sd, input);
+		for(Map.Entry<String, Integer> entry : theFields.entrySet())
+		{	
+			SDObject anObj = sd.GetObjectFromID(entry.getValue());
+			if(anObj != null){
+				anObj.SetTaintState(sd, input);
+			}
 		}
 	}
-	
+
+    public boolean IsTainted(){
+    	return this.tState == TaintState.Tainted;
+    }
+    
 	public JSONObject toJSONObject(){
 		JSONObject jobj = new JSONObject();
 		
@@ -347,14 +356,15 @@ public class SDObject
         String lValue = label;
         if(tState == TaintState.Tainted){
         	if(lValue == null){
-        		lValue = ":Tainted";
+        		lValue = "&Tainted";
         	}
         	else{
-        		lValue = lValue + ":Tainted";
+        		lValue = lValue + "&Tainted";
         	}
         }
         if (lValue != null) 
-            obj.append(String.format("\"%s\"", lValue));
+        	obj.append(lValue);
+            //obj.append(String.format("\"%s\"", lValue));
         return obj.toString();
     }
 	public String GetName() {
