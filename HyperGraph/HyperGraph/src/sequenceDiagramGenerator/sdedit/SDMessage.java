@@ -214,11 +214,18 @@ public class SDMessage
         if (mnemonic != null) {
             msg.append(String.format("[%s]", mnemonic));
         }
-        msg.append(String.format(".%s", message));
-        
+        String localMsg = message;
         if(this.tState == TaintState.Tainted){
-        	msg.append(":Tainted");
+        	if(localMsg == "new"){
+        		//can't change this message to indicate anything.
+        		//oh well, it is still evident in the json.
+        	}
+        	else{
+        	localMsg = localMsg + "_Tainted";
+        	}
         }
+        msg.append(String.format(".%s", localMsg));
+        
         
         return msg.toString();
     	

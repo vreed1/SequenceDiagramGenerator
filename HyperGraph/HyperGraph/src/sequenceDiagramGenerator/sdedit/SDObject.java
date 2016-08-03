@@ -356,10 +356,10 @@ public class SDObject
         String lValue = label;
         if(tState == TaintState.Tainted){
         	if(lValue == null){
-        		lValue = "&Tainted";
+        		lValue = "_Tainted";
         	}
         	else{
-        		lValue = lValue + "&Tainted";
+        		lValue = lValue + "_Tainted";
         	}
         }
         if (lValue != null) 

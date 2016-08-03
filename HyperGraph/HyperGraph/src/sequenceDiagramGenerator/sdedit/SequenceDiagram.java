@@ -287,6 +287,19 @@ public class SequenceDiagram {
     	if(Utilities.DEBUG){
     		Utilities.DebugPrintln("---------SD---------");
     		Utilities.DebugPrintln(this.toString());
+    		String ofDbg = outFile + "DEBUG.txt";
+    		File aFile = new File(ofDbg);
+    		try{
+    			PrintStream ps = new PrintStream(aFile);
+    			ps.print(this.toString());
+    			ps.flush();
+    			ps.close();
+    			ps = null;
+    		} catch(FileNotFoundException e){
+    			e.printStackTrace();
+    			Utilities.DebugPrintln("DBG File Not Found");
+    			
+    		}
     		Utilities.DebugPrintln("--------------------");
     	}
     	MakePDFFromSDEdit(this.toString(), outFile);
