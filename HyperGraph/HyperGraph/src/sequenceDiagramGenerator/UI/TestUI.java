@@ -497,7 +497,7 @@ public class TestUI implements ActionListener{
 		String outdir = Utilities.GetArgument(args, "-outdir");
 		GenReducer gr = GenReducerFactory.Build(args);
 		DiagramPDFGen dpg = new DiagramPDFGen(lDias, gr,args);
-		dpg.CreatePDFs(outdir);
+		dpg.CreatePDFs(outdir, true);
 		
 		Utilities.PerfLogPrintln("AfterQueryReduction_RunTaintAnalysis," + Long.toString(System.nanoTime()));
 		

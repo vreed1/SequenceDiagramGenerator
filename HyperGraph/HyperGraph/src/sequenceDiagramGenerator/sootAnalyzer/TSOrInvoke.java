@@ -60,6 +60,11 @@ public class TSOrInvoke{
 		List<SequenceDiagram> lDias = new ArrayList<SequenceDiagram>();
 		for(int i = 0; i < lnodes.size(); i++){
 			try {
+				//BRIAN - DO NOT CHECK THIS IN IT IS TEMPORARY
+				//String mName = lnodes.get(i).data.GetMethod().getName();
+				//if(!mName.equals("run")){continue;}
+				//THIS IS JUST TO RESTRICT FOR SOME SPECIFIC TESTING STOP HERE.
+				
 				List<SequenceDiagram> listSDs =GenerateAllDiagrams(hg,
 						(GroupableHyperNode<MethodNodeAnnot, EdgeAnnotation>)lnodes.get(i),
 						q);
@@ -543,6 +548,11 @@ public class TSOrInvoke{
 							listCallStack,
 							q,
 							lvl +1);
+					//BLP - forcing taint regardless of subsituation 
+					//if it was introduced
+					if(taintIntro){
+						toReturn.tState = TaintState.Tainted;
+					}
 					for(int i = 0; i < toReturn.listDiagrams.size(); i++){
 						toReturn.listDiagrams.get(i).PopNames();
 					}
@@ -560,6 +570,11 @@ public class TSOrInvoke{
 							optionIndex,
 							q,
 							lvl +1);
+					//BLP - forcing taint regardless of subsituation 
+					//if it was introduced
+					if(taintIntro){
+						toReturn.tState = TaintState.Tainted;
+					}
 					sd.PopNames();
 				}
 				listCallStack.remove(listCallStack.size() -1);

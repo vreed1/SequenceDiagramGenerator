@@ -23,9 +23,18 @@ public class DiagramPDFGen {
 	}
 	
 	public void CreatePDFs(String directory){
+		CreatePDFs(directory, false);
+	}
+	
+	public void CreatePDFs(String directory, boolean taintMode){
 		List<SequenceDiagram> listDiagram = theReducer.SelectTopK(theDiagrams);
 		
 		for(int i = 0; i < listDiagram.size(); i++){
+			if(taintMode){
+				if(!listDiagram.get(i).hasTaint()){
+					continue;
+				}
+			}
 			listDiagram.get(i).CreatePDFInDir(directory, tersemode);
 			Utilities.PerfLogPrintln("DiagramDepth,"+Integer.toString(listDiagram.get(i).GetMaxDepth()));
 		}

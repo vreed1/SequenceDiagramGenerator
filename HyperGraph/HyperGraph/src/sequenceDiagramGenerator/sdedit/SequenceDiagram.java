@@ -104,6 +104,25 @@ public class SequenceDiagram {
     	thePriority = inval;
     }
     
+    public boolean hasTaint(){
+    	for(Map.Entry<Integer, SDObject> entry : this.theInstanceObjects.entrySet()){
+    		if(entry.getValue().IsTainted()){
+    			return true;
+    		}
+    	}
+    	for(Map.Entry<String, SDObject> entry : this.theStaticObjects.entrySet()){
+    		if(entry.getValue().IsTainted()){
+    			return true;
+    		}
+    	}
+    	for(int i =0; i < this.theMessages.size(); i++){
+    		if(this.theMessages.get(i).IsTainted()){
+    			return true;
+    		}
+    	}
+    	return false;
+    }
+    
     public int GetPriority(){
     	return thePriority;
     }

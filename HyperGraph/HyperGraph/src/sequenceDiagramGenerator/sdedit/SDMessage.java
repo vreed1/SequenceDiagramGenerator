@@ -171,7 +171,7 @@ public class SDMessage
     	if(inTState == TaintState.Tainted){
     		sd.GetObjectFromID(this.calleeID).SetTaintState(sd, inTState);
     		//discuss this point in particular.
-    		sd.GetObjectFromID(this.callerID).SetTaintState(sd, inTState);
+    		//sd.GetObjectFromID(this.callerID).SetTaintState(sd, inTState);
     	}
     }
     
