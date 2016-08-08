@@ -36,11 +36,14 @@ import soot.jimple.internal.AbstractDefinitionStmt;
 import soot.jimple.internal.AbstractStmt;
 import soot.jimple.internal.IdentityRefBox;
 import soot.jimple.internal.JAssignStmt;
+import soot.jimple.internal.JGotoStmt;
 import soot.jimple.internal.JInstanceFieldRef;
 import soot.jimple.internal.JNewExpr;
 import soot.jimple.internal.JReturnStmt;
 import soot.jimple.internal.JVirtualInvokeExpr;
 import soot.jimple.internal.JimpleLocal;
+import soot.shimple.internal.SPhiExpr;
+import soot.shimple.internal.SValueUnitPair;
 import utilities.ByRefInt;
 import utilities.Utilities;
 
@@ -300,6 +303,9 @@ public class TSOrInvoke{
 				}
 			}
 		}
+		//if(aStmt.theStmt instanceof JGotoStmt){
+		//	throw new Exception("Should never happen, ruled out by tracestatement constructor");
+		//			}
 		if(aStmt.theStmt instanceof AssignStmt){
 			AssignStmt assignStmt = (AssignStmt)aStmt.theStmt;
 			
@@ -548,7 +554,7 @@ public class TSOrInvoke{
 							listCallStack,
 							q,
 							lvl +1);
-					//BLP - forcing taint regardless of subsituation 
+					//BLP - forcing taint regardless of substitution 
 					//if it was introduced
 					if(taintIntro){
 						toReturn.tState = TaintState.Tainted;
@@ -570,7 +576,7 @@ public class TSOrInvoke{
 							optionIndex,
 							q,
 							lvl +1);
-					//BLP - forcing taint regardless of subsituation 
+					//BLP - forcing taint regardless of substitution 
 					//if it was introduced
 					if(taintIntro){
 						toReturn.tState = TaintState.Tainted;
@@ -742,6 +748,18 @@ public class TSOrInvoke{
 			else{
 				return prname;
 			}
+		}
+		if(obj instanceof SPhiExpr){
+			SPhiExpr sp = (SPhiExpr)obj;
+			for(int i = 0; i < sp.getArgs().size(); i++){
+				SValueUnitPair su = (SValueUnitPair)sp.getArgs().get(i);
+				Value vb = su.getValue();
+				SDObject aObj = extractObject(vb, sd);
+				if(aObj != null){
+					return aObj;
+				}
+			}
+			return null;
 		}
 		//Brian added this, used to return null until recently.
 		if(mode == 0){
