@@ -189,6 +189,8 @@ public class SDObject
 	}
 	
 	public void SetTaintState(SequenceDiagram sd, TaintState input){
+		//Can't untaint objects.
+		if(input == TaintState.Safe){return;}
 		this.tState = input;
 		for(Map.Entry<String, Integer> entry : theFields.entrySet())
 		{	

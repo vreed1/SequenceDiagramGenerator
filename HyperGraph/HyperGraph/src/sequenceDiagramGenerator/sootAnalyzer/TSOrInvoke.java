@@ -670,6 +670,7 @@ public class TSOrInvoke{
 		
 		if(rightObj != null){
 			sd.AttachNameToObject(leftName, rightObj);
+			
 			rightObj.SetTaintState(sd, toReturn.tState);
 		}
 		else{
