@@ -36,6 +36,7 @@ import soot.jimple.internal.AbstractDefinitionStmt;
 import soot.jimple.internal.AbstractStmt;
 import soot.jimple.internal.IdentityRefBox;
 import soot.jimple.internal.JAssignStmt;
+import soot.jimple.internal.JCastExpr;
 import soot.jimple.internal.JGotoStmt;
 import soot.jimple.internal.JInstanceFieldRef;
 import soot.jimple.internal.JNewExpr;
@@ -647,6 +648,7 @@ public class TSOrInvoke{
 					lvl);
 			
 			if(allResults.tState == TaintState.Tainted){
+
 				toReturn.tState = TaintState.Tainted;
 			}
 			
@@ -660,8 +662,8 @@ public class TSOrInvoke{
 				else{
 					retObj = allResults.listReturns.get(i);
 				}
-				retObj.SetTaintState(sd, allResults.tState);
 				allResults.listDiagrams.get(i).AttachNameToObject(leftName, retObj);
+				retObj.SetTaintState(allResults.listDiagrams.get(i), allResults.tState);
 			}
 			return allResults;
 		}
@@ -761,6 +763,14 @@ public class TSOrInvoke{
 				}
 			}
 			return null;
+		}
+		if(obj instanceof JCastExpr){
+			JCastExpr jce = (JCastExpr)obj;
+			Value vb = jce.getOp();
+			SDObject aObj = extractObject(vb, sd);
+			if(aObj != null){
+				return aObj;
+			}
 		}
 		//Brian added this, used to return null until recently.
 		if(mode == 0){

@@ -474,7 +474,9 @@ public class TestUI implements ActionListener{
 					parentDir = jars[i].getCanonicalPath();
 				ClassPath = ClassPath + Utilities.GetClassPathDelim() + parentDir;
 			}
+			//Analyzer.setSootClassPath("/usr/lib/jvm/java-7-openjdk-amd64/jre/lib/rt.jar");
 			hg = Analyzer.AnalyzeFromJAR(listClasses, ClassPath);
+			
 		} catch (IOException e1) {
 			// TODO Auto-generated catch block
 			e1.printStackTrace();
