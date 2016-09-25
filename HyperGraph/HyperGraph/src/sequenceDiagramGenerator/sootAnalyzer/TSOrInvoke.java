@@ -8,6 +8,7 @@ import sequenceDiagramGenerator.MethodNodeAnnot;
 import sequenceDiagramGenerator.Query;
 import sequenceDiagramGenerator.QueryDataContainer;
 import sequenceDiagramGenerator.TraceStatement;
+import sequenceDiagramGenerator.TraceStatement.BranchStatus;
 import sequenceDiagramGenerator.Query.QueryResponse;
 import sequenceDiagramGenerator.hypergraph.EdgeAnnotation;
 import sequenceDiagramGenerator.hypergraph.GroupableHyperEdge;
@@ -180,7 +181,8 @@ public class TSOrInvoke{
 					null,
 					null,
 					q,
-					lvl));
+					lvl,
+					tc));
 		}
 		toReturn.compress();
 		return toReturn;
@@ -237,7 +239,8 @@ public class TSOrInvoke{
 				options,
 				optionIndex,
 				q,
-				lvl);
+				lvl,
+				tc);
 	}
 	
 	private TSDListAndReturns RecFillTraceAllStmtDiagram(
@@ -253,7 +256,8 @@ public class TSOrInvoke{
 			List<Integer> options,
 			ByRefInt optionIndex,
 			Query q,
-			int lvl) throws Exception
+			int lvl,
+			TraceStatement top) throws Exception
 	{
 		//List<SequenceDiagram> toReturn = new ArrayList<SequenceDiagram>();
 		TSDListAndReturns toReturn = allSDs.Copy(sdIndex);
@@ -323,7 +327,8 @@ public class TSOrInvoke{
 					optionIndex, 
 					assignStmt,
 					q,
-					lvl);
+					lvl,
+					top);
 			
 		}
 		//If a statement contains an invoke expression
@@ -350,7 +355,7 @@ public class TSOrInvoke{
 		}
 		if(aStmt.theStmt instanceof JReturnStmt){
 			JReturnStmt rs = (JReturnStmt)aStmt.theStmt;
-			SDObject retObj = extractObject(rs.getOp(), sd);
+			SDObject retObj = extractObject(rs.getOp(), sd, top);
 			toReturn.SetSafeReturn(0, retObj);
 		}
 		//after we've handled everything in this statement
@@ -372,7 +377,8 @@ public class TSOrInvoke{
 						null,
 						null,
 						q,
-						lvl));
+						lvl,
+						top));
 			}
 			return toReturnNew;
 		}
@@ -390,7 +396,8 @@ public class TSOrInvoke{
 					options,
 					optionIndex,
 					q,
-					lvl);
+					lvl,
+					top);
 			return null;
 		}
 	}
@@ -611,7 +618,8 @@ public class TSOrInvoke{
 			ByRefInt optionIndex,
 			AssignStmt assignStmt,
 			Query q,
-			int lvl) throws Exception{
+			int lvl,
+			TraceStatement top) throws Exception{
 
 		SequenceDiagram sd = allSDs.listDiagrams.get(sdIndex);
 		TSDListAndReturns toReturn = allSDs.Copy(sdIndex);
@@ -619,7 +627,7 @@ public class TSOrInvoke{
 		
 		toReturn.tState = TaintState.Safe;
 		
-		String leftName = extractName(assignStmt.getLeftOp(), sd);
+		String leftName = extractName(assignStmt.getLeftOp(), sd, top);
 		if(leftName == null || leftName.equals("")){
 			return toReturn;
 		}
@@ -668,7 +676,7 @@ public class TSOrInvoke{
 			return allResults;
 		}
 		
-		SDObject rightObj = extractObject(assignStmt.getRightOp(), sd);
+		SDObject rightObj = extractObject(assignStmt.getRightOp(), sd, top);
 		
 		if(rightObj != null){
 			sd.AttachNameToObject(leftName, rightObj);
@@ -684,15 +692,25 @@ public class TSOrInvoke{
 		return toReturn;
 	}
 	
-	private SDObject extractObject(Object v, SequenceDiagram sd){
-		return (SDObject)extract(v, sd, 0);
+	private SDObject extractObject(
+			Object v, 
+			SequenceDiagram sd,
+			TraceStatement top){
+		return (SDObject)extract(v, sd, 0, top);
 	}
 	
-	private String extractName(Object v, SequenceDiagram sd){
-		return (String)extract(v, sd, 1);
+	private String extractName(
+			Object v, 
+			SequenceDiagram sd,
+			TraceStatement top){
+		return (String)extract(v, sd, 1, top);
 	}
 	
-	private Object extract(Object v, SequenceDiagram sd, int mode){
+	private Object extract(
+			Object v, 
+			SequenceDiagram sd, 
+			int mode,
+			TraceStatement top){
 		Object obj = null;
 		if(v instanceof AbstractValueBox){
 			AbstractValueBox avb = (AbstractValueBox)v;
@@ -719,7 +737,7 @@ public class TSOrInvoke{
 		else if(v instanceof JInstanceFieldRef){
 			JInstanceFieldRef ret = (JInstanceFieldRef)v;
 			Value val = ret.getBase();
-			SDObject baseObj = extractObject(val, sd);
+			SDObject baseObj = extractObject(val, sd, top);
 			SootField sf = ret.getField();
 			if(mode == 0){
 				return baseObj.getField(sf.getName(), sd);
@@ -754,20 +772,22 @@ public class TSOrInvoke{
 		}
 		if(obj instanceof SPhiExpr){
 			SPhiExpr sp = (SPhiExpr)obj;
-			for(int i = 0; i < sp.getArgs().size(); i++){
+			Object o = SolvePhiExpr(sp, top, sd);
+			return o;
+			/*for(int i = 0; i < sp.getArgs().size(); i++){
 				SValueUnitPair su = (SValueUnitPair)sp.getArgs().get(i);
 				Value vb = su.getValue();
-				SDObject aObj = extractObject(vb, sd);
+				SDObject aObj = extractObject(vb, sd, top);
 				if(aObj != null){
 					return aObj;
 				}
 			}
-			return null;
+			return null;*/
 		}
 		if(obj instanceof JCastExpr){
 			JCastExpr jce = (JCastExpr)obj;
 			Value vb = jce.getOp();
-			SDObject aObj = extractObject(vb, sd);
+			SDObject aObj = extractObject(vb, sd, top);
 			if(aObj != null){
 				return aObj;
 			}
@@ -782,6 +802,38 @@ public class TSOrInvoke{
 		//end of added code.
 	}
 	
+	private Object SolvePhiExpr(
+			SPhiExpr sp, 
+			TraceStatement top, 
+			SequenceDiagram sd) {
+		
+		for(int i = 0; i < sp.getArgs().size(); i++){
+			SValueUnitPair su = (SValueUnitPair)sp.getArgs().get(i);
+			AbstractStmt as = (AbstractStmt) su.getUnit();
+			if(BranchSatisfies(top, as)){
+				Value vb = su.getValue();
+				SDObject aObj = extractObject(vb, sd, top);
+				if(aObj != null){
+					return aObj;
+				}
+			}
+		}
+		return null;
+	}
+
+	private boolean BranchSatisfies(TraceStatement top, AbstractStmt as) {
+		TraceStatement aStmt = top;
+		while(aStmt != null){
+			if(aStmt.theStmt == as){
+				if(aStmt.theBranchStatus != BranchStatus.FalseChosen){
+					return true;
+				}
+			}
+			aStmt = aStmt.theNext;
+		}
+		return false;
+	}
+
 	//helper function to extract a local from a Value
 	//Values may or may not contain locals
 	//the statement
