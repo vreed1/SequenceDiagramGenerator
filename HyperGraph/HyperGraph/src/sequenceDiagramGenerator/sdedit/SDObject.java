@@ -200,6 +200,10 @@ public class SDObject
 			}
 		}
 	}
+	
+	public TaintState GetTaintState(){
+		return this.tState;
+	}
 
     public boolean IsTainted(){
     	return this.tState == TaintState.Tainted;

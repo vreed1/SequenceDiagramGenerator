@@ -529,6 +529,9 @@ public class TSOrInvoke{
 			//now that the sd has a source and target, we can
 			//add the message.
 			SDMessage msg = new SDMessage(sourceObj, sdTarget, sm, isSuper, lvl, TaintState.Safe);
+			if(sdTarget.GetTaintState() == TaintState.Tainted){
+				toReturn.tState = TaintState.Tainted;
+			}
 			msg.SetTaintState(sd, toReturn.tState);
 			sd.AddMessage(msg);
 			
