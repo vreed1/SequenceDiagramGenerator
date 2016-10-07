@@ -110,7 +110,7 @@ public class Analyzer {
 
 		if(AppendtoClassPath != null ){
 			if(!AppendtoClassPath.isEmpty()){
-				setSootClassPath(getSootClassPath()  + AppendtoClassPath);
+				setSootClassPath(getSootClassPath() +":" + AppendtoClassPath);
 			}
 		}
 
