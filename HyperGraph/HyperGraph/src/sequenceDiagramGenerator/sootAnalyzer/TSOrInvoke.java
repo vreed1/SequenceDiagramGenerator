@@ -51,6 +51,8 @@ import utilities.Utilities;
 
 public class TSOrInvoke{
 	
+	private static int MAXLVL = 10;
+	
 	private TaintAnalyzer tTest;
 	
 	public TSOrInvoke(TaintAnalyzer inTest){
@@ -117,6 +119,7 @@ public class TSOrInvoke{
 				outerObject,
 				new ArrayList<String>(),
 				q,
+				0,
 				0).listDiagrams;
 
 		return listToReturn;
@@ -132,7 +135,8 @@ public class TSOrInvoke{
 			SDObject outerObject,
 			List<String> listCallStack,
 			Query q,
-			int lvl) throws Exception{
+			int lvl,
+			int reclvl) throws Exception{
 	
 		TSDListAndReturns toReturn = allSDs.Copy(sdIndex);
 		//SDListAndReturns toReturn = new SDListAndReturns();
@@ -182,7 +186,8 @@ public class TSOrInvoke{
 					null,
 					q,
 					lvl,
-					tc));
+					tc,
+					reclvl));
 		}
 		toReturn.compress();
 		return toReturn;
@@ -199,7 +204,8 @@ public class TSOrInvoke{
 			List<Integer> options,
 			ByRefInt optionIndex,
 			Query q,
-			int lvl) throws Exception{
+			int lvl,
+			int reclvl) throws Exception{
 	
 		TSDListAndReturns toReturn = allSDs.Copy(sdIndex);
 		//toReturn.listDiagrams.add(allSDs.listDiagrams.get(sdIndex));
@@ -240,7 +246,8 @@ public class TSOrInvoke{
 				optionIndex,
 				q,
 				lvl,
-				tc);
+				tc,
+				reclvl);
 	}
 	
 	private TSDListAndReturns RecFillTraceAllStmtDiagram(
@@ -257,7 +264,8 @@ public class TSOrInvoke{
 			ByRefInt optionIndex,
 			Query q,
 			int lvl,
-			TraceStatement top) throws Exception
+			TraceStatement top,
+			int reclvl) throws Exception
 	{
 		//List<SequenceDiagram> toReturn = new ArrayList<SequenceDiagram>();
 		TSDListAndReturns toReturn = allSDs.Copy(sdIndex);
@@ -268,6 +276,9 @@ public class TSOrInvoke{
 		//}
 		
 		if(aStmt == null){return toReturn;}
+		
+		//HARD mem fix! bad!
+		if(MAXLVL > 0 && reclvl > MAXLVL){return toReturn;}
 		
 		SDObject sourceObj = (SDObject)sd.GetObjectFromID(sourceObjID);
 		
@@ -328,7 +339,8 @@ public class TSOrInvoke{
 					assignStmt,
 					q,
 					lvl,
-					top);
+					top,
+					reclvl);
 			
 		}
 		//If a statement contains an invoke expression
@@ -350,7 +362,8 @@ public class TSOrInvoke{
 					options, 
 					optionIndex,
 					q,
-					lvl);
+					lvl,
+					reclvl);
 					
 		}
 		if(aStmt.theStmt instanceof JReturnStmt){
@@ -378,7 +391,8 @@ public class TSOrInvoke{
 						null,
 						q,
 						lvl,
-						top));
+						top,
+						reclvl+1));
 			}
 			return toReturnNew;
 		}
@@ -397,7 +411,8 @@ public class TSOrInvoke{
 					optionIndex,
 					q,
 					lvl,
-					top);
+					top,
+					reclvl+1);
 			return null;
 		}
 	}
@@ -414,15 +429,23 @@ public class TSOrInvoke{
 			List<Integer> options,
 			ByRefInt optionIndex,
 			Query q,
-			int lvl
+			int lvl,
+			int reclvl
 			) throws Exception{
 		
 		SequenceDiagram sd = allSDs.listDiagrams.get(sdIndex);
 		TSDListAndReturns toReturn = allSDs.Copy(sdIndex);
 		//toReturn.listDiagrams.add(sd);
+		SootMethod calledMethod = null;
 		
-		SootMethod calledMethod = ie.getMethod();
-
+		try{
+			calledMethod = ie.getMethod();
+		}
+		catch(Exception ex){
+			Utilities.DebugPrintln("Error on getMethod");
+			return toReturn;
+		}
+			
 		boolean taintIntro = this.tTest.IsMethodTainted(calledMethod);
 		
 		//moved this here to help taint analysis.  
@@ -564,7 +587,8 @@ public class TSOrInvoke{
 							sdTarget,
 							listCallStack,
 							q,
-							lvl +1);
+							lvl +1,
+							reclvl+1);
 					//BLP - forcing taint regardless of substitution 
 					//if it was introduced
 					if(taintIntro){
@@ -586,7 +610,8 @@ public class TSOrInvoke{
 							options,
 							optionIndex,
 							q,
-							lvl +1);
+							lvl +1,
+							reclvl + 1);
 					//BLP - forcing taint regardless of substitution 
 					//if it was introduced
 					if(taintIntro){
@@ -622,7 +647,8 @@ public class TSOrInvoke{
 			AssignStmt assignStmt,
 			Query q,
 			int lvl,
-			TraceStatement top) throws Exception{
+			TraceStatement top,
+			int reclvl) throws Exception{
 
 		SequenceDiagram sd = allSDs.listDiagrams.get(sdIndex);
 		TSDListAndReturns toReturn = allSDs.Copy(sdIndex);
@@ -656,7 +682,8 @@ public class TSOrInvoke{
 					options, 
 					optionIndex,
 					q,
-					lvl);
+					lvl,
+					reclvl);
 			
 			if(allResults.tState == TaintState.Tainted){
 

@@ -4,6 +4,7 @@ import java.io.ByteArrayInputStream;
 import java.io.File;
 import java.io.FileNotFoundException;
 import java.io.FileOutputStream;
+import java.io.FileReader;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
@@ -16,10 +17,13 @@ import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
+import java.util.UUID;
 import java.util.regex.Pattern;
 
 import org.json.simple.JSONArray;
 import org.json.simple.JSONObject;
+import org.json.simple.parser.JSONParser;
+import org.json.simple.parser.ParseException;
 
 import soot.SootClass;
 import utilities.SetableList;
@@ -53,15 +57,38 @@ public class SequenceDiagram {
     protected static String diagType = "pdf";
     protected static String diagFormat = "A4";
     protected static String diagOrientation = "portrait";
+    
+    protected UUID theID;
 
     public SequenceDiagram() {
         theInstanceObjects = new HashMap<Integer, SDObject>();
         theMessages = new ArrayList<SDMessage>();
         theStaticObjects = new HashMap<String,SDObject>();
+        theID = UUID.randomUUID();
+    }
+    
+    public static SequenceDiagram FromFile(String filename){
+    	try{
+    		JSONParser jp = new JSONParser();
+    		FileReader fr = new FileReader(filename);
+    		JSONObject jobj = (JSONObject) jp.parse(fr);
+    		fr.close();
+    		fr = null;
+    		return new SequenceDiagram(jobj);
+    	}
+    	catch(Exception ex){
+    		return null;
+    	}
     }
     
     public SequenceDiagram(JSONObject jobj){
     	
+    	if(jobj.containsKey("ID")){
+    		theID = UUID.fromString((String)jobj.get("ID"));
+    	}
+    	else{
+    		theID = UUID.randomUUID();
+    	}
     	theName = (String)jobj.get("Name");
     	thePriority = Integer.parseInt((String)jobj.get("Priority"));
     	
@@ -326,7 +353,7 @@ public class SequenceDiagram {
     	MakeJSONFile(outFile);
     }
     
-    private void MakeJSONFile(String pdfFile){
+    public void MakeJSONFile(String pdfFile){
     	String jsonFile = pdfFile.substring(0, pdfFile.length()-3) + "json";
     	JSONObject jobj = this.toJSONObject();
     	String filecontents = jobj.toJSONString();
@@ -539,6 +566,8 @@ public class SequenceDiagram {
 		SetMaxDepth();
 		JSONObject topObj = new JSONObject();
 		
+		topObj.put("ID", theID.toString());
+		
 		JSONObject sObjs = new JSONObject();
 		Iterator<String> iStatics = this.theStaticObjects.keySet().iterator();
 		while(iStatics.hasNext())
@@ -630,5 +659,9 @@ public class SequenceDiagram {
 
 	public int GetMaxDepth() {
 		return this.theMaxDepth;
+	}
+
+	public String IDString() {
+		return theID.toString();
 	}
 }

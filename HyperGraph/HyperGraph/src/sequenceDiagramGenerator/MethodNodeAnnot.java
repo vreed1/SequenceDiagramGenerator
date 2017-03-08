@@ -54,7 +54,7 @@ public class MethodNodeAnnot {
 				theTraces = new ArrayList<TraceStatement>();
 			}
 			else{
-				theTraces = Analyzer.GenerateAllTracesFromBranches(theBStmt, new ArrayList<BranchableStmt>());
+				theTraces = Analyzer.GenerateAllTracesFromBranches(theBStmt, new ArrayList<BranchableStmt>(), 0);
 				singleTraceCache.Set(theMethodName, theTraces);
 			}
 		}

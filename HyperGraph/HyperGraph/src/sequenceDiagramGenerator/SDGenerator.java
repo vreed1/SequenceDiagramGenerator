@@ -14,9 +14,10 @@ import sequenceDiagramGenerator.sdedit.SDMessage;
 import sequenceDiagramGenerator.sdedit.SDObject;
 import sequenceDiagramGenerator.sdedit.SDObject.TaintState;
 import sequenceDiagramGenerator.sdedit.SequenceDiagram;
-import soot.AbstractValueBox;
+import sequenceDiagramGenerator.sootAnalyzer.SeqDiaSet;
 import soot.SootClass;
 import soot.SootField;
+import soot.AbstractValueBox;
 import soot.SootMethod;
 import soot.Value;
 import soot.jimple.AssignStmt;
@@ -31,6 +32,7 @@ import soot.jimple.internal.JNewExpr;
 import soot.jimple.internal.JReturnStmt;
 import soot.jimple.internal.JVirtualInvokeExpr;
 import soot.jimple.internal.JimpleLocal;
+import soot.jimple.internal.JArrayRef;
 import utilities.ByRefInt;
 import utilities.Utilities;
 
@@ -743,6 +745,13 @@ public class SDGenerator {
 			else{
 				return prname;
 			}
+		}
+		if(obj instanceof JArrayRef){
+			JArrayRef jr = (JArrayRef)obj;
+			Value vb = jr.getBase();
+			Value vi = jr.getIndex();
+			//Brian 2017 unfinished
+			return vb.toString() + "[" + vi.toString() + "]";
 		}
 		//Brian added this, used to return null until recently.
 		if(mode == 0){

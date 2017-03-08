@@ -148,11 +148,20 @@ public class SDObject
 	}
 	
 	public SDObject(JSONObject jobj){
+
+		theCurrentNames = new ArrayList<String>();
+		theCallStackNames = new Stack<List<String>>();
 		
 		ID = Integer.parseInt((String)jobj.get("ID"));
 		name = (String)jobj.get("name");
 		type = (String)jobj.get("type");
 		label = (String)jobj.get("label");
+		
+		try{
+			theSootClass = Scene.v().getSootClass(type);}
+	    catch(java.lang.RuntimeException ex){
+	        Utilities.DebugPrintln("Unfound SootClass: " + type);
+	    }
 		
 		isConstructed = Boolean.parseBoolean((String)jobj.get("isConstructed"));
 		isStatic = Boolean.parseBoolean((String)jobj.get("isStatic"));
@@ -173,6 +182,20 @@ public class SDObject
 		
 		for(int i = 0; i < jarr.size(); i++){
 			theNameHistory.add((String)jarr.get(i));
+		}
+		
+		jarr = (JSONArray)jobj.get("theCurrentNames");
+		for(int i = 0; i < jarr.size(); i++){
+			theCurrentNames.add((String)jarr.get(i));
+		}
+		jarr = (JSONArray)jobj.get("theCallStackNames");
+		for(int i = jarr.size() - 1; i >= 0; i--){
+			JSONArray subarr = (JSONArray)jarr.get(i);
+			List<String> sublist = new ArrayList<String>();
+			for(int j= 0; j < subarr.size(); j++){
+				sublist.add((String)subarr.get(j));
+			}
+			theCallStackNames.push(sublist);
 		}
 		
 		JSONObject jobjFields = (JSONObject)jobj.get("theFields");
@@ -232,10 +255,27 @@ public class SDObject
 		//because they are only relevant during generation.
 		
 		JSONArray jarr = new JSONArray();
-		for(int i = 0; i < theNameHistory.size(); i++){
-			jarr.add(theNameHistory.get(i));
+		for(int i = 0; i < theCurrentNames.size(); i++){
+			jarr.add(theCurrentNames.get(i));
 		}
-		jobj.put("theNameHistory", jarr);
+		jobj.put("theCurrentNames", jarr);
+		
+		JSONArray jarr2 = new JSONArray();
+		for(int i = 0; i < theCallStackNames.size(); i++){
+			JSONArray jsubarr = new JSONArray();
+			List<String> lsnames = theCallStackNames.get(i);
+			for(int j = 0; j < lsnames.size(); j++){
+				jsubarr.add(lsnames.get(j));
+			}
+			jarr2.add(jsubarr);
+		}
+		jobj.put("theCallStackNames", jarr2);
+		
+		JSONArray jarr3 = new JSONArray();
+		for(int i = 0; i < theNameHistory.size(); i++){
+			jarr3.add(theNameHistory.get(i));
+		}
+		jobj.put("theNameHistory", jarr3);
 		
 		JSONObject jobjFields = new JSONObject();
 		Iterator<String> iFieldKeys = theFields.keySet().iterator();
@@ -265,8 +305,13 @@ public class SDObject
 						break;
 					}
 				}
-				Type t = sf.getType();
-				newObj = new SDObject(t, "", false, sf.isStatic(), tState);
+				try{
+					Type t = sf.getType();
+					newObj = new SDObject(t, "", false, sf.isStatic(), tState);
+				}
+				catch(java.lang.NullPointerException e){
+					newObj = new SDObject("UnknownType", "", false, false, tState);
+				}
 			}
 			else{
 				newObj = new SDObject("UnknownType", "", false, false, tState);

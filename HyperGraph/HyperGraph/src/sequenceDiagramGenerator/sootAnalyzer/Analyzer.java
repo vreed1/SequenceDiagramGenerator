@@ -36,6 +36,8 @@ import utilities.Utilities;
 
 public class Analyzer {
 	
+	private static int MAXLVL = 10;
+	
 	//Many methods here are helper methods designed to 
 	//work around different ways of specifying classes
 	//to be analyzed.
@@ -229,6 +231,29 @@ public class Analyzer {
 				HyperNode<MethodNodeAnnot, EdgeAnnotation> tarNode = hg.GetCompleteNode(finder);
 				
 				if(tarNode == null){
+					
+					//Brian - 2017 dangerous code.
+					SootClass c= null;
+					String cname = finder.GetMethod().getDeclaringClass().getName();
+					try{
+						c = Scene.v().loadClassAndSupport(cname);
+					}
+					catch(Exception ex){
+						Utilities.DebugPrintln("Couldn't load class: " + cname);
+						Utilities.DebugPrintln(ex.getMessage());
+					}
+					if(c != null){
+					AddClassToHypergraph(
+							hg,
+							c);}
+					//Brian - end dangerous stuff - commented out
+					//next line which adds "empty" placeholder nodes to
+					//untraversed code.
+					
+					//hg.AddNode(finder);
+					tarNode = hg.GetCompleteNode(finder);
+				}
+				if(tarNode == null){
 					hg.AddNode(finder);
 					tarNode = hg.GetCompleteNode(finder);
 				}
@@ -264,8 +289,11 @@ public class Analyzer {
 			ShimpleBody sb = Shimple.v().newBody(b);
 			pcu = sb.getUnits();
 		}
-		catch(java.lang.RuntimeException ex){
-			Utilities.DebugPrintln("Not possible to analyze method: " + sm.getName() + " Error: " + ex.getMessage());
+		//catch(java.lang.RuntimeException ex){
+		//	Utilities.DebugPrintln("Not possible to analyze method: " + sm.getName() + " Error: " + ex.getMessage());
+		//}
+		catch(java.lang.Exception ex2){
+			Utilities.DebugPrintln("Not possible to analyze method2: " + sm.getName() + " Error: " + ex2.getMessage());
 		}
 		if(pcu != null){
 			if(Utilities.DEBUG){
@@ -294,17 +322,19 @@ public class Analyzer {
 
 	public static List<TraceStatement> GenerateAllTracesFromBranches(
 			BranchableStmt bs,
-			List<BranchableStmt> listSeen) {
+			List<BranchableStmt> listSeen,
+			int reclvl) {
 		
 		List<TraceStatement> toReturn = new ArrayList<TraceStatement>();
 		if(listSeen.contains(bs)){return toReturn;}
+		if(MAXLVL > 0 && reclvl > MAXLVL){return toReturn;}
 		
 		List<BranchableStmt> newSeen = new ArrayList<BranchableStmt>(listSeen);
 		newSeen.add(bs);
 		BranchStatus bStat = BranchStatus.NotBranch;
 		if(bs.theElse != null){
 			bStat = BranchStatus.TrueChosen;
-			List<TraceStatement> listE = GenerateAllTracesFromBranches(bs.theElse, newSeen);
+			List<TraceStatement> listE = GenerateAllTracesFromBranches(bs.theElse, newSeen, reclvl+1);
 			for(int i = 0; i < listE.size(); i++){
 				TraceStatement its = listE.get(i);
 				TraceStatement tthis = new TraceStatement(bs.theStmt, its);
@@ -313,7 +343,7 @@ public class Analyzer {
 			}
 		}
 		if(bs.theNext != null){
-			List<TraceStatement> listN = GenerateAllTracesFromBranches(bs.theNext, newSeen);
+			List<TraceStatement> listN = GenerateAllTracesFromBranches(bs.theNext, newSeen, reclvl+1);
 			for(int i = 0; i < listN.size(); i++){
 				TraceStatement its = listN.get(i);
 				TraceStatement tthis = new TraceStatement(bs.theStmt, its);
@@ -639,6 +669,16 @@ public class Analyzer {
 		List<SootMethod> listMethods = aClass.getMethods();
 		for(int i = 0; i < listMethods.size(); i++){
 			SootMethod m = listMethods.get(i);
+			if(Utilities.DEBUG){
+				Utilities.DebugPrintln("METHOD:"+m.getName());
+			}
+			//BLP - 2017 horrible kludge per err like
+			//https://mailman.cs.mcgill.ca/pipermail/soot-list/2011-May/003695.html
+			if(m.getName().equals("toXml") ||
+					m.getName().equals("readObject") ||
+					m.getName().equals("addServletSecurity")){
+				continue;
+				}
 			MethodNodeAnnot mannot = BuildAnnotFromMethod(m);
 			hg.AddNode(mannot);
 		}
