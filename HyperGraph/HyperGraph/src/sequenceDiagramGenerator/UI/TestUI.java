@@ -496,6 +496,18 @@ public class TestUI implements ActionListener{
 		TSOrInvoke toi = new TSOrInvoke(ta);
 		List<SequenceDiagram> lDias = toi.GenerateTaintDiagrams(hg,q);
 		
+		
+		//BLP TEMP BUG FINDING
+		if(false){
+			List<SequenceDiagram> lsubset = new ArrayList<SequenceDiagram>();
+			for(int qi = 0; qi < lDias.size(); qi++){
+				if(lDias.get(qi).GetMessages().size() > 0){
+					lsubset.add(lDias.get(qi));
+				}
+			}
+			System.out.println(Integer.toString(lsubset.size()));
+		}
+		
 		String outdir = Utilities.GetArgument(args, "-outdir");
 		GenReducer gr = GenReducerFactory.Build(args);
 		DiagramPDFGen dpg = new DiagramPDFGen(lDias, gr,args);

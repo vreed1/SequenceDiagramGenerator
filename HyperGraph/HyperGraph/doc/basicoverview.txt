@@ -1,0 +1,104 @@
+The entrypoint class is
+
+sequenceDiagramGenerator.UI.TestUI.java
+
+A sample execution argument for small taint analysis would be 
+(not including java and the argument to the location of the TestUI jar/class)
+
+-ta -classpath "/home/brian/javax.servlet-api-3.0.1.jar" -jars "/home/brian/Desktop/gradschool/supratik/tomcat-catalina-7.0.25.jar" -taintfile "/home/brian/Desktop/gradschool/supratik/taintfile" -outdir "/home/brian/Desktop/gradschool/supratik/outdirtomcat/" -startswith "org.apache.catalina"
+
+-ta specifies taint analysis, there are other options for older functionality.
+
+-classpath specifies TO TAINT ANALYSIS what jars should be loaded into SOOT's classpath
+
+-jars specifies the jar(s) we will actually analyze.
+
+-taintfile specifies the file which lists methods we consider tainted
+
+-outdir specifies the directory to which any output files (pdf and json, and potentially dbg txt) will be written / OVERWRITTEN
+
+-startswith specifies a package prefix in the jar(s) to be analyzed that we want to restrict ourselves to
+
+
+Execution Process -
+If we examine the function
+RunTaintAnalysis 
+in TestUI.java
+
+We first pull execution arguments into data structures.
+Then we look at the jar(s) to analyze and pull out every class in the jar, then compare
+its full package name to the startswith prefix. If they match we add the class to a list
+for analysis
+
+We then call
+Analyzer.AnalyzeFromJar
+which creates the code hypergraph given the class subset.  More details below
+
+After this we create a TaintAnalyzer object from the taintfile argument, and run the method
+TSOrInvoke.GenerateTaintDiagrams More details below
+To create an arraylist of SequenceDiagram objects
+
+After this we build a diagram reducer object,
+GenReducer
+And a pdf generator
+DiagramPDFGen
+And we use those to print the diagrams out to the output directory.
+
+sequenceDiagramGenerator.sootAnalyzer.Analyzer.AnalyzeFromJar
+
+This function uses soot to create a hypergraph by iteratively adding each class in the analysis
+subset to a initially empty hypergraph object.
+
+The call to 
+Scene.v().loadClassAndSupport(listClassNames.get(i)
+May fail for some classes that soot for whatever reason can't interpret.  
+This is often because the classpath given to soot is incomplete / incorrect.
+
+If soot is able to load the class, we call the method 
+Analyzer.AddClassToHypergraph
+-NOTE: There is a bad kludge in this method, see comments.  
+-There have been a few classes that,
+-although they may get through loadClassAndSupport, cannot be instrumented.
+-I did not see an alternative but to deal with these classes individually at the time.
+-Although even this method should be made more formal.
+This function constructs an instance of
+sequenceDiagramGenerator.MethodNodeAnnot
+via the function
+Analyzer.BuildAnnotFromMethod
+and uses it to annotate a new node which is added to the hypergraph.
+
+BuildAnnotFromMethod uses the soot method retrieveActiveBody() to actually get
+the individual statements from soot.
+This method may fail in a manner which breaks the soot analysis, and can't
+be fixed by catching an exception
+
+Each method is annotated by a directed acyclic graph which has as a 
+"root" / origin the initial statement in the function.
+Every statement in java may have either 0, 1, or 2 subsequent statements
+all meaningful branch statements will have 2 subsequent statements
+terminating statements will have 0 subsequent statements
+all other statements will have 1 subsequent statement
+MethodNodeAnnot's BranchableStmt variable theStmt
+is the initial "root" statement of the function that the node describes
+
+After creating these nodes, we return to AnalyzeFromJar to 
+build the edges between nodes, via the 
+Analyzer.AddEdgesToHypergraph
+Which uses
+Analyzed.AddRecStmts
+We add the edges at this point so that we can distinguish between
+nodes that we want to contain in our hypergraph
+and nodes that represent calls out of the analyzed methods
+which will be represented as edges to dummy nodes that do not
+contain soot-analyzed methods.  This approach is useful for
+sequence diagram generation as it limits scope
+It may have drawbacks for taint analysis but we don't do this at the 
+moment because we already have scaling issues.
+
+An implementation that adds complete values of those nodes is visible in 
+AddRecStmts near the comment //Brian 2017 dangerous code
+but it is commented out.
+
+Adding the links between nodes is a graph traversal of each trace graph
+in each node in the hypergraph.
+

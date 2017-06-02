@@ -36,7 +36,7 @@ import utilities.Utilities;
 
 public class Analyzer {
 	
-	private static int MAXLVL = 10;
+	//private static int MAXLVL = 1000;
 	
 	//Many methods here are helper methods designed to 
 	//work around different ways of specifying classes
@@ -233,6 +233,7 @@ public class Analyzer {
 				if(tarNode == null){
 					
 					//Brian - 2017 dangerous code.
+				/*
 					SootClass c= null;
 					String cname = finder.GetMethod().getDeclaringClass().getName();
 					try{
@@ -246,11 +247,13 @@ public class Analyzer {
 					AddClassToHypergraph(
 							hg,
 							c);}
+				*/
+					
 					//Brian - end dangerous stuff - commented out
 					//next line which adds "empty" placeholder nodes to
 					//untraversed code.
 					
-					//hg.AddNode(finder);
+					hg.AddNode(finder);
 					tarNode = hg.GetCompleteNode(finder);
 				}
 				if(tarNode == null){
@@ -327,7 +330,9 @@ public class Analyzer {
 		
 		List<TraceStatement> toReturn = new ArrayList<TraceStatement>();
 		if(listSeen.contains(bs)){return toReturn;}
-		if(MAXLVL > 0 && reclvl > MAXLVL){return toReturn;}
+		//if(MAXLVL > 0 && reclvl > MAXLVL){
+		//	return toReturn;
+		//}
 		
 		List<BranchableStmt> newSeen = new ArrayList<BranchableStmt>(listSeen);
 		newSeen.add(bs);

@@ -51,7 +51,7 @@ import utilities.Utilities;
 
 public class TSOrInvoke{
 	
-	private static int MAXLVL = 10;
+	//private static int MAXLVL = 1000;
 	
 	private TaintAnalyzer tTest;
 	
@@ -151,7 +151,15 @@ public class TSOrInvoke{
 			return toReturn;
 		}
 		
-		if(aGNode.data.getTraces() == null){return toReturn;}
+		//blp 2017-june debug
+		if(true){
+			List<TraceStatement> ltc = aGNode.data.getTraces();
+			System.out.println(Integer.toString(ltc.size()));
+		}
+		
+		if(aGNode.data.getTraces() == null){
+			return toReturn;
+		}
 		
 		int tstmtssize = aGNode.data.getTraces().size();
 		if(tstmtssize == 0){return toReturn;}
@@ -278,7 +286,7 @@ public class TSOrInvoke{
 		if(aStmt == null){return toReturn;}
 		
 		//HARD mem fix! bad!
-		if(MAXLVL > 0 && reclvl > MAXLVL){return toReturn;}
+		//if(MAXLVL > 0 && reclvl > MAXLVL){return toReturn;}
 		
 		SDObject sourceObj = (SDObject)sd.GetObjectFromID(sourceObjID);
 		

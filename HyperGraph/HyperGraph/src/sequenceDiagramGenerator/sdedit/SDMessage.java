@@ -166,6 +166,10 @@ public class SDMessage
     	return fullMethodName;
     }
     
+    public String toString(){
+    	return this.GetFullMethodName();
+    }
+    
     public void SetTaintState(SequenceDiagram sd, TaintState inTState){
     	this.tState = inTState;
     	if(inTState == TaintState.Tainted){
