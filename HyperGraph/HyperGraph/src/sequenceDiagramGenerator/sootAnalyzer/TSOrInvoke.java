@@ -152,7 +152,7 @@ public class TSOrInvoke{
 		}
 		
 		//blp 2017-june debug
-		if(true){
+		if(false){
 			List<TraceStatement> ltc = aGNode.data.getTraces();
 			System.out.println(Integer.toString(ltc.size()));
 		}

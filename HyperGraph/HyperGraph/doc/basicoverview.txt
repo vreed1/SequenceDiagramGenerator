@@ -101,4 +101,75 @@ but it is commented out.
 
 Adding the links between nodes is a graph traversal of each trace graph
 in each node in the hypergraph.
+If we are going to run out of memory, this is one of the places that is
+most likely to do it.
 
+When we have a complete hypergraph, we utilize
+sequenceDiagramGenerator.sootAnalyzer.TSOrInvoke.GenerateTaintDiagrams
+in TestUI.RunTaintAnalysis
+
+The class TSOrInvoke contains some of the most difficult to understand 
+pieces of code.  The hypergraph contains the potential code paths of
+the program without any context.  Navigating through the hypergraph
+to create a diagram requires maintaining an additional data structure 
+to accompany the traversal, which creates a pseudostate.
+
+This pseudostate (Represented by an instance of TSDListAndReturns)
+ represents the variables which will be actors in the 
+diagram.  These are either instance variables with type, or they may
+be calls into the static instance of a particular class.  
+They may be modified by variations on the assignment statement.
+When we start a diagram, (In TSOrInvoke.GenerateAllDiagrams) 
+we postulate some outer instance for us to start in. (may be a static
+instance depending on the static/nonstatic nature of the method we
+have chosen as a starting point).
+
+When we navigate through a node, we generate all possible traces 
+(with some exceptions because of loops), from the DAG of the node annotation.
+Then we clone the TSDListAndReturns, which contains the pseudostate upon entry,
+as many times as there are traces, and send each cloned state through 
+one trace to be modified.  This results in the data structure that will
+in the end, be the sequence diagram / potential taint data structure.
+
+The remainder of the program concerns rendering the diagrams from 
+a TSDListAndReturns object.
+
+The most tricky and dangerous part of the trace generation is handling
+individual statements in each method.  We look through the statements
+of each trace sequentially and if we identify that they create a 
+modification in state, we model that modification.  We look through
+soot's statement object to determine two important possible facts
+Does the statement contain an assignment expression
+Does the statement contain an invoke expression
+It is possible that a statement contains both.
+
+If a statement contains an assignment expression, we need to or 
+create the relevant objects that participate in the expression
+and "link" them.  
+Objects that participate in state and message passing are defined by the
+sequenceDiagramGenerator.sdedit.SDObject class
+For a simple statement like:
+Object x = y;
+What we see as happening is that there was prior to this statement
+some instance that had the name y attached to it.  After this
+statement we will see both the names x and y as attached to this
+object.
+Occasionally we will fail to understand that two objects are
+conceptually the "same".  This occurs most frequently with
+data sets (such as arrays / lists).  If the member of the 
+array/list retrieved is the result of a run-time calculation, as it
+often is, we won't be able to necessarily tell what member of the 
+array is retrieved at runtime.  In this case, we will identify this
+as a new and unrelated object.
+
+If a statement contains an invoke expression, we need to navigate
+in the hypergraph to the next location with a copy of the current
+psuedostate. If the invoke expression contains arguments, we see this
+as essentially assigning those new names to the relevant object as it passes into
+the new function.
+
+Therefore, objects (SDObject), possess two name lists. theCurrentNames,
+which is every name that we think is actually a reference at a certain point in 
+traversal, and theNameHistory, which is every name that we ever used for an object.
+theNameHistory will be referenced when we have to pick a single name to use for
+the object when creating a sequence diagram. 
