@@ -108,7 +108,7 @@ public class TSOrInvoke{
 			sd.AddObject(outerObject);
 			sd.AttachNameToObject("this", outerObject);
 		}
-		TSDListAndReturns allSDs = new TSDListAndReturns();
+		TSDListAndReturns allSDs = new TSDDeltaLR();
 		allSDs.listDiagrams.add(sd);
 		listToReturn = MakeAllTaintTraces(
 				"", 
@@ -383,7 +383,7 @@ public class TSOrInvoke{
 		//including any calls and subsequent calls generated
 		//we traverse to the next statement.
 		if(FindAll){
-			TSDListAndReturns toReturnNew = new TSDListAndReturns();
+			TSDListAndReturns toReturnNew = new TSDDeltaLR();
 			for(int i = 0; i < toReturn.size(); i++){
 				toReturnNew.addAll(RecFillTraceAllStmtDiagram(
 						outerMethodName, 

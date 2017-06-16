@@ -16,6 +16,7 @@ import java.util.HashMap;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
+import java.util.Map.Entry;
 import java.util.Set;
 import java.util.UUID;
 import java.util.regex.Pattern;
@@ -59,13 +60,83 @@ public class SequenceDiagram {
     protected static String diagOrientation = "portrait";
     
     protected UUID theID;
-
+    private boolean terse = false;
+    
     public SequenceDiagram() {
         theInstanceObjects = new HashMap<Integer, SDObject>();
         theMessages = new ArrayList<SDMessage>();
         theStaticObjects = new HashMap<String,SDObject>();
         theID = UUID.randomUUID();
     }
+    
+    public void LoadJSON(JSONObject jobj){
+    	theID = UUID.fromString((String)jobj.get("theID"));
+    	JSONObject subobj = (JSONObject)jobj.get("theInstanceObjects");
+    
+    	Iterator<Entry<Integer, JSONObject>> iinst = subobj.entrySet().iterator();
+    	while(iinst.hasNext()){
+    		Entry<Integer, JSONObject> einst = iinst.next();
+    		SDObject anObj = new SDObject();
+    		anObj.LoadJSON(einst.getValue());
+    		this.theInstanceObjects.put(einst.getKey(), anObj);
+    	}
+    	
+    	JSONArray jarr = (JSONArray)jobj.get("theMessages");
+    	for(int i = 0; i < jarr.size(); i++){
+    		SDMessage amsg = new SDMessage();
+    		JSONObject jmsgobj = (JSONObject)jarr.get(i);
+    		amsg.LoadJSON(jmsgobj);
+    		theMessages.add(amsg);
+    	}
+    }
+ 
+    public JSONObject serialize(){
+		JSONObject topObj = new JSONObject();
+		
+	 	topObj.put("theID", theID.toString());
+		JSONObject instObj = new JSONObject();
+		Iterator it = theInstanceObjects.entrySet().iterator();
+		while(it.hasNext()){
+			Map.Entry<Integer, SDObject> pair = (Map.Entry)it.next();
+			instObj.put(pair.getKey(), pair.getValue().serialize());
+		}
+		topObj.put("theInstanceObjects", instObj);
+		
+		JSONObject statObj = new JSONObject();
+		it = theStaticObjects.entrySet().iterator();
+		while(it.hasNext()){
+			Map.Entry<String, SDObject> estat = (Map.Entry)it.next();
+			statObj.put(estat.getKey(),estat.getValue().serialize());
+		}
+		topObj.put("theStaticObjects", statObj);
+		
+		JSONArray jarr = new JSONArray();
+		for(int i = 0; i < theMessages.size(); i++){
+			jarr.add(theMessages.get(i).serialize());
+		}
+		topObj.put("theMessages", jarr);
+		JSONObject staticObj = new JSONObject();
+		it = theStaticObjects.entrySet().iterator();
+		while(it.hasNext()){
+			Map.Entry<String, SDObject> pair = (Map.Entry<String, SDObject>)it.next();
+			staticObj.put(pair.getKey(), pair.getValue().serialize());
+		}
+		topObj.put("theName", this.theName);
+		 
+		//protected int thePriority;
+		//protected int theUniqueMsgCount;
+		//protected int theMaxDepth;
+		//protected int theTotalMsgsInGroup;
+		  
+		topObj.put("thePriority", Integer.toString(thePriority));
+		topObj.put("theUniqueMsgCount", Integer.toString(theUniqueMsgCount));
+		topObj.put("theMaxDepth", Integer.toString(theMaxDepth));
+		topObj.put("theTotalMsgsInGroup", Integer.toString(theTotalMsgsInGroup));
+		
+		return topObj;
+		
+    }
+    
     
     public static SequenceDiagram FromFile(String filename){
     	try{
@@ -322,7 +393,7 @@ public class SequenceDiagram {
     			+ "_" + GetName();
     	CreatePDF(fileName, tersemode);
     }
-    private boolean terse = false;
+ 
     public void CreatePDF(String outFile, boolean tersemode) {
     	terse = tersemode;
     	NameSafetyCheck();

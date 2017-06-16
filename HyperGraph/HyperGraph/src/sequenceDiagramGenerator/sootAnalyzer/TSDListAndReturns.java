@@ -7,11 +7,11 @@ import sequenceDiagramGenerator.sdedit.SDObject;
 import sequenceDiagramGenerator.sdedit.SDObject.TaintState;
 import sequenceDiagramGenerator.sdedit.SequenceDiagram;
 
-public class TSDListAndReturns {
+public abstract class TSDListAndReturns {
 
-	public List<SequenceDiagram> listDiagrams;
-	public List<SDObject> listReturns;
-	public TaintState tState = TaintState.Safe;
+	protected List<SequenceDiagram> listDiagrams;
+	protected List<SDObject> listReturns;
+	protected TaintState tState = TaintState.Safe;
 	
 		public TSDListAndReturns(){
 			listDiagrams = new ArrayList<SequenceDiagram>();
@@ -19,20 +19,34 @@ public class TSDListAndReturns {
 		}
 		
 		public void clear(){
+			loadifneeded();
 			listDiagrams.clear();
 			listReturns.clear();
 		}
 		
+		protected boolean needsLoad(){
+			return false;
+		}
+		
+		protected void load(){}
+		
+		protected void loadifneeded(){
+			if(needsLoad()){load();}
+		}
+		
 		public void addAll(TSDListAndReturns other){
+			loadifneeded();
 			listDiagrams.addAll(other.listDiagrams);
 			listReturns.addAll(other.listReturns);
 		}
 		
 		public int size(){
+			loadifneeded();
 			return listDiagrams.size();
 		}
 
 		public void SetSafeReturn(int sdIndex, SDObject retObj) {
+			loadifneeded();
 			while(listReturns.size() <= sdIndex){
 				listReturns.add(null);
 			}
@@ -40,7 +54,8 @@ public class TSDListAndReturns {
 		}
 		
 		public TSDListAndReturns clone(){
-			TSDListAndReturns toReturn = new TSDListAndReturns();
+			loadifneeded();
+			TSDListAndReturns toReturn = new TSDDeltaLR();
 			for(int i = 0; i < listDiagrams.size(); i++){
 				int id = -1;
 				if(i < listReturns.size()){
@@ -57,7 +72,8 @@ public class TSDListAndReturns {
 		}
 
 		public TSDListAndReturns Copy(int sdIndex) {
-			TSDListAndReturns toReturn = new TSDListAndReturns();
+			loadifneeded();
+			TSDListAndReturns toReturn = new TSDDeltaLR();
 			toReturn.listDiagrams.add(listDiagrams.get(sdIndex));
 			if(listReturns.size() > sdIndex){
 				toReturn.listReturns.add(listReturns.get(sdIndex));

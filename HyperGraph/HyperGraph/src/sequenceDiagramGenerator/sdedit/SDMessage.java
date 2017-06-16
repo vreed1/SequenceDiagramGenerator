@@ -47,6 +47,8 @@ public class SDMessage
 //        this.specifier = opts.get(MessageOpt.SPECIFIER);
 //    }
     
+    public SDMessage(){}
+    
     public SDMessage clone(){
     	return new SDMessage(callerID, calleeID, answer,
     			message,specifier,mnemonic,isConstruction,
@@ -235,4 +237,40 @@ public class SDMessage
         return msg.toString();
     	
     }
+
+	public JSONObject serialize() {
+		//blah
+		JSONObject jobj = new JSONObject();
+		jobj.put("callerID", callerID);
+		jobj.put("calleeID", calleeID);
+		jobj.put("tState", tState);
+		jobj.put("answer", answer);
+		jobj.put("message", message);
+		jobj.put("specifier", specifier);
+		jobj.put("mnemonic", mnemonic);
+		jobj.put("isConstruction", isConstruction);
+		jobj.put("isSuper", isSuper);
+		jobj.put("fullMethodName", fullMethodName);
+		jobj.put("callLevel", callLevel);
+		jobj.put("finalLevel", finalLevel);
+		return jobj;
+		 
+	}
+	
+	public void LoadJSON(JSONObject topObj){
+		callerID = Integer.parseInt((String)topObj.get("callerID"));
+		calleeID = Integer.parseInt((String)topObj.get("calleeID"));
+		tState = TaintState.valueOf((String)topObj.get("tState"));
+		answer = (String) topObj.get("answer");
+		message = (String) topObj.get("message");
+		specifier = (String) topObj.get("specifier");
+		mnemonic = (String) topObj.get("mnemonic");
+		isConstruction = Boolean.parseBoolean((String)topObj.get("isConstruction"));
+		isSuper = Boolean.parseBoolean((String)topObj.get("isSuper"));
+		fullMethodName = (String)topObj.get("fullMethodName");
+		callLevel = Integer.parseInt((String)topObj.get("callLevel"));
+		finalLevel = Integer.parseInt((String)topObj.get("finalLevel"));
+		
+		
+	}
 }

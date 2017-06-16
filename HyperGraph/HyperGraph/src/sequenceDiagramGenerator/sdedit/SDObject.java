@@ -5,6 +5,7 @@ import java.util.HashMap;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
+import java.util.Map.Entry;
 import java.util.Stack;
 
 import org.json.simple.JSONArray;
@@ -44,6 +45,16 @@ public class SDObject
     
     private boolean nameFixed = false;
 
+    public SDObject(){
+
+		theCurrentNames = new ArrayList<String>();
+		theNameHistory = new ArrayList<String>();
+		theCallStackNames = new Stack<List<String>>();
+		theFields = new HashMap<String, Integer>();
+        this.flags = new ArrayList<ObjectFlag>();
+    }
+    
+    
 	public SDObject(Type sc, 
 			String startName, 
 			boolean aIsConstructed,
@@ -487,5 +498,110 @@ public class SDObject
 	private boolean isTerse = false;
 	public void SetTerse(boolean terse) {
 		isTerse = terse;
+	}
+
+    public void LoadJSON(JSONObject topObj){
+    	tState = TaintState.valueOf((String)topObj.get("tState"));
+    	ID = Integer.parseInt((String)topObj.get("ID"));
+    	name = (String)topObj.get("name");
+    	type = (String)topObj.get("type");
+    	label = (String)topObj.get("label");
+    	JSONArray jarr = (JSONArray)topObj.get("flags");
+    	for(int i = 0; i < jarr.size(); i++){
+    		flags.add(ObjectFlag.valueOf((String)jarr.get(i)));
+    	}
+    	
+    	isConstructed = Boolean.parseBoolean((String)topObj.get("isConstructed"));
+    	isStatic = Boolean.parseBoolean((String)topObj.get("isStatic"));
+    	
+    	jarr = (JSONArray)topObj.get("theCurrentNames");
+    	for(int i = 0; i < jarr.size(); i++){
+    		theCurrentNames.add((String)jarr.get(i));
+    	}
+    	
+    	jarr = (JSONArray)topObj.get("theNameHistory");
+    	for(int i = 0; i < jarr.size(); i++){
+    		theNameHistory.add((String)jarr.get(i));
+    	}
+    	
+    	jarr = (JSONArray)topObj.get("theCallStackNames");
+    	for(int i = 0; i < jarr.size(); i++){
+    		JSONArray jarrsub = (JSONArray)jarr.get(i);
+    		List<String> sublist = new ArrayList<String>();
+    		for(int j = 0; j < jarrsub.size(); j++){
+    			sublist.add((String)jarrsub.get(j));
+    		}
+    		theCallStackNames.push(sublist);
+    	}
+    	
+    	JSONObject jobjfield = (JSONObject)topObj.get("theFields");
+    	Iterator<Entry<String, Integer>> ifield = jobjfield.entrySet().iterator();
+    	while(ifield.hasNext()){
+    		Entry<String, Integer> ef = ifield.next();
+    		theFields.put(ef.getKey(), ef.getValue());
+    	}
+    	
+    	nameFixed = Boolean.parseBoolean((String)topObj.get("nameFixed"));
+		
+    	String sootclassname = (String)topObj.get("theSootClass");
+    	this.theSootClass = Scene.v().loadClassAndSupport(sootclassname);
+    }
+    
+	public JSONObject serialize() {
+
+		JSONObject topObj = new JSONObject();
+		
+		topObj.put("tState", tState);
+		topObj.put("ID", ID);
+		topObj.put("name", name);
+	    topObj.put("type", type);
+		topObj.put("label", label);
+		JSONArray jarr =new JSONArray();
+		for(int i = 0; i < flags.size(); i++){
+			jarr.add(flags.get(i));
+		}
+		topObj.put("flags", jarr);
+		topObj.put("isConstructed",isConstructed);
+		topObj.put("isStatic", isStatic);
+	    
+		jarr = new JSONArray();
+		for(int i = 0; i < theCurrentNames.size(); i++){
+			jarr.add(theCurrentNames.get(i));
+		}
+		topObj.put("theCurrentNames", jarr);
+		
+		jarr = new JSONArray();
+		for(int i = 0; i < theNameHistory.size(); i++){
+			jarr.add(theNameHistory.get(i));
+		}
+		topObj.put("theNameHistory", theNameHistory);
+	    
+		jarr = new JSONArray();
+		Iterator<List<String>> it = theCallStackNames.iterator();
+		while(it.hasNext()){
+			List<String> aList = it.next();
+			JSONArray subarr = new JSONArray();
+			for(int i = 0; i < aList.size(); i++){
+				subarr.add(aList.get(i));
+			}
+			jarr.add(subarr);
+		}
+		topObj.put("theCallStackNames", jarr);
+		
+		Iterator<Entry<String, Integer>> itf = theFields.entrySet().iterator();
+		JSONObject jobjsub = new JSONObject();
+		while(itf.hasNext()){
+			Entry<String, Integer> ef = itf.next();
+			jobjsub.put(ef.getKey(), ef.getValue());
+		}
+		topObj.put("theFields", jobjsub);
+
+		topObj.put("nameFixed", nameFixed);
+		
+	    //private SootClass theSootClass;
+	    //c = Scene.v().loadClassAndSupport(listClassNames.get(i));
+		topObj.put("theSootClass", theSootClass.getName());
+		return topObj;
+		
 	}
 }
